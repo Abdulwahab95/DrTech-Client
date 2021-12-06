@@ -30,10 +30,17 @@ void main() async {
 
   //FirebaseCrashlytics.instance.crash();
 
+
+  await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
+    alert: false,
+    badge: true,
+    sound: true,
+  );
+
   const AndroidNotificationChannel channel = AndroidNotificationChannel(
     'high_importance_channel', // id
     'High Importance Notifications', // title
-    'This channel is used for important notifications.', // description
+    description: 'This channel is used for important notifications.', // description
     importance: Importance.max,
     sound: RawResourceAndroidNotificationSound('special'),
     playSound: true,
@@ -60,7 +67,6 @@ void main() async {
 class App extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(fontFamily: "Cario", primarySwatch: Colors.blue,),

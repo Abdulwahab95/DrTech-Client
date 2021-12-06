@@ -72,7 +72,7 @@ PODS:
     - FirebaseCoreDiagnostics (~> 8.0)
     - GoogleUtilities/Environment (~> 7.6)
     - GoogleUtilities/Logger (~> 7.6)
-  - FirebaseCoreDiagnostics (8.9.0):
+  - FirebaseCoreDiagnostics (8.10.0):
     - GoogleDataTransport (~> 9.1)
     - GoogleUtilities/Environment (~> 7.6)
     - GoogleUtilities/Logger (~> 7.6)
@@ -84,7 +84,7 @@ PODS:
     - GoogleUtilities/Environment (~> 7.6)
     - nanopb (~> 2.30908.0)
     - PromisesObjC (< 3.0, >= 1.2)
-  - FirebaseInstallations (8.9.0):
+  - FirebaseInstallations (8.10.0):
     - FirebaseCore (~> 8.0)
     - GoogleUtilities/Environment (~> 7.6)
     - GoogleUtilities/UserDefaults (~> 7.6)
@@ -156,7 +156,7 @@ PODS:
   - sqflite (0.0.2):
     - Flutter
     - FMDB (>= 2.7.5)
-  - SwiftyGif (5.4.0)
+  - SwiftyGif (5.4.1)
   - url_launcher (0.0.1):
     - Flutter
   - vibration (1.7.3):
@@ -265,9 +265,9 @@ SPEC CHECKSUMS:
   firebase_messaging: 089f98d797e1c1c522be8f02b5919cf1b509dfb6
   FirebaseAuth: 2b78b2a32c07b3ecfa4970bdf1d3632b8304099b
   FirebaseCore: 599ee609343eaf4941bd188f85e3aa077ffe325b
-  FirebaseCoreDiagnostics: 5daa63f1c1409d981a2d5007daa100b36eac6a34
+  FirebaseCoreDiagnostics: 56fb7216d87e0e6ec2feddefa9d8a392fe8b2c18
   FirebaseCrashlytics: 40efbd81157dae307ec95612fa1328347284d2c2
-  FirebaseInstallations: caa7c8e0d3e2345b8829d2fa9ca1b4dfbf2fcc85
+  FirebaseInstallations: 830327b45345ffc859eaa9c17bcd5ae893fd5425
   FirebaseMessaging: 82c4a48638f53f7b184f3cc9f6cd2cbe533ab316
   Flutter: 434fef37c0980e73bb6479ef766c45957d4b510c
   flutter_local_notifications: 0c0b1ae97e741e1521e4c1629a459d04b9aec743
@@ -288,7 +288,7 @@ SPEC CHECKSUMS:
   share: 0b2c3e82132f5888bccca3351c504d0003b3b410
   shared_preferences: af6bfa751691cdc24be3045c43ec037377ada40d
   sqflite: 6d358c025f5b867b29ed92fc697fd34924e11904
-  SwiftyGif: 5d4af95df24caf1c570dbbcb32a3b8a0763bc6d7
+  SwiftyGif: 6895c887f5551618a3c5dd3ecb512419105bacca
   url_launcher: 6fef411d543ceb26efce54b05a0a40bfd74cbbef
   vibration: b5a33e764c3f609a975b9dca73dce20fdde627dc
   webview_flutter: d2b4d6c66968ad042ad94cbb791f5b72b4678a96

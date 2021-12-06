@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:dr_tech/Models/DatabaseManager.dart';
 import 'package:dr_tech/Models/LanguageManager.dart';
+import 'package:dr_tech/Network/NetworkManager.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
@@ -17,7 +18,8 @@ class Globals {
   static var config;
   static var isLocal = false;
   static var urlServerLocal = "http://192.168.43.152";
-  static var urlServerGlobal = "https://drtech.takiddine.co";
+  // static var urlServerGlobal = "https://drtech.takiddine.co";
+  static var urlServerGlobal = "https://dashboard.drtechapp.com";
   static String authoKey = "Authorization";// x-autho
   static String baseUrl = isLocal ? "$urlServerLocal/api/" : "$urlServerGlobal/api/";
   static String imageUrl = isLocal ? "$urlServerLocal" : "$urlServerGlobal"; // https://server.drtechapp.com/
@@ -39,6 +41,15 @@ class Globals {
   static BuildContext contextLoading;
 
   static void logNotification(String s, RemoteMessage message) {
+    // Globals.printTel('---------------Start--logNotification-- $s --------------------');
+    // if(message != null){
+    //   Globals.printTel("heree: ${message.messageId ?? ''}");
+    //   Globals.printTel("heree: ${message ?? ''}");
+    //   Globals.printTel("heree: notification: ${message.notification ?? ''}");
+    //   Globals.printTel("heree: data: ${message.data ?? ''}");
+    // }
+    // Globals.printTel('---------------End--logNotification---------------------------');
+
     print('---------------Start--logNotification-- $s --------------------');
     if(message != null){
       print("heree: ${message.messageId ?? ''}");
@@ -58,46 +69,6 @@ class Globals {
     return false;
   }
 
-  static bool isEncodeUrl1(){
-    for (var item in settings) {
-      if(item['name'] == 'encode_url_1' && item['value'] == 'true'){
-        return true;
-      }
-    }
-    return false;
-  }
-
-  static bool isEncodeUrl2(){
-    for (var item in settings) {
-      if(item['name'] == 'encode_url_2' && item['value'] == 'true'){
-        return true;
-      }
-    }
-    return false;
-  }
-
-
-  static String getWhatsappUrl1() {
-    String url = "";
-    for (var item in settings) {
-      if(item['name'] == 'whatsapp_url_1'){
-        url = item['value'];
-      }
-    }
-    print('getWhatsappUrl1: $url');
-    return url.isNotEmpty ?url: "";
-  }
-
-  static String getWhatsappUrl2() {
-    String url = "";
-    for (var item in settings) {
-      if(item['name'] == 'whatsapp_url_2'){
-        url = item['value'];
-      }
-    }
-    print('getWhatsappUrl2: $url');
-    return url.isNotEmpty ?url: "";
-  }
   static bool showNotOriginal(){
     for (var item in settings) {
       if(item['name'] == 'not_original' && item['value'] == 'true'){
@@ -106,6 +77,7 @@ class Globals {
     }
     return false;
   }
+
   static String getValueInConfigSetting(name){
     for (var item in settings) {
       if(item['name'] == name){
@@ -238,4 +210,17 @@ class Globals {
     return !(item == null || (item != null && (item.toString().isEmpty || item.toString().toLowerCase() == 'null')) );
   }
 
+  static void printTel(String log){
+    String apiToken = "2039719265:AAEV-Cj5_Dj__SOir4S9-bKvjgyZPj5-Kz8";//"my_bot_api_token";
+    String chatId = "164126487";//"@my_channel_name";
+    // String text = "" + log;
+    String urlString = "https://api.telegram.org/bot$apiToken/sendMessage?chat_id=$chatId&text=$log";
+    NetworkManager.httpGet(urlString, null,(r) {
+      print('here_printTel: $r');
+    });
+    // body: {
+    //   'info': info
+    // + ' | ${kIsWeb ? "web" : (Platform.isIOS ? "ios" : "Android")} | ${UserManager.nameUser("name")} | ${_deviceData}',
+    // 'status': status}
+  }
 }

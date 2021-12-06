@@ -200,7 +200,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       for (var item in Globals.getConfig("sharing")) {
         shearIcons.add(GestureDetector(
           onTap: () async {
-            launch(item['url']);
+            launch(Uri.encodeFull(item['url']));
           },
           child: Container(
             width: 40,

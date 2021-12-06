@@ -49,6 +49,7 @@ This app requires access to the photo library.
 </string>
 	<key>UIBackgroundModes</key>
 	<array>
+		<string>fetch</string>
 		<string>remote-notification</string>
 	</array>
 	<key>UILaunchStoryboardName</key>
@@ -68,5 +69,9 @@ This app requires access to the photo library.
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
+	<key>FirebaseAppDelegateProxyEnabled</key>
+	<false/>
+	<key>UILocalNotificationDefaultSoundName</key>
+	<string>special.caf</string>
 </dict>
 </plist>

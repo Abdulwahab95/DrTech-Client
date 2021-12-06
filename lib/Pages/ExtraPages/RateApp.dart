@@ -137,7 +137,7 @@ class _RateAppState extends State<RateApp> {
       for (var item in Globals.getConfig("sharing")) {
         shearIcons.add(GestureDetector(
           onTap: () async {
-            await launch(item['url']) ;
+            await launch(Uri.encodeFull(item['url'])) ;
             // void _launchURL() async =>
             // item['url']= 'https://api.whatsapp.com/';
             //     await canLaunch(item['url']) ? await launch(item['url']) : throw 'Could not launch ${item['url']}';

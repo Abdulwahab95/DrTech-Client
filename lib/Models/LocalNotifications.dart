@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:dr_tech/Config/Globals.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 class LocalNotifications {
@@ -14,17 +15,19 @@ class LocalNotifications {
   static void init() {
 // initialise the plugin. app_icon needs to be a added as a drawable resource to the Android head project
     var initializationSettingsAndroid = new AndroidInitializationSettings('@mipmap/ic_launcher');
-    var initializationSettingsIOS = new IOSInitializationSettings();
+    var initializationSettingsIOS = new IOSInitializationSettings(
+        onDidReceiveLocalNotification: onDidReceiveLocalNotification,
+    );
     var initializationSettings = new InitializationSettings(android: initializationSettingsAndroid, iOS: initializationSettingsIOS);
     flutterLocalNotificationsPlugin.initialize(initializationSettings, onSelectNotification: onSelectReminderNotification);
   }
 
   static void send(title, message, Map<String, dynamic> paylaod) async {
     var androidPlatformChannelSpecifics = AndroidNotificationDetails(
-        "NOTIC", "NOTIC", "NOTIC",
+        "NOTIC", "NOTIC", channelDescription: "NOTIC",
         importance: Importance.max, priority: Priority.high, ticker: 'ticker',
         sound: RawResourceAndroidNotificationSound('special'), playSound: true);
-    var iOSPlatformChannelSpecifics = IOSNotificationDetails(sound: 'special');
+    var iOSPlatformChannelSpecifics = IOSNotificationDetails(sound: 'special.caf');
     var platformChannelSpecifics = NotificationDetails(
         android: androidPlatformChannelSpecifics,
         iOS: iOSPlatformChannelSpecifics);
@@ -48,6 +51,34 @@ class LocalNotifications {
       Navigator.of(reminderScreenNavigatorKey.currentState.context).pushNamed("WelcomePage");
     }
 
+  }
+
+  static Future<dynamic> onDidReceiveLocalNotification(
+      int id, String title, String body, String payload) async {
+    // display a dialog with the notification details, tap ok to go to another page
+    showDialog(
+      context: reminderScreenNavigatorKey.currentState.context,
+      builder: (BuildContext context) =>
+          CupertinoAlertDialog(
+            title: Text(title),
+            content: Text(body),
+            actions: [
+              CupertinoDialogAction(
+                isDefaultAction: true,
+                child: Text('Ok'),
+                onPressed: () async {
+                  Navigator.of(context, rootNavigator: true).pop();
+                  // await Navigator.push(
+                  //   context,
+                  //   MaterialPageRoute(
+                  //     builder: (context) => SecondScreen(payload),
+                  //   ),
+                  // );
+                },
+              )
+            ],
+          ),
+    );
   }
 
 }
