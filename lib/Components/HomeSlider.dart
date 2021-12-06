@@ -63,7 +63,7 @@ class _HomeSliderState extends State<HomeSlider> {
                       fit: BoxFit.cover,
                       image: CachedNetworkImageProvider(Globals.correctLink(item['image'])))),
             ),
-            item['visitableBtn'] == 'true'? Align(
+            item['visitableBtn'] == true? Align(
                 alignment: Alignment.bottomLeft,
                 child: InkWell(
                   onTap: () => _launchURL(item['url']),

@@ -14,7 +14,7 @@ class LocalNotifications {
 
   static void init() {
 // initialise the plugin. app_icon needs to be a added as a drawable resource to the Android head project
-    var initializationSettingsAndroid = new AndroidInitializationSettings('@mipmap/ic_launcher');
+    var initializationSettingsAndroid = new AndroidInitializationSettings('@drawable/ic_logo_notifi');
     var initializationSettingsIOS = new IOSInitializationSettings(
         onDidReceiveLocalNotification: onDidReceiveLocalNotification,
     );
@@ -25,6 +25,7 @@ class LocalNotifications {
   static void send(title, message, Map<String, dynamic> paylaod) async {
     var androidPlatformChannelSpecifics = AndroidNotificationDetails(
         "NOTIC", "NOTIC", channelDescription: "NOTIC",
+        enableLights: true,enableVibration: true,ledColor: Colors.blue,ledOffMs: 1,ledOnMs: 2,
         importance: Importance.max, priority: Priority.high, ticker: 'ticker',
         sound: RawResourceAndroidNotificationSound('special'), playSound: true);
     var iOSPlatformChannelSpecifics = IOSNotificationDetails(sound: 'special.caf');

@@ -42,6 +42,9 @@ void main() async {
     'High Importance Notifications', // title
     description: 'This channel is used for important notifications.', // description
     importance: Importance.max,
+    ledColor: Colors.blue,
+    enableVibration: true,
+    enableLights: true,
     sound: RawResourceAndroidNotificationSound('special'),
     playSound: true,
   );

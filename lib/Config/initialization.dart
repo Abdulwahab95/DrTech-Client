@@ -47,7 +47,7 @@ class Initialization {
     Map<String, String> body = {
       "code": DatabaseManager.liveDatabase["code"].toString()
     };
-    NetworkManager.httpPost(Globals.baseUrl + "config/current", Globals.contextLoading,(r) { // main/configuration
+    NetworkManager.httpPost(Globals.baseUrl + "config", Globals.contextLoading,(r) { // main/configuration
       // print('settings: ${r['config'].r['settings']}');
       if (r['state'] == true) {
         // read configs

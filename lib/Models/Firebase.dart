@@ -5,7 +5,6 @@ import 'package:dr_tech/Config/Globals.dart';
 import 'package:dr_tech/Pages/LiveChat.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'LocalNotifications.dart';
 import 'UserManager.dart';
 
@@ -24,31 +23,10 @@ class MessageHandlerState extends State<MessageHandler> {
   void initState() {
     super.initState();
 
-    // FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-    //   Globals.logNotification('onMessage', message);
-    //   LocalNotifications.sendIos('dd: ${message.notification.title}', message.notification.body);
-    //   this.parse(message.data, message.notification);
-    // });
-
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       Globals.logNotification('onMessage', message);
-      RemoteNotification notification = message.notification;
-      AndroidNotification android = message.notification?.android;
-
-      // If onMessage is triggered with a notification, construct our own
-      // local notification to show to users using the created channel.
-      if (notification != null && android != null) {
-        LocalNotifications.flutterLocalNotificationsPlugin.show(
-            notification.hashCode,
-            notification.title + '0',
-            notification.body + '1',
-            NotificationDetails()).then((value) => this.parse(message.data, message.notification));
-      }
-      else
-        this.parse(message.data, message.notification);
+      this.parse(message.data, message.notification);
     });
-
-
 
 
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) { // onReusem
@@ -85,36 +63,36 @@ class MessageHandlerState extends State<MessageHandler> {
       }
     });
 
-    // Timer(Duration(seconds: 15), () {
-    //   Globals.printTel('here_timer: 15');
+    // Timer(Duration(seconds: 2), () {
+    //   print('here_timer: 15');
     //   RemoteMessage message =RemoteMessage.fromMap({
     //     "to": "cGWIGoTDRlunHuhL-UTBRb:APA91bGoDrjEsT8uLq8AqGfCNWfpy2SBsFaiWjKwZrcanQVZWwiNVSPKVfySvsAH10wIBPpO7dFK1sPma9w71Lzbb3MLC8Sm-gyCII4pZjlNitGwoSnU5HRZwb1iasQ0VrFuCFm-xrJm",
     //     "priority": "high",
-    //     "url": "",
-    //     "title": "title",
-    //     "body": "body",
-    //     "message": null,
-    //     "type": "NOTIC",
-    //     "data": {
-    //       "title": "message",
-    //       "message_txt": "",
-    //       "payload_target": "info",
-    //       "priority": "high",
-    //       "screen": "LiveChat",
-    //       "content_available": true,
-    //       "click_action": "FLUTTER_NOTIFICATION_CLICK",
-    //       "conversation_id": "3",
-    //       "payload": {
-    //         "type": "seen"
-    //       }
-    //     },
-    //     // "notification" : {
-    //     //   "body" : "Test Notification9",
-    //     //   "title": "Custom sound9",
-    //     //   "sound": "special.caf",
-    //     //   "color": "#ff0099",
-    //     //   "badge": "9"
-    //     // }
+    //     // "url": "",
+    //     // "title": "title",
+    //     // "body": "body",
+    //     // "message": null,
+    //     // "type": "NOTIC",
+    //     // "data": {
+    //     //   "title": "message",
+    //     //   "message_txt": "",
+    //     //   "payload_target": "info",
+    //     //   "priority": "high",
+    //     //   "screen": "LiveChat",
+    //     //   "content_available": true,
+    //     //   "click_action": "FLUTTER_NOTIFICATION_CLICK",
+    //     //   "conversation_id": "3",
+    //     //   "payload": {
+    //     //     "type": "seen"
+    //     //   }
+    //     // },
+    //     "notification" : {
+    //       "body" : "Test Notification9",
+    //       "title": "Custom sound9",
+    //       "sound": "special.caf",
+    //       "color": "#ff0099",
+    //       "badge": "9"
+    //     }
     //   });
     //   this.parse(message.data, message.notification);
     //   // UserManager.updateSp('not_seen', 0);

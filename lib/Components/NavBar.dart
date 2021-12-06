@@ -21,6 +21,7 @@ class _NavBarState extends State<NavBar> {
   double homeIconSize;
 
   int countNotSeen = UserManager.currentUser('not_seen').isNotEmpty? int.parse(UserManager.currentUser('not_seen')) : 0;
+  int countChatNotSeen = UserManager.currentUser('chat_not_seen').isNotEmpty? int.parse(UserManager.currentUser('chat_not_seen')) : 0;
 
   @override
   void initState() {
@@ -31,6 +32,7 @@ class _NavBarState extends State<NavBar> {
       if(mounted)
         setState(() {
           countNotSeen = UserManager.currentUser('not_seen').isNotEmpty? int.parse(UserManager.currentUser('not_seen')) : 0;
+          countChatNotSeen = UserManager.currentUser('chat_not_seen').isNotEmpty? int.parse(UserManager.currentUser('chat_not_seen')) : 0;
         });
     };
     super.initState();
@@ -67,10 +69,10 @@ class _NavBarState extends State<NavBar> {
               }, iSelectedIndex == 0, isBig: true),
               createIcon("services", 35, () {setState(() {iSelectedIndex = 1;});
                 widget.onUpdate(iSelectedIndex);
-              }, iSelectedIndex == 1),
+              }, iSelectedIndex == 1, count: countChatNotSeen),
               createIcon("bell", 45, () {
                 goToNotification();
-              }, iSelectedIndex == 2),
+              }, iSelectedIndex == 2, count: countNotSeen),
               createIcon("menu", 46, () {setState(() {iSelectedIndex = 3;});
                 widget.onUpdate(iSelectedIndex);
               }, iSelectedIndex == 3),
@@ -81,7 +83,7 @@ class _NavBarState extends State<NavBar> {
     );
   }
 
-  Widget createIcon(icon, text, onTap, isActive, {isBig = false}) {
+  Widget createIcon(icon, text, onTap, isActive, {isBig = false, count = 0}) {
     if (!isBig)
       return InkWell(
           onTap: onTap,
@@ -90,7 +92,7 @@ class _NavBarState extends State<NavBar> {
               alignment: Alignment.topRight,
               children: [
                 Container(
-                    padding: text == 45? EdgeInsets.only(top: 2): EdgeInsets.zero,
+                    padding: count >0 ? EdgeInsets.only(top: 2): EdgeInsets.zero,
                     width: homeIconSize * (text != 45? 0.15: 0.20), // 20.2
                     height: homeIconSize * (text != 45? 0.15: 0.16), // 17.7
                     child: SvgPicture.asset(
@@ -98,14 +100,14 @@ class _NavBarState extends State<NavBar> {
                       color: isActive ? activeColor : Colors.grey,
                       fit: BoxFit.contain,
                     )),
-                text == 45 && countNotSeen > 0
+                  count >0
                     ? Container(
                   alignment: Alignment.center,
                   width: 12,
                   height: 12,
                   decoration: BoxDecoration(borderRadius: BorderRadius.circular(999), color: Colors.red),
                   child: Text(
-                    countNotSeen > 99 ? '99+' : countNotSeen.toString(),
+                    count > 99 ? '99+' : count.toString(),
                     style: TextStyle(fontSize: 6, color: Colors.white,fontWeight: FontWeight.w900 ),
                     textAlign: TextAlign.center,),
                 )
