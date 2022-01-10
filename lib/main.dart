@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:dr_tech/Components/CustomLoading.dart';
 import 'package:dr_tech/Config/initialization.dart';
 import 'package:dr_tech/Models/LanguageManager.dart';
@@ -59,7 +61,7 @@ void main() async {
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
   Initialization(() {
-    UserManager.refrashUserInfo();
+    // UserManager.refrashUserInfo();
     runApp(App());
   });
 

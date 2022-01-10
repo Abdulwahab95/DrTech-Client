@@ -152,7 +152,7 @@ class _WithdrawalState extends State<Withdrawal> {
                           Container(
                             width: 10,
                           ),
-                          Text(widget.unit,
+                          Text(Globals.getUnit(),
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                   fontSize: 18,
@@ -240,7 +240,7 @@ class _WithdrawalState extends State<Withdrawal> {
               ),
               Text(
                 LanguageManager.getText(197)
-                    .replaceAll("*", body["amount"] + "  " + widget.unit)
+                    .replaceAll("*", body["amount"] + "  " + Globals.getUnit())
                     .replaceAll("#", body["email"]),
                 textDirection: LanguageManager.getTextDirection(),
                 textAlign: TextAlign.center,

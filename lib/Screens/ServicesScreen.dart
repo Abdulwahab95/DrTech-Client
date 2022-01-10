@@ -47,12 +47,28 @@ class _ServicesScreenState extends State<ServicesScreen> {
     var servicesApi = Globals.getConfig("services");
     if (servicesApi == "") return Container();
     List<Widget> lastInsert = [];
-    // var numItemAdd = 0;
-    // var numItemInactive = 0;
+    List<Widget> newWidget = [];
+
+    for (var item in servicesApi) {
+
+      newWidget.add(createService(item["icon"], Globals.isRtl()? item["name"]: item["name_en"], () {
+          if (item["target"].toString() == "0") {
+            Navigator.push(context, MaterialPageRoute(builder: (_) => Store()));
+            return;
+          }
+          if (item["target"].toString() == "1") {
+            Navigator.push(context, MaterialPageRoute(builder: (_) => OnlineServices()));
+            return;
+          }
+          Navigator.push(context, MaterialPageRoute(
+              builder: (_) => Service(item['id'], Globals.isRtl()? item["name"]: item["name_en"])));
+        }, () {Alert.show(context, item['description']);}));
+    }
+
     for (var item in servicesApi) {
       print('here_row_item: ${item['name']}');
-      // if (item["status"] != "inactive"){
-        if (lastInsert.length < 3) {
+
+        if (lastInsert.length < 4) {
           print('here_row < 3: ${item['name']}, lastInsert: ${lastInsert.length}');
           lastInsert.add(createService(item["icon"], Globals.isRtl()? item["name"]: item["name_en"], () {
             if (item["target"].toString() == "0") {
@@ -74,8 +90,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
         lastInsert.add(Container(width: 20,));
         print('here_row_length: ${rows.length}, lastInsert: ${lastInsert.length}');
       }
-      if (lastInsert.length == 3) {
-        // numItemAdd += 2;
+      if (lastInsert.length == 4) {
         print('here_row == 3: ${item['name']}');
         rows.add(Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -87,12 +102,10 @@ class _ServicesScreenState extends State<ServicesScreen> {
         lastInsert = [];
       }
 
-    // } else numItemInactive++;
-    //
+
     }
     print('here_length: rows: ${rows.length}, items: ${(servicesApi as List).length}');
 
-    // if ((servicesApi.length - numItemInactive) % 2 != 0 && servicesApi.length - numItemInactive - 1 == numItemAdd ){
     if(rows.length < (servicesApi as List).length){
       rows.add(Row(
         mainAxisAlignment: MainAxisAlignment.end,
@@ -105,10 +118,18 @@ class _ServicesScreenState extends State<ServicesScreen> {
 
     return Expanded(
       child: Container(
-        child: ListView(
-            padding: EdgeInsets.symmetric(vertical: 0, horizontal: 0),
-            children: rows),
+          child: Directionality(
+            textDirection: LanguageManager.getTextDirection(),
+            child: GridView.count(
+              mainAxisSpacing: 10,
+              childAspectRatio: 1.45,
+              primary: false,
+              padding: const EdgeInsets.only(right: 10, left: 10),
+              crossAxisSpacing: 10,
+              crossAxisCount: 2,
+              children: newWidget,
       ),
+          )),
     );
   }
 
@@ -118,8 +139,8 @@ class _ServicesScreenState extends State<ServicesScreen> {
     return InkWell(
       onTap: onTap,
       child: Container(
-        width: size,
-        height: size * 0.9,
+        width: 10,
+        height: 10,
         padding: EdgeInsets.all(7),
         decoration: BoxDecoration(
             color: Colors.white,
@@ -130,11 +151,10 @@ class _ServicesScreenState extends State<ServicesScreen> {
                   spreadRadius: 1)
             ],
             borderRadius: BorderRadius.circular(10)),
-        child: Column(
-          children: [
-            Expanded(
-              flex: 4,
-              child: Center(
+        child: Container(
+          child: Column(
+            children: [
+              Center(
                 child: Container(
                   width: size * 0.35,
                   height: size * 0.35,
@@ -158,36 +178,34 @@ class _ServicesScreenState extends State<ServicesScreen> {
                       borderRadius: BorderRadius.circular(10)),
                 ),
               ),
-            ),
-            Expanded(
-                flex: 3,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Text(
-                      Converter.getRealText(text),
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    Converter.getRealText(text),
+                    textAlign: TextAlign.center,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                        fontSize: 14,//14
+                        color: Converter.hexToColor("#707070"),
+                        fontWeight: FontWeight.bold),
+                  ),
+                  InkWell(
+                    onTap: onInfo,
+                    child: Text(
+                      LanguageManager.getText(53),
                       textAlign: TextAlign.center,
-                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                          fontSize: 14,//14
+                          fontSize: 12,
                           color: Converter.hexToColor("#707070"),
-                          fontWeight: FontWeight.bold),
+                          fontWeight: FontWeight.normal),
                     ),
-                    InkWell(
-                      onTap: onInfo,
-                      child: Text(
-                        LanguageManager.getText(53),
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            fontSize: 12,
-                            color: Converter.hexToColor("#707070"),
-                            fontWeight: FontWeight.normal),
-                      ),
-                    )
-                  ],
-                ))
-          ],
+                  )
+                ],
+              )
+            ],
+          ),
         ),
       ),
     );

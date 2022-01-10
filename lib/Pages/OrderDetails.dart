@@ -138,7 +138,7 @@ class _OrderDetailsState extends State<OrderDetails> {
                                   width: 5,
                                 ),
                                 Text(
-                                  widget.data["unit"].toString(),
+                                  Globals.getUnit(),
                                   textDirection:
                                   LanguageManager.getTextDirection(),
                                   style: TextStyle(
@@ -336,7 +336,7 @@ class _OrderDetailsState extends State<OrderDetails> {
     NetworkManager.httpPost(Globals.baseUrl + "orders/status/${widget.data['id']}", context ,(r) { // orders/cancel
       Alert.endLoading();
       if (r['state'] == true) {
-        Navigator.of(context).pop(true);
+        Navigator.of(context, rootNavigator: true)..pop(true)..pop(true);
       }
     }, body: cancel);
   }
@@ -351,7 +351,7 @@ class _OrderDetailsState extends State<OrderDetails> {
         var results = await Navigator.push(context, MaterialPageRoute(builder: (_) => OrderSetRating(widget.data['id'])));
         print('here_2: $results');
         if (results == true) {
-            Navigator.of(context).pop(true);
+          Navigator.of(context, rootNavigator: true)..pop(true)..pop(true);
             Alert.show(context, Converter.getRealText(237));
         }
       }

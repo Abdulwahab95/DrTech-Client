@@ -350,7 +350,7 @@ class _OrdersState extends State<Orders> with TickerProviderStateMixin {
                               width: 5,
                             ),
                             Text(
-                              item["unit"].toString(),
+                              Globals.getUnit(),
                               textDirection: LanguageManager.getTextDirection(),
                               style: TextStyle(
                                   fontSize: 14,
@@ -396,11 +396,13 @@ class _OrdersState extends State<Orders> with TickerProviderStateMixin {
 
                     Container(height: 10),
 
-                    customButton(96, () {// Call Action
+                    item["status"] == 'PENDING' || item["status"] == 'WAITING'
+                    ? customButton(96, () {// Call Action
                       launch('tel:${item['number_phone']}');
-                    }, FlutterIcons.phone_in_talk_mco, FlutterIcons.phone_in_talk_mco),
+                    }, FlutterIcons.phone_in_talk_mco, FlutterIcons.phone_in_talk_mco)
+                    : Container(),
 
-                    customButton(117, () {// Call Action
+                    customButton(117, () {// Chat Action
                       Navigator.push(context, MaterialPageRoute(builder: (_) => LiveChat(item['provider_id'].toString())));
                     }, FlutterIcons.message_text_mco, FlutterIcons.message_reply_text_mco),
 

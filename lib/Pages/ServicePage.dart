@@ -103,7 +103,7 @@ class _ServicePageState extends State<ServicePage>
                                     width: 5,
                                   ),
                                   Text(
-                                    data['rate'].toString(),
+                                    Converter.format(data['rate']),
                                     style: TextStyle(
                                         fontWeight: FontWeight.bold,
                                         fontSize: 16,
@@ -525,7 +525,7 @@ class _ServicePageState extends State<ServicePage>
             ),
             Container(height: 10,),
             Text(
-              item['comment'].toString(),
+              item['comment']?? '',
               textDirection: LanguageManager.getTextDirection(),
               style: TextStyle(
                   fontSize: 15,
@@ -594,7 +594,7 @@ class _ServicePageState extends State<ServicePage>
                     Container(
                       child: InkWell(
                         onTap: () {
-                          ShareManager.shearService(data['id'], data['name']);
+                          ShareManager.shearService(data['id'], data['provider_name'] ?? '', service: data['name']?? '');
                         },
                         child: Icon(
                           Icons.share,
@@ -613,10 +613,6 @@ class _ServicePageState extends State<ServicePage>
   }
 
   void startNewConversation(id) {
-    // Alert.startLoading(context);
-    // NetworkManager.httpPost(Globals.baseUrl + "convertation", (r) { // chat/add?id=$id
-    //   Alert.endLoading();
-    //   if (r['state'] == true) {
     UserManager.currentUser("id").isNotEmpty
         ? Navigator.push(context, MaterialPageRoute(builder: (_) => LiveChat(id.toString())))
         : Alert.show(context, LanguageManager.getText(298),
@@ -624,9 +620,5 @@ class _ServicePageState extends State<ServicePage>
         onYes: () {
           Navigator.push(context, MaterialPageRoute(builder: (_) => Login()));
         }, onYesShowSecondBtn: false);
-    //   } else if (r['message'] != null) {
-    //     Alert.show(context, Converter.getRealText(r['message']));
-    //   }
-    // }, body: {});
   }
 }

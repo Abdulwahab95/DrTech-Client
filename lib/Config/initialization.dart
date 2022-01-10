@@ -5,6 +5,7 @@ import 'package:dr_tech/Config/Globals.dart';
 import 'package:dr_tech/Models/DatabaseManager.dart';
 import 'package:dr_tech/Models/Firebase.dart';
 import 'package:dr_tech/Models/LanguageManager.dart';
+import 'package:dr_tech/Models/UserManager.dart';
 import 'package:dr_tech/Network/NetworkManager.dart';
 import 'package:flutter_sim_country_code/flutter_sim_country_code.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -40,6 +41,10 @@ class Initialization {
         });
       }
   }
+
+  bool configLoad = false;
+  bool profileLoad = false;
+
   void init(callback) async {
     Globals.sharedPreferences = await SharedPreferences.getInstance();
 
@@ -55,9 +60,24 @@ class Initialization {
         Globals.settings = Globals.getConfig('settings');
         LanguageManager.init(r['data']['localisation']);
         dataSetup();
-        callback();
+        configLoad = true;
+        goNext(callback);
+        // callback();
       }
     }, body: body, cachable: true );
+
+    UserManager.refrashUserInfo(callBack: (){
+      profileLoad = true;
+      goNext(callback);
+    });
+  }
+
+  void goNext(callback) {
+    if(configLoad && profileLoad){
+      configLoad = false;
+      profileLoad = false;
+      callback();
+    }
   }
 
   void dataSetup() {

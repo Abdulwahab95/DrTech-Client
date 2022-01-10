@@ -213,7 +213,7 @@ class _AddServicesState extends State<AddServices>
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            e["price"].toString() + " " + config["unit"],
+                            e["price"].toString() + " " + Globals.getUnit(),
                             textDirection: LanguageManager.getTextDirection(),
                             style: TextStyle(
                                 color: Converter.hexToColor("#2094CD"),

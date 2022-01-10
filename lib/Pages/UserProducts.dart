@@ -236,7 +236,7 @@ class _UserProductsState extends State<UserProducts> {
                                 width: 5,
                               ),
                               Text(
-                                item["unit"].toString(),
+                                Globals.getUnit(),
                                 textDirection:
                                     LanguageManager.getTextDirection(),
                                 style: TextStyle(

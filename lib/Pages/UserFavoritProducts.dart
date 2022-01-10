@@ -225,7 +225,7 @@ class _UserFavoritProductsState extends State<UserFavoritProducts> {
                             width: 5,
                           ),
                           Text(
-                            item["unit"].toString(),
+                            Globals.getUnit(),
                             textDirection: LanguageManager.getTextDirection(),
                             style: TextStyle(
                                 fontSize: 14,

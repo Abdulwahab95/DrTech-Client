@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:dr_tech/Models/DatabaseManager.dart';
 import 'package:dr_tech/Models/LanguageManager.dart';
+import 'package:dr_tech/Models/UserManager.dart';
 import 'package:dr_tech/Network/NetworkManager.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
@@ -13,8 +14,8 @@ import 'package:vibration/vibration.dart';
 class Globals {
   static String deviceToken = "";
   static Map deviceInfo = {};
-  static String version = "1.0.3";
-  static String buildNumber = "74";
+  static String version = "5.0.26";
+  static String buildNumber = "76";
   static var config;
   static var isLocal = false;
   static var urlServerLocal = "http://192.168.43.152";
@@ -166,18 +167,20 @@ class Globals {
     return LanguageManager.getTextDirection() == TextDirection.rtl;
   }
 
+  static String getUnit(){
+    if(isRtl())
+      return UserManager.currentUser('unit_ar');
+    else
+      return UserManager.currentUser('unit_en');
+  }
+
   static String correctLink(data) {
-
-
     if(!isLocal){
       if (!data.toString().contains('http') ) {
         return imageUrl + data;
       } else
         return data;
-    }
-
-
-    else  {
+    } else  {
       String url = data.toString();
       // print('here_correct1: $url');
       if(!url.contains('http')) {
@@ -189,15 +192,11 @@ class Globals {
             .replaceFirst(urlServerGlobal, urlServerLocal)
             .replaceFirst("https://server.drtechapp.com/storage/images/",
             "http://192.168.43.152/images/sliders/");
-        // print('here_correct3: $url');
       } else {
         url = data.toString();
-        // print('here_correct4: $url');
       }
-      // print('here_correct5: $url');
       return url;
     }
-
   }
 
   static void vibrate() async {

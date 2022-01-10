@@ -272,19 +272,22 @@ class _ServiceState extends State<Service> {
   List<Widget> getFilters() {
     List<Widget> items = [];
 
-    if(showSelectCountry)
+    if(showSelectCountry || UserManager.currentUser('country_id').isEmpty)
       items.add(getFilterOption(312, configFilters['countries'], "countries", keyId: 'country_id'));
     else
       (configFilters['countries'] as List<dynamic>).forEach((element) {
         if((element as Map)['id'].toString() == UserManager.currentUser('country_id')) {
-          configFilters['city'] = element['cities'];
-        }else if((element as Map)['id'].toString() == "191") {
-          configFilters['city'] = element['cities'];
+          configFilters['city'] = element['cities'] as List<dynamic>;
         }
       });
 
-    if(showSelectCity)
-      items.add(getFilterOption(107, configFilters['city'], "city", keyId: 'city_id'));
+    if(showSelectCity && UserManager.currentUser('country_id').isEmpty)
+      items.add(getFilterOption(107, selectedFilters['countries'] != null
+          ? selectedFilters['countries']['cities']
+          : LanguageManager.getText(113), "city", keyId: 'city_id', message: LanguageManager.getText(311))); // configFilters['city']
+
+    else items.add(getFilterOption(107, configFilters['city'], "city", keyId: 'city_id')); //
+
 
     if(showSelectStreet)
       items.add(getFilterOption(108, selectedFilters['city'] != null
@@ -517,7 +520,63 @@ class _ServiceState extends State<Service> {
       children: items,);
   }
 
+  String getCCT(List cct, item){
+    if(cct[0] == 1){
+      print('here: cct[0] == 1');
+      return Converter.getRealText(324); // في جميع فروعنا العالمية لدكتورتك
+    } else if(cct[1] == 1){
+      print('here: cct[1] == 1');
+      return Converter.getRealText(325) + ' ' + item['country_name']; // في جميع أنحاء
+    } else if(cct[2] == 1){
+      print('here: cct[2] == 1: ${Converter.getRealText(325)}');
+      return (Converter.getRealText(325) + ' ' + item['city_name']); // في جميع أنحاء
+    }
+    return '';
+  }
+
+
+  String getSpecializ(List cssss, item){
+    // if(item['specializ_from'] == 0) return '';
+    // for(int i = 0; i< cssss.length;i++){
+    //   if(cssss[i] == 1 && (item['specializ_from'] - 2) == i)
+    //     return Converter.getRealText(326); // عام
+    // }
+    return Converter.getRealText(326); // return '';
+  }
+
+  String getBrand(List cssss, item){
+    // if(item['brand_from'] == 0) return '';
+
+    // for(int i = 0; i< cssss.length;i++){
+    //   if(cssss[i] == 1 && (item['brand_from'] - 2) == i)
+    //     return Converter.getRealText(112);//الكل
+    // }
+    return Converter.getRealText(112); // return '';
+  }
+
+  String getServices(List cssss, item){ // الخدمات
+    if(item['title_from'] == 0) return '';
+    for(int i = 0; i< cssss.length;i++){
+      if(cssss[i] == 1 && (item['title_from'] - 2) == i)
+        return Converter.getRealText(327) + ' ' + widget.title; //جميع خدمات
+    }
+    return Converter.getRealText(327) + ' ' + widget.title; // return '';
+  }
+
   Widget getEngineerUi(item) {
+
+    List cct   =
+        (item != null && (item as Map).isNotEmpty && (item as Map).containsKey('country_city_street') && item['country_city_street'] != null)
+        ? item['country_city_street']           .split('-').map(int.parse).toList()
+        : [0,0,0];
+    List cssss =
+        (item != null && (item as Map).isNotEmpty && (item as Map).containsKey('cat_subcat_sub1_sub2_sub3_sub4') && item['cat_subcat_sub1_sub2_sub3_sub4'] != null)
+        ? item['cat_subcat_sub1_sub2_sub3_sub4'].split('-').map(int.parse).toList()
+        : [0,0,0,0,0];
+
+
+    print('here_cct: $cct, cssss: $cssss');
+
     return Container(
       padding: EdgeInsets.all(7),
       margin: EdgeInsets.all(10),
@@ -644,7 +703,7 @@ class _ServiceState extends State<Service> {
                 ),
                 Container(height: 5),
 
-                Globals.checkNullOrEmpty(item['specializ'])?
+                // Globals.checkNullOrEmpty(item['specializ']) || Globals.checkNullOrEmpty(getSpecializ(cssss, item)) ?
                 Row(
                   textDirection: LanguageManager.getTextDirection(),
                   children: [
@@ -660,8 +719,10 @@ class _ServiceState extends State<Service> {
                       child: Container(
                         child: Text(
                           LanguageManager.getText(270) +
-                              "   " +
-                              item['specializ'].toString(),
+                              " :  " +
+                              (Globals.checkNullOrEmpty(item['specializ'].toString())
+                                  ? item['specializ'].toString()
+                                  : getSpecializ(cssss, item)),
                           textDirection: LanguageManager.getTextDirection(),
                           style: TextStyle(
                               fontWeight: FontWeight.normal, fontSize: 11),
@@ -669,9 +730,11 @@ class _ServiceState extends State<Service> {
                       ),
                     ),
                   ],
-                ) : Container(),
+                )
+                    // : Container()
+                ,
 
-                Globals.checkNullOrEmpty(item['brand'])?
+                // Globals.checkNullOrEmpty(item['brand']) || Globals.checkNullOrEmpty(getBrand(cssss, item))  ?
                 Row(
                   textDirection: LanguageManager.getTextDirection(),
                   children: [
@@ -689,8 +752,10 @@ class _ServiceState extends State<Service> {
                       child: Container(
                         child: Text(
                           LanguageManager.getText(310) +
-                              "   " +
-                              item['brand'].toString(),
+                              " :  " +
+                              (Globals.checkNullOrEmpty(item['brand'].toString())
+                                  ? item['brand'].toString()
+                                  : getBrand(cssss, item)),
                           textDirection: LanguageManager.getTextDirection(),
                           style: TextStyle(
                               fontWeight: FontWeight.normal, fontSize: 11),
@@ -698,9 +763,10 @@ class _ServiceState extends State<Service> {
                       ),
                     ),
                   ],
-                ) : Container(),
+                ) ,
+                    // : Container(),
 
-                Globals.checkNullOrEmpty(item['provider_services_title'])?
+                // Globals.checkNullOrEmpty(item['provider_services_title']) || Globals.checkNullOrEmpty(getServices(cssss, item)) ?
                 Row(
                   textDirection: LanguageManager.getTextDirection(),
                   children: [
@@ -715,9 +781,11 @@ class _ServiceState extends State<Service> {
                     Expanded(
                       child: Container(
                         child: Text(
-                          LanguageManager.getText(309) +
-                              "   " +
-                              item['provider_services_title'].toString(),
+                          (
+                              (Globals.checkNullOrEmpty(item['provider_services_title'].toString())
+                                ? LanguageManager.getText(309) + " :  " + item['provider_services_title'].toString()
+                                :getServices(cssss, item))
+                          ),
                           textDirection: LanguageManager.getTextDirection(),
                           style: TextStyle(
                               fontWeight: FontWeight.normal, fontSize: 11),
@@ -725,8 +793,12 @@ class _ServiceState extends State<Service> {
                       ),
                     ),
                   ],
-                ) : Container(),
-                Globals.checkNullOrEmpty(item['city_name'])?
+                )
+                    // : Container()
+                ,
+                Globals.checkNullOrEmpty(item['city_name']) ||
+                Globals.checkNullOrEmpty(item['country_name']) ||
+                    Globals.checkNullOrEmpty(getCCT(cct, item))?
                 Row(
                   textDirection: LanguageManager.getTextDirection(),
                   children: [
@@ -741,10 +813,19 @@ class _ServiceState extends State<Service> {
                     Expanded(
                       child: Container(
                         child: Text(
-                                item['city_name'].toString() +
-                                    (item['street_name'].toString().isEmpty
-                                        ? ""
-                                        : ("  -  " + item['street_name'].toString())),
+
+                          Globals.checkNullOrEmpty(getCCT(cct, item))
+                              ? getCCT(cct, item)
+
+                              : Globals.checkNullOrEmpty(item['city_name'])
+                                ? item['street_name'].toString().isEmpty
+                                        ? (Globals.checkNullOrEmpty(getCCT([0,0,1], item)) ? getCCT([0,0,1], item) : "")
+                                        : (item['city_name'].toString()  + "  -  " + item['street_name'].toString())
+
+                                   : Globals.checkNullOrEmpty( item['country_name'].toString())
+                                        ? getCCT([0,1,0] , {'country_name': item['country_name'].toString()})
+                                        : getCCT([0,1,0] , {'country_name': item['country_name'].toString()})
+                          ,
                                 textDirection: LanguageManager.getTextDirection(),
                           style: TextStyle(
                               fontWeight: FontWeight.normal, fontSize: 11),
@@ -889,15 +970,22 @@ class _ServiceState extends State<Service> {
               } else {
                 var tmpList = options as List;
                // print('tmp: ${tmpList.isEmpty}, ${tmpList.first != {'name': 'الكل'}}, ${(tmpList.isEmpty || tmpList.first != {'name': 'الكل'})}, ${tmpList.first.runtimeType}, ${{'name': 'الكل'}.runtimeType}');
-                Map<String, dynamic> s= {'name': 'الكل'};
-                if(tmpList.isEmpty || (!mapEquals(tmpList.first, s)))
-                    tmpList.insert(0, {'name': 'الكل'});
+               //  Map<String, dynamic> s= {'name': 'الكل'};
+               //  if(tmpList.isEmpty || (!mapEquals(tmpList.first, s)))
+               //      tmpList.insert(0, {'name': 'الكل'});
 
                 Alert.show(context,tmpList,
                     type: AlertType.SELECT, onSelected: (item) {
                   setState(() {
-                    print('here_item: $key');
+                    print('here_item: $key, $item');
+
                     switch (key) {
+                      case 'countries':
+                        filters.remove('city_id');
+                        selectedFilters.remove('city');
+                        filters.remove('street_id');
+                        selectedFilters.remove('street');
+                        break;
                       case 'city':
                         filters.remove('street_id');
                         selectedFilters.remove('street');
@@ -922,9 +1010,21 @@ class _ServiceState extends State<Service> {
                         print('------------->>>> $key');
                     }
 
+
+                    if((item as Map) != null && (item as Map).isNotEmpty && (item as Map).containsKey('id')
+                        && (item['id'] == null || (item['id'] != null && item['id'].toString().toLowerCase() == 'null'))) {
+                      print('here_selectedFilters:* $selectedFilters');
+                      print('here_filters:* , $filters');
+                      if(selectedFilters.containsKey(key))
+                        selectedFilters.remove(key);
+                      if(filters.containsKey(keyId))
+                        filters.remove(keyId);
+                      return;
+                    }
+
                     selectedFilters[key] = item;
                     filters[keyId] = item['id'].toString();
-                    print('here_selectedFilters:* $selectedFilters');
+                    print('here_selectedFilters:* ${selectedFilters.keys}');
                     print('here_filters:* , $filters');
                   });
                 });

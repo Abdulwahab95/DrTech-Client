@@ -6,19 +6,19 @@ class ShareManager {
   static void shearEngineer(id, name, service) {
     String paylaod = [
       LanguageManager.getText(173),
-      name,
-      Globals.shareUrl + "?eng_id=$id",
+      name + " " + service,
+      LanguageManager.getText(321),//Globals.shareUrl + "?eng_id=$id",
       LanguageManager.getText(174)
     ].join("\n");
 
     Share.share(paylaod, subject: service);
   }
 
-  static void shearService(id, name) {
+  static void shearService(id, name, {service = ''}) {
     String paylaod = [
       LanguageManager.getText(266),
-      name,
-      Globals.shareUrl + "?service_id=$id",
+      name + " " + service,
+      LanguageManager.getText(321),//Globals.shareUrl + "?service_id=$id",
       LanguageManager.getText(174)
     ].join("\n");
 

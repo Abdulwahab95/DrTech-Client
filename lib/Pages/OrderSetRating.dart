@@ -205,7 +205,7 @@ class _OrderSetRatingState extends State<OrderSetRating> {
     NetworkManager.httpPost(Globals.baseUrl + "ratings/create", context ,(r) { // orders/rate
       Alert.endLoading();
       if (r['state'] == true) {
-        Navigator.of(context).pop(true);
+        Navigator.of(context, rootNavigator: true)..pop(true)..pop(true);
       }
     }, body: body);
   }

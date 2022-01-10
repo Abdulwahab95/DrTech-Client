@@ -47,7 +47,7 @@ class _TransactionsState extends State<Transactions> {
         setState(() {
           data[r["page"]] = r['data'];
           balance = r['balance'];
-          unit = r['unit'];
+          unit = Globals.getUnit();
           page++;
         });
       }

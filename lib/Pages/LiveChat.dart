@@ -963,7 +963,7 @@ class _LiveChatState extends State<LiveChat>  with WidgetsBindingObserver {
                                               width: 5,
                                             ),
                                             Text(
-                                              Converter.getRealText(UserManager.currentUser("unit")),
+                                              Globals.getUnit(),
                                               textDirection: LanguageManager
                                                   .getTextDirection(),
                                               style: TextStyle(
@@ -1683,7 +1683,8 @@ class _LiveChatState extends State<LiveChat>  with WidgetsBindingObserver {
         (p) {}, (r) {
       if (r["state"] == true) {
         setState(() {
-          data[page][index] = r['data'][0];
+          //data[page][index] = r['data'][0];
+          data.values.last.add(r['data'][0]);
           int tempId = id;
           files[tempId] = null;
         });
@@ -1735,11 +1736,13 @@ class _LiveChatState extends State<LiveChat>  with WidgetsBindingObserver {
     }, (r) {
       if (r["state"] == true) {
         setState(() {
-          data[page][index] = r['data'][0];//r["message"];
+          //data[page][index] = r['data'][0];//r["message"];
+          data.values.last.add(r['data'][0]);
           int tempId = id;//int.parse(r["temp_id"]);
           images[tempId] = null;
         });
       } else {
+        print('here_ r["state"] else');
         setState(() {
           data[page][index]["error"] = true;
         });
@@ -1786,7 +1789,7 @@ class _LiveChatState extends State<LiveChat>  with WidgetsBindingObserver {
   }
 
   void send() {
-    if(body['text'].toString().replaceAll(new RegExp(r'[^0-9]'),'').length<7) {
+    if(replaceArabicNumber(body['text'].toString()).replaceAll(new RegExp(r'[^0-9]'),'').length<7) {
       typingNotifyer = false;
       if (body.keys.length == 0) return;
       AssetsAudioPlayer.newPlayer().open(Audio("assets/sounds/sent.mp3"));
@@ -1808,7 +1811,7 @@ class _LiveChatState extends State<LiveChat>  with WidgetsBindingObserver {
       });
       body = {};
     }else{
-      Alert.show(context, 'لضمان جودة الخدمة لايسمح بتبادل الأرقام');
+      Alert.show(context, 320);
     }
   }
 
@@ -1948,7 +1951,7 @@ class _LiveChatState extends State<LiveChat>  with WidgetsBindingObserver {
                     ),
                   ),
                   Text(
-                    Converter.getRealText(UserManager.currentUser("unit")),
+                    Globals.getUnit(),
                     style: TextStyle(fontSize: 15),
                   )
                 ],
@@ -2101,5 +2104,14 @@ class _LiveChatState extends State<LiveChat>  with WidgetsBindingObserver {
       return true;
     } else
       return Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => Conversations()), (Route<dynamic> route) => false);
+  }
+
+  String replaceArabicNumber(String offerNum) {
+    const en = ['0','1','2','3','4','5','6','7','8','9'];
+    const ar = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
+    for (int i = 0; i< en.length; i++){
+      offerNum = offerNum.replaceAll(ar[i], en[i]);
+    }
+    return    offerNum;
   }
 }

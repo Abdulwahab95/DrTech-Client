@@ -47,7 +47,7 @@ class NetworkManager {
         if (onError != null)
           onError('Error trying parsing server responce . ');
         else
-          log('1onError: $e');
+          log('onError: $e');
 
         if (context != null) {
           Alert.endLoading();
@@ -56,7 +56,9 @@ class NetworkManager {
               Alert.show(context, LanguageManager.getText(int.parse(json.decode(responseBody)['message_code'].toString())));
             else
               Alert.show(context, Converter.getRealText(json.decode(responseBody)['message']));
-          } else
+          } else if(json.decode(responseBody)['state'] != null && json.decode(responseBody)['state'] == true){
+            Alert.show(context, 'onError: $e');
+          }else
             Alert.show(context, responseBody);
         }
       }

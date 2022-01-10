@@ -18,9 +18,16 @@ import 'package:keyboard_visibility/keyboard_visibility.dart';
 import 'package:vibration/vibration.dart';
 
 class EnterCode extends StatefulWidget {
-  Map body;
-  String selectedCountrieCode;
-  EnterCode(this.body, this.selectedCountrieCode);
+  final Map body;
+  final String selectedCountryCode;
+  final Function sendSms;
+
+  EnterCode(this.body, this.selectedCountryCode, this.sendSms);
+
+  static Function callVerificationCompleted = (PhoneAuthCredential authCredential){};
+  static Function callVerificationFailed = (){};
+  static Function callCodeSent = (){};
+  static Function callCodeAutoRetrievalTimeout = (){};
 
   @override
   _EnterCodeState createState() => _EnterCodeState();
@@ -29,20 +36,20 @@ class EnterCode extends StatefulWidget {
 class _EnterCodeState extends State<EnterCode> {
   var visibleKeyboard = false;
   Map<int, String> code = {};
+  TextEditingController controlSms = TextEditingController();
+  String codeStr = '';
   int selectedIndex = 0;
-  List<Map> fileds = [];
+  List<Map> fields = [];
   String countDownTimer = "00:00";
   int resendTime = 0;
   bool errorInputOtp = false;
-
   String phoneNumber, verificationId, otp;
-  static const int duration = 60;
-  int  _forceCodeResent = 0;
+
 
   @override
   void initState() {
     for (var i = 0; i < 6; i++)
-      fileds.add({"Node": FocusNode(), "Controller": TextEditingController()});
+      fields.add({"Node": FocusNode(), "Controller": TextEditingController()});
 
     KeyboardVisibilityNotification().addNewListener(
       onChange: (bool visible) {
@@ -60,7 +67,7 @@ class _EnterCodeState extends State<EnterCode> {
     countDownTimer = getTimeFromInt(resendTime);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      fileds[0]["Node"].requestFocus();
+      fields[0]["Node"].requestFocus();
     });
 
 
@@ -68,11 +75,35 @@ class _EnterCodeState extends State<EnterCode> {
 
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       print('heree: addPostFrameCallback');
+
       if(Globals.isLocal){
         Alert.endLoading();
         tick();
-      } else
-        sendSms();
+      } else {
+        // sendSms();
+        EnterCode.callVerificationCompleted = (PhoneAuthCredential authCredential) async {
+          print('heree: verificationCompleted');
+          if(authCredential != null && authCredential.smsCode != null && authCredential.smsCode.isNotEmpty) {
+            codeStr = authCredential.smsCode;
+            controlSms.text = codeStr;
+          }
+          Alert.endLoading();
+          await conferm();
+        };
+
+        EnterCode.callCodeAutoRetrievalTimeout = (String verId){
+          verificationId = verId;
+        };
+
+        EnterCode.callCodeSent = (String verId, [int forceCodeResent]){
+          verificationId = verId;
+          resendTime = Globals.getConfig("resend_time") != ""
+              ? Parser(context).getRealValue(Globals.getConfig("resend_time"))
+              : 60;
+          tick();
+        };
+
+      }
     });
   }
 
@@ -122,19 +153,47 @@ class _EnterCodeState extends State<EnterCode> {
                       padding: EdgeInsets.only(
                           left: MediaQuery.of(context).size.width * 0.07,
                           right: MediaQuery.of(context).size.width * 0.07,
-                          top: 20,
+                          top: 5,
                           bottom: 20),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: [
-                          getCodeField(0),
-                          getCodeField(1),
-                          getCodeField(2),
-                          getCodeField(3),
-                          getCodeField(4),
-                          getCodeField(5),
-                        ],
-                      ),
+                    //   child: Row(
+                    //     mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    //     children: [
+                    //       getCodeField(0),
+                    //       getCodeField(1),
+                    //       getCodeField(2),
+                    //       getCodeField(3),
+                    //       getCodeField(4),
+                    //       getCodeField(5),
+                    //     ],
+                    //   ),
+                        child: Container(
+                          decoration: BoxDecoration(
+                              border: Border.all(
+                                  width: 2,
+                                  color: Colors.transparent),
+                              color: errorInputOtp
+                                  ? Converter.hexToColor( "#ffb6b6")
+                                  : Colors.transparent,
+                              borderRadius: BorderRadius.circular(5)),
+                          child: TextFormField(keyboardType: TextInputType.number,
+                              controller: controlSms,
+                              autofocus: true,
+                              textAlign: TextAlign.center,
+                              maxLength: 6,
+                              decoration: InputDecoration(
+                                enabledBorder: UnderlineInputBorder(
+                                  borderSide: BorderSide(color: Colors.blue),
+                                ),
+                                focusedBorder: UnderlineInputBorder(
+                                  borderSide: BorderSide(color: Colors.blue),
+                                ),
+                              ),
+                              cursorColor: Colors.blue,
+                              onChanged: (value) {
+                            codeStr = value;
+                            if (value.length == 6) hideKeyBoard();
+                          }),
+                        )
                     ),
                     Container(
                       padding: EdgeInsets.only(left: 20, right: 20),
@@ -211,21 +270,21 @@ class _EnterCodeState extends State<EnterCode> {
           setState(() {
             errorInputOtp = false;
             hideKeyBoard();
-            fileds[index]["Node"].requestFocus();
-            fileds[index]["Controller"].text = "";
+            fields[index]["Node"].requestFocus();
+            fields[index]["Controller"].text = "";
             selectedIndex = index;
           });
         },
         textAlignVertical: TextAlignVertical.center,
-        controller: fileds[index]["Controller"],
-        focusNode: fileds[index]["Node"],
+        controller: fields[index]["Controller"],
+        focusNode: fields[index]["Node"],
         onChanged: (v) {
           setState(() {
             errorInputOtp = false;
             code[index] = v;
             if (index < 5) {
-              fileds[index + 1]["Node"].requestFocus();
-              fileds[index + 1]["Controller"].text = "";
+              fields[index + 1]["Node"].requestFocus();
+              fields[index + 1]["Controller"].text = "";
             } else {
               hideKeyBoard();
             }
@@ -267,29 +326,13 @@ class _EnterCodeState extends State<EnterCode> {
       Alert.endLoading();
       tick();
     } else
-      sendSms();
-    // NetworkManager.httpPost(Globals.baseUrl + "user/resend", (r) {
-    //   Alert.endLoading();
-    //   if (r['state'] == true) {
-    //     setState(() {
-    //       resendTime = r['time'];
-    //       tick();
-    //     });
-    //     Alert.show(
-    //         context,
-    //         LanguageManager.getText(r['at'] == "PHONE" ? 24 : 25) + "\n" + r["to"] //تم ارسال رمز مكون من 6 ارقام للرقم الجوال التالي
-    //     );
-    //     // success
-    //   } else if (r['message'] != null) {
-    //     Alert.show(context, Converter.getRealText(r['message']));
-    //   }
-    // });
+      widget.sendSms();
   }
 
   Future<void> conferm() async {
     setState(() {errorInputOtp = false;});
 
-    if (code.keys.length < 6) {
+    if (codeStr.length < 6) {
       errorInputOtp = true;
       vibrate();
       return;
@@ -309,7 +352,7 @@ class _EnterCodeState extends State<EnterCode> {
         }
       }, body: widget.body);
     } else
-      signIn(code.values.join(), context);
+      signIn(codeStr, context);
   }
 
   Future<void> signIn(String otp, BuildContext contextPage) async {
@@ -347,20 +390,6 @@ class _EnterCodeState extends State<EnterCode> {
               Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => Home()), (route) => false);
           }
         }, body: widget.body);
-
-        // Navigator.pop(context, true);
-        // NetworkManager.httpPost(Globals.baseUrl + "user/active", (r) {
-        //   Alert.endLoading();
-        //   if (r['state'] == true) {
-        //     DatabaseManager.save(Globals.authoKey, r['token']);
-        //     DatabaseManager.save('about', r['about']);
-        //     UserManager.proccess(r['user']);
-        //     Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => Home()));
-        //     // success
-        //   } else if (r['message'] != null) {
-        //     Alert.show(context, Converter.getRealText(r['message']));
-        //   }
-        // }, body: {});
       }
     });
   }
@@ -378,53 +407,6 @@ class _EnterCodeState extends State<EnterCode> {
     }
   }
 
-  Future<void> sendSms() async {
-    print('heree: sendSms');
-
-    Alert.startLoading(context);
-
-    await FirebaseAuth.instance.verifyPhoneNumber(
-      phoneNumber: widget.selectedCountrieCode + widget.body['number_phone'],// "+249965095703",
-      forceResendingToken: _forceCodeResent,
-      timeout: const Duration(seconds: duration),
-      verificationCompleted: (PhoneAuthCredential  authCredential) {
-        print('heree: verificationCompleted');
-        Alert.endLoading();
-        // setState(() {authStatus = "Your account is successfully verified";});
-        // loginApi();
-      },
-      verificationFailed: (FirebaseAuthException  authException) {
-        print('heree: verificationFailed: ${authException.code}, ${authException.message}');
-        Alert.endLoading();
-        // Alert.show(context, Converter.getRealText(r['message']));
-        Alert.show(context, authException.message);
-        // setState(() {authStatus = "Authentication failed";});
-      },
-      codeSent: (String verId, [int forceCodeResent]) {
-        Alert.endLoading();
-        print('heree: codeSent');
-        verificationId = verId;
-        // setState(() {authStatus = "OTP has been successfully send";});
-        _forceCodeResent = forceCodeResent;
-
-        resendTime = Globals.getConfig("resend_time") != ""
-            ? Parser(context).getRealValue(Globals.getConfig("resend_time"))
-            : 60;
-
-
-        tick();
-        // Navigator.push(context, MaterialPageRoute(builder: (_) => EnterCode(verId)))
-        //     .then((value) {print('heree: back_here $value');});
-      },
-      codeAutoRetrievalTimeout: (String verId) {
-        print('heree: codeAutoRetrievalTimeout');
-        verificationId = verId;
-        // setState(() {authStatus = "TIMEOUT";});
-      },
-    );
-
-
-  }
 }
 
 enum CodeSendType { PHONE, EMAIL }
