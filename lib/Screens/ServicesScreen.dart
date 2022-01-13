@@ -28,9 +28,10 @@ class _ServicesScreenState extends State<ServicesScreen> {
           widget.slider,
           Globals.showNotOriginal()
               ? Container(
-                  padding: EdgeInsets.all(15),
+                  padding: EdgeInsets.only(right: 15, left: 15, bottom: 0, top: 0),
                   child: Text(
                     Converter.getRealText(318),
+                    textAlign: TextAlign.center,
                     style: TextStyle(color: Colors.red),
                     textDirection: LanguageManager.getTextDirection(),
                   ),
@@ -43,10 +44,8 @@ class _ServicesScreenState extends State<ServicesScreen> {
   }
 
   Widget getServices() {
-    List<Widget> rows = [];
     var servicesApi = Globals.getConfig("services");
     if (servicesApi == "") return Container();
-    List<Widget> lastInsert = [];
     List<Widget> newWidget = [];
 
     for (var item in servicesApi) {
@@ -63,57 +62,6 @@ class _ServicesScreenState extends State<ServicesScreen> {
           Navigator.push(context, MaterialPageRoute(
               builder: (_) => Service(item['id'], Globals.isRtl()? item["name"]: item["name_en"])));
         }, () {Alert.show(context, item['description']);}));
-    }
-
-    for (var item in servicesApi) {
-      print('here_row_item: ${item['name']}');
-
-        if (lastInsert.length < 4) {
-          print('here_row < 3: ${item['name']}, lastInsert: ${lastInsert.length}');
-          lastInsert.add(createService(item["icon"], Globals.isRtl()? item["name"]: item["name_en"], () {
-            if (item["target"].toString() == "0") {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => Store()));
-              return;
-            }
-            if (item["target"].toString() == "1") {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => OnlineServices()));
-              return;
-            }
-            Navigator.push(context, MaterialPageRoute(
-                    builder: (_) => Service(item['id'], Globals.isRtl()? item["name"]: item["name_en"])));
-          }, () {Alert.show(context, item['description']);}));
-          print('here_row_length: ${rows.length}, lastInsert: ${lastInsert.length}');
-        }
-
-      if (lastInsert.length == 1) {
-        print('here_row == 1: ${item['name']}');
-        lastInsert.add(Container(width: 20,));
-        print('here_row_length: ${rows.length}, lastInsert: ${lastInsert.length}');
-      }
-      if (lastInsert.length == 4) {
-        print('here_row == 3: ${item['name']}');
-        rows.add(Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          textDirection: LanguageManager.getTextDirection(),
-          children: lastInsert,
-        ));
-        rows.add(Container(height: 20,));
-        print('here_row_length: ${rows.length}, lastInsert: ${lastInsert.length}');
-        lastInsert = [];
-      }
-
-
-    }
-    print('here_length: rows: ${rows.length}, items: ${(servicesApi as List).length}');
-
-    if(rows.length < (servicesApi as List).length){
-      rows.add(Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        textDirection: LanguageManager.getDirection() ? TextDirection.ltr : TextDirection.rtl,
-        children: lastInsert,
-      ));
-      lastInsert.add(Container(width: 7,));
-      rows.add(Container(height: 20,));
     }
 
     return Expanded(

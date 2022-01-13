@@ -83,13 +83,7 @@ class Alert extends StatefulWidget {
                   ),
                 ),
               ));
-        }).then((value) {
-      currentLoader = false;
-      publicClose = null;
-      setStateCall = null;
-      callSetState = null;
-      staticContent = null;
-    });
+        });
   }
 
   static void endLoading() {
