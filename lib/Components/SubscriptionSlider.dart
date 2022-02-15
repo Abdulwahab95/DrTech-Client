@@ -45,7 +45,7 @@ class _SubscriptionSliderState extends State<SubscriptionSlider> {
     var width = MediaQuery.of(context).size.width;
     var height = width * 0.45;
     List<Widget> items = [];
-    var slides = Globals.getConfig("slider");
+    var slides = widget.slider;
     if (slides != "")
       for (var item in slides) {
         items.add(Container(

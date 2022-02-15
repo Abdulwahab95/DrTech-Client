@@ -1,4 +1,3 @@
-import 'package:dr_tech/Config/Globals.dart';
 import 'package:dr_tech/Models/LanguageManager.dart';
 import 'package:share/share.dart';
 

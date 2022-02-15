@@ -9,6 +9,7 @@ import 'package:dr_tech/Components/CustomLoading.dart';
 import 'package:dr_tech/Components/RateStars.dart';
 import 'package:dr_tech/Components/Recycler.dart';
 import 'package:dr_tech/Components/TitleBar.dart';
+import 'package:dr_tech/Components/phoneCall.dart';
 import 'package:dr_tech/Config/Converter.dart';
 import 'package:dr_tech/Config/Globals.dart';
 import 'package:dr_tech/Models/LanguageManager.dart';
@@ -16,12 +17,14 @@ import 'package:dr_tech/Models/ShareManager.dart';
 import 'package:dr_tech/Models/UserManager.dart';
 import 'package:dr_tech/Network/NetworkManager.dart';
 import 'package:dr_tech/Pages/LiveChat.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+import 'FeatureSubscribe.dart';
 import 'Login.dart';
+import 'Offers.dart';
 import 'ServicePage.dart';
 
 class Service extends StatefulWidget {
@@ -41,6 +44,7 @@ class _ServiceState extends State<Service> {
   Map<int, List> data = {};
   bool isLoading = false, isFilterOpen = false, applyFilter = false,
       showSelectCountry = false, showSelectCity    = false, showSelectStreet  = false;
+  bool isSubscribe = UserManager.isSubscribe();
 
   ScrollController controller = ScrollController();
 
@@ -272,7 +276,7 @@ class _ServiceState extends State<Service> {
   List<Widget> getFilters() {
     List<Widget> items = [];
 
-    if(showSelectCountry || UserManager.currentUser('country_id').isEmpty)
+    if(showSelectCountry || (UserManager.currentUser('country_id').isEmpty && (showSelectCity || showSelectStreet)))
       items.add(getFilterOption(312, configFilters['countries'], "countries", keyId: 'country_id'));
     else
       (configFilters['countries'] as List<dynamic>).forEach((element) {
@@ -281,12 +285,17 @@ class _ServiceState extends State<Service> {
         }
       });
 
-    if(showSelectCity && UserManager.currentUser('country_id').isEmpty)
+    if(!showSelectCountry && showSelectCity && UserManager.currentUser('country_id').isNotEmpty){
+      print('here_getFilterOption: else');
+      items.add(getFilterOption(107, configFilters['city'], "city", keyId: 'city_id'));
+    }
+    else if(showSelectCity || (UserManager.currentUser('country_id').isEmpty && showSelectStreet)){
+      print('here_getFilterOption: if');
       items.add(getFilterOption(107, selectedFilters['countries'] != null
-          ? selectedFilters['countries']['cities']
-          : LanguageManager.getText(113), "city", keyId: 'city_id', message: LanguageManager.getText(311))); // configFilters['city']
-
-    else items.add(getFilterOption(107, configFilters['city'], "city", keyId: 'city_id')); //
+              ? selectedFilters['countries']['cities']
+              : LanguageManager.getText(113),
+          "city", keyId: 'city_id', message: LanguageManager.getText(311)));
+    } // configFilters['city']
 
 
     if(showSelectStreet)
@@ -577,366 +586,480 @@ class _ServiceState extends State<Service> {
 
     print('here_cct: $cct, cssss: $cssss');
 
-    return Container(
-      padding: EdgeInsets.all(7),
-      margin: EdgeInsets.all(10),
-      decoration: BoxDecoration(boxShadow: [
-        BoxShadow(
-            color: Colors.black.withAlpha(15), spreadRadius: 2, blurRadius: 2)
-      ], borderRadius: BorderRadius.circular(15), color: Colors.white),
-      child: InkWell(
-        onTap: () {
-          Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => ServicePage(item['id']))); // EngineerPage(item['id'], widget.target)
-        },
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          textDirection: LanguageManager.getTextDirection(),
-          children: [
-            Container(
-              width: 90,
-              margin: EdgeInsets.all(5),
-              alignment: Alignment.center,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Container(
-                    width: 100,
-                    height: 100,
-                    alignment: !LanguageManager.getDirection()
-                        ? Alignment.bottomRight
-                        : Alignment.bottomLeft,
-                    child: item['profile_verified'] == true
-                        ? Container(
-                            width: 20,
-                            height: 20,
-                            child: Icon(
-                              FlutterIcons.check_fea,
-                              color: Colors.white,
-                              size: 15,
-                            ),
-                            decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(20),
-                                color: Colors.blue),
-                          )
-                        : Container(),
-                    decoration: BoxDecoration(
-                        image: DecorationImage(
-                            image: CachedNetworkImageProvider(Globals.correctLink(item['thumbnail']))),
-                        borderRadius: BorderRadius.circular(10),
-                        color: Converter.hexToColor("#F2F2F2")),
-                  ),
-                  Container(
-                    height: 15,
-                  ),
-                  item['active'] == true
-                      ? Text(
-                          LanguageManager.getText(100) ,//+ '/' + item['id'].toString() + '/' + item['Country_name'] + '/' + item['service_id'].toString(),
-                          style: TextStyle(
-                              fontSize: 18,
-                              color: Colors.green,
-                              fontWeight: FontWeight.normal),
-                        )
-                      : Text(
-                          LanguageManager.getText(101) ,//+ '/' + item['id'].toString() + '/' + item['Country_name'] + '/' + item['service_id'].toString(),
-                          style: TextStyle(
-                              fontSize: 18,
-                              color: Colors.red,
-                              fontWeight: FontWeight.normal),
-                        )
-                ],
-              ),
-            ),
-            Container(
-              width: 10,
-            ),
-            Expanded(
-                child: Column(
-              textDirection: LanguageManager.getTextDirection(),
+    return Stack(
+      textDirection: LanguageManager.getReversTextDirection(),
+      children: [
+        Container(
+          padding: EdgeInsets.only(top: 7, right: 4, left: 4, bottom: 4),
+          margin: EdgeInsets.all(10),
+          decoration: BoxDecoration(boxShadow: [
+            BoxShadow(
+                color: Colors.black.withAlpha(15), spreadRadius: 2, blurRadius: 2)
+          ], borderRadius: BorderRadius.circular(15), color: Colors.white),
+          child: InkWell(
+            onTap: () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => ServicePage(item['id']))); // EngineerPage(item['id'], widget.target)
+            },
+            child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
+              textDirection: LanguageManager.getTextDirection(),
               children: [
-                Row(
+                Container(
+                  width: 90,
+                  margin: LanguageManager.getDirection()
+                      ? EdgeInsets.only(top: 5, right: 5, left: 0)
+                      : EdgeInsets.only(top: 5, right: 0, left: 5),
+                  alignment: Alignment.center,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Container(
+                        width: 100,
+                        height: 100,
+                        alignment: !LanguageManager.getDirection()
+                            ? Alignment.bottomRight
+                            : Alignment.bottomLeft,
+                        child: item['profile_verified'] == true
+                            ? Container(
+                                width: 20,
+                                height: 20,
+                                child: Icon(
+                                  FlutterIcons.check_fea,
+                                  color: Colors.white,
+                                  size: 15,
+                                ),
+                                decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(20),
+                                    color: Colors.blue),
+                              )
+                            : Container(),
+                        decoration: BoxDecoration(
+                            image: DecorationImage(
+                                image: CachedNetworkImageProvider(Globals.correctLink(item['thumbnail']))),
+                            borderRadius: BorderRadius.circular(10),
+                            color: Converter.hexToColor("#F2F2F2")),
+                      ),
+                      Container(
+                        height: 15,
+                      ),
+                      item['active'] == true
+                          ? Text(
+                              LanguageManager.getText(100) ,//+ '/' + item['id'].toString() + '/' + item['Country_name'] + '/' + item['service_id'].toString(),
+                              style: TextStyle(
+                                  fontSize: 18,
+                                  color: Colors.green,
+                                  fontWeight: FontWeight.normal),
+                            )
+                          : Text(
+                              LanguageManager.getText(101) ,//+ '/' + item['id'].toString() + '/' + item['Country_name'] + '/' + item['service_id'].toString(),
+                              style: TextStyle(
+                                  fontSize: 18,
+                                  color: Colors.red,
+                                  fontWeight: FontWeight.normal),
+                            )
+                    ],
+                  ),
+                ),
+                Container(
+                  width: 10,
+                ),
+                Expanded(
+                    child: Column(
                   textDirection: LanguageManager.getTextDirection(),
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                        child: Text(
-                      item['provider_name'].toString(),
+                    Row(
                       textDirection: LanguageManager.getTextDirection(),
-                      style: TextStyle(
-                          color: Converter.hexToColor("#2094CD"),
-                          fontSize: 14.5,
-                          fontWeight: FontWeight.bold),
-                    )),
-                    InkWell(
-                      onTap: () {
-                        ShareManager.shearEngineer(
-                            item['id'], item['provider_name'], item['provider_services_title']);
-                      },
-                      child: Container(
-                        // margin: EdgeInsets.only(top: 10),
-                        child: Icon(
-                          FlutterIcons.share_2_fea,
-                          color: Converter.hexToColor("#344F64"),
-                        ),
-                      ),
-                    )
-                  ],
-                ),
-
-                Row(
-                  textDirection: LanguageManager.getTextDirection(),
-                  children: [
-                    RateStars(
-                      12,
-                      stars: item['stars'].toInt(),
-                    ),
-                    Container(
-                      margin: EdgeInsets.symmetric(horizontal: 5),
-                      child: Text(
-                        Converter.format(item['stars']),
-                        textDirection: LanguageManager.getTextDirection(),
-                        style: TextStyle(fontWeight: FontWeight.normal, fontSize: 12),
-                      ),
-                    ),
-                  ],
-                ),
-                Container(height: 5),
-
-                // Globals.checkNullOrEmpty(item['specializ']) || Globals.checkNullOrEmpty(getSpecializ(cssss, item)) ?
-                Row(
-                  textDirection: LanguageManager.getTextDirection(),
-                  children: [
-                    Icon(
-                      FlutterIcons.md_person_ion,
-                      color: Colors.grey,
-                      size: 15,
-                    ),
-                    Container(
-                      width: 5,
-                    ),
-                    Expanded(
-                      child: Container(
-                        child: Text(
-                          LanguageManager.getText(270) +
-                              " :  " +
-                              (Globals.checkNullOrEmpty(item['specializ'].toString())
-                                  ? item['specializ'].toString()
-                                  : getSpecializ(cssss, item)),
+                      children: [
+                        Expanded(
+                            child: Text(
+                          item['provider_name'].toString(),
                           textDirection: LanguageManager.getTextDirection(),
                           style: TextStyle(
-                              fontWeight: FontWeight.normal, fontSize: 11),
-                        ),
-                      ),
-                    ),
-                  ],
-                )
-                    // : Container()
-                ,
-
-                // Globals.checkNullOrEmpty(item['brand']) || Globals.checkNullOrEmpty(getBrand(cssss, item))  ?
-                Row(
-                  textDirection: LanguageManager.getTextDirection(),
-                  children: [
-                    Container(
-                      margin: LanguageManager.getDirection()? EdgeInsets.only(right: 2, left: 5) : EdgeInsets.only(right: 6, left: 0),
-                      child: SvgPicture.asset(
-                        "assets/icons/services.svg",
-                        width: 13,
-                        height: 13,
-                        color: Colors.grey,
-                      ),
-                    ),
-
-                    Expanded(
-                      child: Container(
-                        child: Text(
-                          LanguageManager.getText(310) +
-                              " :  " +
-                              (Globals.checkNullOrEmpty(item['brand'].toString())
-                                  ? item['brand'].toString()
-                                  : getBrand(cssss, item)),
-                          textDirection: LanguageManager.getTextDirection(),
-                          style: TextStyle(
-                              fontWeight: FontWeight.normal, fontSize: 11),
-                        ),
-                      ),
-                    ),
-                  ],
-                ) ,
-                    // : Container(),
-
-                // Globals.checkNullOrEmpty(item['provider_services_title']) || Globals.checkNullOrEmpty(getServices(cssss, item)) ?
-                Row(
-                  textDirection: LanguageManager.getTextDirection(),
-                  children: [
-                    Icon(
-                      FlutterIcons.md_cog_ion,
-                      color: Colors.grey,
-                      size: 15,
-                    ),
-                    Container(
-                      width: 5,
-                    ),
-                    Expanded(
-                      child: Container(
-                        child: Text(
-                          (
-                              (Globals.checkNullOrEmpty(item['provider_services_title'].toString())
-                                ? LanguageManager.getText(309) + " :  " + item['provider_services_title'].toString()
-                                :getServices(cssss, item))
+                              color: Converter.hexToColor("#2094CD"),
+                              fontSize: 14.5,
+                              fontWeight: FontWeight.bold),
+                        )),
+                        InkWell(
+                          onTap: () {
+                            ShareManager.shearEngineer(
+                                item['id'], item['provider_name'], item['provider_services_title']);
+                          },
+                          child: Container(
+                            // margin: EdgeInsets.only(top: 10),
+                            child: Icon(
+                              FlutterIcons.share_2_fea,
+                              color: Converter.hexToColor("#344F64"),
+                            ),
                           ),
-                          textDirection: LanguageManager.getTextDirection(),
-                          style: TextStyle(
-                              fontWeight: FontWeight.normal, fontSize: 11),
+                        )
+                      ],
+                    ),
+
+                    Row(
+                      textDirection: LanguageManager.getTextDirection(),
+                      children: [
+                        RateStars(
+                          12,
+                          stars: item['stars'].toInt(),
                         ),
-                      ),
-                    ),
-                  ],
-                )
-                    // : Container()
-                ,
-                Globals.checkNullOrEmpty(item['city_name']) ||
-                Globals.checkNullOrEmpty(item['country_name']) ||
-                    Globals.checkNullOrEmpty(getCCT(cct, item))?
-                Row(
-                  textDirection: LanguageManager.getTextDirection(),
-                  children: [
-                    Icon(
-                      FlutterIcons.location_oct,
-                      size: 15,
-                      color: Colors.grey,
-                    ),
-                    Container(
-                      width: 5,
-                    ),
-                    Expanded(
-                      child: Container(
-                        child: Text(
-
-                          Globals.checkNullOrEmpty(getCCT(cct, item))
-                              ? getCCT(cct, item)
-
-                              : Globals.checkNullOrEmpty(item['city_name'])
-                                ? item['street_name'].toString().isEmpty
-                                        ? (Globals.checkNullOrEmpty(getCCT([0,0,1], item)) ? getCCT([0,0,1], item) : "")
-                                        : (item['city_name'].toString()  + "  -  " + item['street_name'].toString())
-
-                                   : Globals.checkNullOrEmpty( item['country_name'].toString())
-                                        ? getCCT([0,1,0] , {'country_name': item['country_name'].toString()})
-                                        : getCCT([0,1,0] , {'country_name': item['country_name'].toString()})
-                          ,
-                                textDirection: LanguageManager.getTextDirection(),
-                          style: TextStyle(
-                              fontWeight: FontWeight.normal, fontSize: 11),
-                        ),
-                      ),
-                    ),
-                  ],
-                ) : Container(),
-                Container(
-                  height: 10,
-                ),
-                Row(
-                  textDirection: LanguageManager.getTextDirection(),
-                  children: [
-                    // Expanded(
-                    //   child: InkWell(
-                    //     onTap: () {},
-                    //     child: Container(
-                    //       height: 40,
-                    //       alignment: Alignment.center,
-                    //       child: Row(
-                    //         mainAxisAlignment: MainAxisAlignment.center,
-                    //         textDirection: LanguageManager.getTextDirection(),
-                    //         children: [
-                    //           Icon(
-                    //             FlutterIcons.phone_faw,
-                    //             color: Colors.white,
-                    //           ),
-                    //           Container(
-                    //             width: 5,
-                    //           ),
-                    //           Text(
-                    //             LanguageManager.getText(96),
-                    //             style: TextStyle(
-                    //                 color: Colors.white,
-                    //                 fontSize: 15,
-                    //                 fontWeight: FontWeight.w600),
-                    //           ),
-                    //         ],
-                    //       ),
-                    //       decoration: BoxDecoration(
-                    //           boxShadow: [
-                    //             BoxShadow(
-                    //                 color: Colors.black.withAlpha(15),
-                    //                 spreadRadius: 2,
-                    //                 blurRadius: 2)],
-                    //           borderRadius: BorderRadius.circular(12),
-                    //           color: Converter.hexToColor("#344f64")
-                    //       ),
-                    //     ),
-                    //   ),
-                    // ),
-                    // Container(
-                    //   width: 10,
-                    // ),
-                    Expanded(
-                      child: InkWell(
-                        onTap: () {
-                          startNewConversation(item['provider_id']);
-                        },
-                        child: Container(
-                          height: 40,
-                          alignment: Alignment.center,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
+                        Container(
+                          margin: EdgeInsets.symmetric(horizontal: 5),
+                          child: Text(
+                            Converter.format(item['stars']),
                             textDirection: LanguageManager.getTextDirection(),
-                            children: [
-                              Icon(
-                                Icons.chat,
-                                color: Converter.hexToColor("#344f64"),
-                                size: 20,
-                              ),
-                              Container(
-                                width: 5,
-                              ),
-                              Text(
-                                LanguageManager.getText(117),
-                                style: TextStyle(
-                                    color: Converter.hexToColor("#344f64"),
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w600),
-                              ),
-                            ],
+                            style: TextStyle(fontWeight: FontWeight.normal, fontSize: 12),
                           ),
-                          decoration: BoxDecoration(
-                              color: Colors.white,
-                              boxShadow: [
-                                BoxShadow(
-                                    color: Colors.black.withAlpha(15),
-                                    spreadRadius: 2,
-                                    blurRadius: 2)
-                              ],
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                  color: Converter.hexToColor("#344f64"))),
                         ),
-                      ),
+                      ],
                     ),
+                    Container(height: 5),
+
+                    // Globals.checkNullOrEmpty(item['specializ']) || Globals.checkNullOrEmpty(getSpecializ(cssss, item)) ?
+                    Row(
+                      textDirection: LanguageManager.getTextDirection(),
+                      children: [
+                        Icon(
+                          FlutterIcons.md_person_ion,
+                          color: Colors.grey,
+                          size: 15,
+                        ),
+                        Container(
+                          width: 5,
+                        ),
+                        Expanded(
+                          child: Container(
+                            child: Text(
+                              LanguageManager.getText(270) +
+                                  " :  " +
+                                  (Globals.checkNullOrEmpty(item['specializ'].toString())
+                                      ? item['specializ'].toString()
+                                      : getSpecializ(cssss, item)),
+                              textDirection: LanguageManager.getTextDirection(),
+                              style: TextStyle(
+                                  fontWeight: FontWeight.normal, fontSize: 11),
+                            ),
+                          ),
+                        ),
+                      ],
+                    )
+                        // : Container()
+                    ,
+
+                    // Globals.checkNullOrEmpty(item['brand']) || Globals.checkNullOrEmpty(getBrand(cssss, item))  ?
+                    Row(
+                      textDirection: LanguageManager.getTextDirection(),
+                      children: [
+                        Container(
+                          margin: LanguageManager.getDirection()? EdgeInsets.only(right: 2, left: 5) : EdgeInsets.only(right: 6, left: 0),
+                          child: SvgPicture.asset(
+                            "assets/icons/services.svg",
+                            width: 13,
+                            height: 13,
+                            color: Colors.grey,
+                          ),
+                        ),
+
+                        Expanded(
+                          child: Container(
+                            child: Text(
+                              LanguageManager.getText(310) +
+                                  " :  " +
+                                  (Globals.checkNullOrEmpty(item['brand'].toString())
+                                      ? item['brand'].toString()
+                                      : getBrand(cssss, item)),
+                              textDirection: LanguageManager.getTextDirection(),
+                              style: TextStyle(
+                                  fontWeight: FontWeight.normal, fontSize: 11),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ) ,
+                        // : Container(),
+
+                    // Globals.checkNullOrEmpty(item['provider_services_title']) || Globals.checkNullOrEmpty(getServices(cssss, item)) ?
+                    Row(
+                      textDirection: LanguageManager.getTextDirection(),
+                      children: [
+                        Icon(
+                          FlutterIcons.md_cog_ion,
+                          color: Colors.grey,
+                          size: 15,
+                        ),
+                        Container(
+                          width: 5,
+                        ),
+                        Expanded(
+                          child: Container(
+                            child: Text(
+                              (
+                                  (Globals.checkNullOrEmpty(item['provider_services_title'].toString())
+                                    ? LanguageManager.getText(309) + " :  " + item['provider_services_title'].toString()
+                                    :getServices(cssss, item))
+                              ),
+                              textDirection: LanguageManager.getTextDirection(),
+                              style: TextStyle(
+                                  fontWeight: FontWeight.normal, fontSize: 11),
+                            ),
+                          ),
+                        ),
+                      ],
+                    )
+                        // : Container()
+                    ,
+                    Globals.checkNullOrEmpty(item['city_name']) ||
+                    Globals.checkNullOrEmpty(item['country_name']) ||
+                        Globals.checkNullOrEmpty(getCCT(cct, item))?
+                    Row(
+                      textDirection: LanguageManager.getTextDirection(),
+                      children: [
+                        Icon(
+                          FlutterIcons.location_oct,
+                          size: 15,
+                          color: Colors.grey,
+                        ),
+                        Container(
+                          width: 5,
+                        ),
+                        Expanded(
+                          child: Container(
+                            child: Text(
+
+                              Globals.checkNullOrEmpty(getCCT(cct, item))
+                                  ? getCCT(cct, item)
+
+                                  : Globals.checkNullOrEmpty(item['city_name'])
+                                    ? item['street_name'].toString().isEmpty
+                                            ? (Globals.checkNullOrEmpty(getCCT([0,0,1], item)) ? getCCT([0,0,1], item) : "")
+                                            : (item['city_name'].toString()  + "  -  " + item['street_name'].toString())
+
+                                       : Globals.checkNullOrEmpty( item['country_name'].toString())
+                                            ? getCCT([0,1,0] , {'country_name': item['country_name'].toString()})
+                                            : getCCT([0,1,0] , {'country_name': item['country_name'].toString()})
+                              ,
+                                    textDirection: LanguageManager.getTextDirection(),
+                              style: TextStyle(
+                                  fontWeight: FontWeight.normal, fontSize: 11),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ) : Container(height: 20,),
+                    Container(
+                      height: 15,
+                    ),
+                    Row(
+                      textDirection: LanguageManager.getTextDirection(),
+                      children: [
+                        item['phone'].toString().isEmpty || item['phone'].toString().toLowerCase() == 'null'
+                            ? Container()
+                            : Expanded(
+                          child: InkWell(
+                            onTap: () => PhoneCall.call(item['phone'], context),
+                            child: Column(
+                              children: [
+                                Container(
+                                  height: 40,
+                                  alignment: Alignment.center,
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    textDirection: LanguageManager.getTextDirection(),
+                                    children: [
+                                      Icon(
+                                        FlutterIcons.phone_faw,
+                                        color: Colors.white,
+                                      ),
+                                      Container(
+                                        width: 5,
+                                      ),
+                                      Text(
+                                        LanguageManager.getText(96),
+                                        style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.w600),
+                                      ),
+                                    ],
+                                  ),
+                                  decoration: BoxDecoration(
+                                      boxShadow: [
+                                        BoxShadow(
+                                            color: Colors.black.withAlpha(15),
+                                            spreadRadius: 2,
+                                            blurRadius: 2)],
+                                      borderRadius: BorderRadius.circular(12),
+                                      color: Converter.hexToColor("#344f64")
+                                  ),
+                                ),
+                                Text(
+                                  LanguageManager.getText(isSubscribe ? 358 : 348),
+                                  style: TextStyle(
+                                      color: isSubscribe ? Colors.green : Colors.black,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w600),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        item['phone'].toString().isEmpty || item['phone'].toString().toLowerCase() == 'null'
+                            ? Container()
+                            : Container(
+                          width: 10,
+                        ),
+                        Expanded(
+                          child: InkWell(
+                            onTap: () => Globals.startNewConversation(item['provider_id'], context, active: item['active'].toString()),
+                            child: Column(
+                              children: [
+                                Container(
+                                  height: 40,
+                                  alignment: Alignment.center,
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    textDirection: LanguageManager.getTextDirection(),
+                                    children: [
+                                      Icon(
+                                        Icons.chat,
+                                        color: Converter.hexToColor("#344f64"),
+                                        size: 20,
+                                      ),
+                                      Container(
+                                        width: 5,
+                                      ),
+                                      Text(
+                                        LanguageManager.getText(117),
+                                        style: TextStyle(
+                                            color: Converter.hexToColor("#344f64"),
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.w600),
+                                      ),
+                                    ],
+                                  ),
+                                  decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      boxShadow: [
+                                        BoxShadow(
+                                            color: Colors.black.withAlpha(15),
+                                            spreadRadius: 2,
+                                            blurRadius: 2)
+                                      ],
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(
+                                          color: Converter.hexToColor("#344f64"))),
+                                ),
+                                Text(
+                                  LanguageManager.getText(348),
+                                  style: TextStyle(
+                                      color: Colors.transparent,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w600),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+
                   ],
-                ),
+                )),
                 Container(
-                  height: 10,
+                  width: 10,
                 ),
               ],
-            )),
-            Container(
-              width: 10,
             ),
-          ],
+          ),
         ),
-      ),
+        item['quick_offer'].toString() != 'null'
+        ? Container(
+          width: 55,
+          height: 110,
+          margin: LanguageManager.getDirection()? EdgeInsets.only(left: 18, top: 52) : EdgeInsets.only(right: 18, top: 52),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                padding: EdgeInsets.all(1),
+                decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(5),
+                    color:  Converter.hexToColor("#ffffff"),
+                    boxShadow: [
+                    BoxShadow(
+                        color: Colors.black.withAlpha(45),
+                        spreadRadius: 1,
+                        blurRadius: 7)
+                  ]),
+                   child: Stack(
+                     children: [
+                       CachedNetworkImage(imageUrl:Globals.correctLink(item['quick_offer']['image'])),
+                       new Positioned.fill(
+                           child: new Material(
+                               color: Colors.transparent,
+                               child: new InkWell(
+                                 splashColor: Colors.white70,
+                                 onTap: () => showAlertQuickOffer(item['quick_offer'], item['provider_id'], item['active']),
+                               ))),
+                     ],
+                   ),
+              ),
+
+            ],
+          ),
+        )
+        : item['offers'].toString() != 'false'
+        ? Container(
+          width: 85,
+          margin: LanguageManager.getDirection() ? EdgeInsets.only(left: 25, top: 70) : EdgeInsets.only(right: 25, top: 70),
+          child: Column(
+            // mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 5),
+                decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Converter.hexToColor("#344f64")),
+                    color:  Converter.hexToColor("#ffffff"),
+                    boxShadow: [
+                      BoxShadow(
+                          color: Colors.black.withAlpha(20),
+                          spreadRadius: 1,
+                          blurRadius: 7)
+                    ]),
+                child: Stack(
+                  children: [
+                    Row(
+                      textDirection: LanguageManager.getTextDirection(),
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                      Icon(
+                        FlutterIcons.tag_ant,
+                        color: Converter.hexToColor("#344f64"),
+                        size: 18,
+                      ),
+                        Container(padding: EdgeInsets.symmetric( horizontal: 4),child: Text(LanguageManager.getText(353), textDirection: LanguageManager.getTextDirection(), style: TextStyle(color: Converter.hexToColor("#344f64"), fontWeight: FontWeight.bold),)),
+                      ],
+                    ) ,
+                    new Positioned.fill(
+                        child: new Material(
+                            color: Colors.transparent,
+                            child: new InkWell(
+                              splashColor: Colors.white70,
+                              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (
+                                  _) => Offers(item['id'].toString(),item['phone'], item['active'].toString() ))),
+                            ))),
+                  ],
+                ),
+              ),
+
+            ],
+          ),
+        )
+        : Container(),
+      ],
     );
   }
 
@@ -969,10 +1092,6 @@ class _ServiceState extends State<Service> {
                 }
               } else {
                 var tmpList = options as List;
-               // print('tmp: ${tmpList.isEmpty}, ${tmpList.first != {'name': 'الكل'}}, ${(tmpList.isEmpty || tmpList.first != {'name': 'الكل'})}, ${tmpList.first.runtimeType}, ${{'name': 'الكل'}.runtimeType}');
-               //  Map<String, dynamic> s= {'name': 'الكل'};
-               //  if(tmpList.isEmpty || (!mapEquals(tmpList.first, s)))
-               //      tmpList.insert(0, {'name': 'الكل'});
 
                 Alert.show(context,tmpList,
                     type: AlertType.SELECT, onSelected: (item) {
@@ -1098,9 +1217,6 @@ class _ServiceState extends State<Service> {
   getSelectedOptions(String s, {String keyId}) {
     print('here_selectOptions_map : ${selectOptions[s]}');
     var isNullOrEmptySO = selectOptions[s]!=null && (selectOptions[s] as List).isNotEmpty;
-    // if(isNullOrEmptySO){
-    //   selectOptions[s]
-    // }
     return isNullOrEmptySO? getFilterOption(256, selectOptions[s], s, keyId: keyId): Container();
   }
 
@@ -1114,4 +1230,200 @@ class _ServiceState extends State<Service> {
       });
   }
 
+  showAlertQuickOffer(quickOffer, providerId, active) {
+    Alert.show(context, Wrap(
+      children: [
+        Column(
+          children: [
+            Row(
+              children: [
+                InkWell(
+                  highlightColor: Colors.green,
+                  onTap: () => Navigator.pop(context),
+                  child: Icon(FlutterIcons.close_ant,size: 24),
+                )
+              ],
+            ),
+            Text(
+              Converter.getRealText(quickOffer[LanguageManager.getDirection() ? 'title' : 'title_en']),
+              textDirection: LanguageManager.getTextDirection(),
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.normal, color: Converter.hexToColor("#F5A623")),
+              textAlign: TextAlign.center,
+            ),
+            Container(height: 15),
+            Container(padding: EdgeInsets.all(1),
+                decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(5),
+                    color:  Converter.hexToColor("#F2F2F2"),
+                    boxShadow: [
+                      BoxShadow(
+                          color: Colors.black.withAlpha(45),
+                          spreadRadius: 1,
+                          blurRadius: 7)
+                    ]),child: CachedNetworkImage(imageUrl:Globals.correctLink(quickOffer['image']))),
+            Container(height: 15),
+            Text(quickOffer[LanguageManager.getDirection() ? 'body' : 'body_en'],
+              textDirection: LanguageManager.getTextDirection(),
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black),
+            ),
+            Container(
+              margin: EdgeInsets.only(top: 10, bottom: 15),
+              child: Row(
+                textDirection: LanguageManager.getTextDirection(),
+                children: [
+                  Expanded(
+                    child: InkWell(
+                      onTap: () => Navigator.pop(context),
+                      child: Container(
+                        width: 90,
+                        height: 45,
+                        alignment: Alignment.center,
+                        child: Text(
+                          Converter.getRealText(132),
+                          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+                        ),
+                        decoration: BoxDecoration(
+                            boxShadow: [
+                              BoxShadow(
+                                  color: Converter.hexToColor("#F5A623"),
+                                  spreadRadius: 1,
+                                  blurRadius: 1)
+                            ],
+                            borderRadius: BorderRadius.circular(8),
+                            color: Converter.hexToColor("#ffffff")),
+                      ),
+                    ),
+                  ),
+                  Container(
+                    width: 10,
+                  ),
+                  Expanded(
+                      child: InkWell(
+                        onTap: () {
+                          if(active.toString() == 'false') {
+                            Alert.show(context, 349);
+                            return;
+                          }
+                          if(UserManager.currentUser("id").isEmpty) {
+                            Alert.show(context, LanguageManager.getText(298), // عليك تسجيل الدخول أولا
+                                premieryText: LanguageManager.getText(30),
+                                onYes: () {
+                              Navigator.push(context,
+                                  MaterialPageRoute(builder: (_) => Login()));
+                            }, onYesShowSecondBtn: false);
+                            return;
+                          }
+                          if(!UserManager.isSubscribe()){
+                            showAlertSubscribe();
+                            return;
+                          }
+                          Navigator.push(context, MaterialPageRoute(builder: (
+                              _) => LiveChat(providerId.toString(),
+                            openSendMessage: Converter.replaceValue(LanguageManager.getText(351), quickOffer['body'])
+                            ,)));
+                        },
+                        child: Container(
+                          width: 90,
+                          height: 45,
+                          alignment: Alignment.center,
+                          child: Text(
+                            Converter.getRealText(350), // اطلبها
+                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                          ),
+                          decoration: BoxDecoration(
+                              boxShadow: [
+                                BoxShadow(
+                                    color: Colors.black.withAlpha(15),
+                                    spreadRadius: 2,
+                                    blurRadius: 2)
+                              ],
+                              borderRadius: BorderRadius.circular(8),
+                              color: Converter.hexToColor("#F5A623")),
+                        ),
+                      ))
+                ],
+              ),
+            )
+          ],
+        ),
+    ],), type: AlertType.WIDGET, isDismissible: false);
+  }
+
+  void showAlertSubscribe() {
+    Alert.show(
+        context,
+        Container(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  InkWell(
+                    onTap: () {
+                      if (Alert.publicClose != null)
+                        Alert.publicClose();
+                      else
+                        Navigator.pop(context);
+                    },
+                    child: Icon(
+                      FlutterIcons.close_ant,
+                      size: 24,
+                    ),
+                  )
+                ],
+              ),
+              Container(
+                height: 10,
+              ),
+              Text(
+                LanguageManager.getText(357),
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
+              ),
+              Container(
+                height: 15,
+              ),
+              Container(
+                margin: EdgeInsets.only(top: 10, bottom: 15),
+                child: Row(
+                  textDirection: LanguageManager.getTextDirection(),
+                  children: [
+                    Expanded(
+                      child: InkWell(
+                        onTap: () {
+                          Navigator.pop(context);
+                          Navigator.push(context, MaterialPageRoute(builder: (_) => FeatureSubscribe()));
+                        },
+                        child: Container(
+                          width: 90,
+                          height: 45,
+                          alignment: Alignment.center,
+                          child: Text(
+                            LanguageManager.getText(75),
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          decoration: BoxDecoration(
+                              boxShadow: [
+                                BoxShadow(
+                                    color: Colors.black.withAlpha(15),
+                                    spreadRadius: 2,
+                                    blurRadius: 2)
+                              ],
+                              borderRadius: BorderRadius.circular(8),
+                              color: Converter.hexToColor("#344f64")),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            ],
+          ),
+        ),
+        type: AlertType.WIDGET);
+  }
 }

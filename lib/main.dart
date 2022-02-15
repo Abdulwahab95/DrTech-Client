@@ -1,12 +1,11 @@
+
+import 'dart:async';
 import 'dart:io';
 
-import 'package:dr_tech/Components/CustomLoading.dart';
 import 'package:dr_tech/Config/initialization.dart';
 import 'package:dr_tech/Models/LanguageManager.dart';
-import 'package:dr_tech/Models/UserManager.dart';
 import 'package:dr_tech/Pages/Welcome.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -60,12 +59,14 @@ void main() async {
 
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
+  HttpOverrides.global = MyHttpOverrides();
+
   Initialization(() {
     // UserManager.refrashUserInfo();
     runApp(App());
   });
 
-  runApp(Loading());
+  runApp(MaterialApp(debugShowCheckedModeBanner: false,home: Loading()));
 
 }
 
@@ -94,6 +95,24 @@ class Loading extends StatefulWidget {
 }
 
 class _LoadingState extends State<Loading> {
+
+  double opacity = 0.2;
+
+  @override
+  void initState() {
+    animationTimer();
+    super.initState();
+  }
+
+  void animationTimer() {
+    Timer(Duration(milliseconds: 250), () {
+      setState(() {
+        opacity = 1;
+      });
+    });
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -106,8 +125,42 @@ class _LoadingState extends State<Loading> {
         supportedLocales: LanguageManager.getSupportedLocales(),
         locale: LanguageManager.getLocal(),
         home: Scaffold(
-            body: Center(
-          child: CustomLoading(),
-        )));
+          backgroundColor: Colors.white,
+            body: Stack(
+              children: [
+                getLogoPage(),
+                // Center(child: CustomLoading()),
+              ],
+            )));
+  }
+
+  Widget getLogoPage() {
+    double size = MediaQuery.of(context).size.width * 0.5;
+    return Center(
+        child: Container(
+            width: size,
+            height: size,
+            child: AnimatedOpacity(
+              opacity: opacity,
+              duration: Duration(milliseconds: 750),
+              child: Container(
+                width: size,
+                height: size,
+                decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    color: Colors.white,
+                    image: DecorationImage(
+                        image: AssetImage("assets/images/logo.png"))),
+              ),
+            )));
+  }
+
+}
+
+class MyHttpOverrides extends HttpOverrides{
+  @override
+  HttpClient createHttpClient(SecurityContext context){
+    return super.createHttpClient(context)
+      ..badCertificateCallback = (X509Certificate cert, String host, int port)=> true;
   }
 }

@@ -51,6 +51,13 @@ class LanguageManager {
       return TextDirection.ltr;
   }
 
+  static TextDirection getReversTextDirection() {
+    if (getDirection())
+      return TextDirection.ltr;
+    else
+      return TextDirection.rtl;
+  }
+
   static void init(data) {
     selectedLanguage = DatabaseManager.getUserSettings("localization");
 

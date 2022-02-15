@@ -47,7 +47,7 @@ class Alert extends StatefulWidget {
                                 secondaryText, type, isDismissible, onYesShowSecondBtn))
           .then((value) {
                 currentLoader = false ;
-                publicClose   = null  ;
+                //publicClose   = null  ;
                 setStateCall  = null  ;
                 callSetState  = null  ;
                 staticContent = null  ;

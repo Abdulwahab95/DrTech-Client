@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:dr_tech/Components/Alert.dart';
@@ -53,9 +54,14 @@ class BaseWebview extends State<WebBrowser> {
                 children: <Widget>[
                   WebView(
                     onPageFinished: (a) {
+                      print('here_WebView_onPageFinished: $a');
                       setState(() {
                         loading = false;
                       });
+                      if(a.toString().contains('success'))
+                        Timer(Duration(seconds: 1), () {
+                          Navigator.of(context).pop('success');
+                        });
                     },
                     javascriptChannels: <JavascriptChannel>[
                       JavascriptChannel(
@@ -63,6 +69,7 @@ class BaseWebview extends State<WebBrowser> {
                           onMessageReceived: (JavascriptMessage e) {
                             try {
                               var reponce = json.decode(e.message);
+                              print('here_WebView_onMessageReceived: $reponce');
                               Navigator.of(context).pop(reponce);
                             } catch (er) {
                               Alert.show(context, er.toString());

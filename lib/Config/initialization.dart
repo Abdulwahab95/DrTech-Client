@@ -64,7 +64,7 @@ class Initialization {
         goNext(callback);
         // callback();
       }
-    }, body: body, cachable: true );
+    }, body: body, cachable: false );
 
     UserManager.refrashUserInfo(callBack: (){
       profileLoad = true;

@@ -89,6 +89,9 @@
             <action android:name="android.intent.action.SEND" />
             <data android:mimeType="*/*" />
         </intent>
+         <intent>
+             <action android:name="android.media.action.IMAGE_CAPTURE" />
+         </intent>
     </queries>
 	
 </manifest>

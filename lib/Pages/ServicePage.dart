@@ -3,6 +3,7 @@ import 'package:dr_tech/Components/Alert.dart';
 import 'package:dr_tech/Components/CustomLoading.dart';
 import 'package:dr_tech/Components/RateStars.dart';
 import 'package:dr_tech/Components/TitleBar.dart';
+import 'package:dr_tech/Components/phoneCall.dart';
 import 'package:dr_tech/Config/Converter.dart';
 import 'package:dr_tech/Config/Globals.dart';
 import 'package:dr_tech/Models/LanguageManager.dart';
@@ -267,7 +268,7 @@ class _ServicePageState extends State<ServicePage>
                           //                       Text(
                           //                         e["price"].toString() +
                           //                             " " +
-                          //                             data["unit"].toString(),
+                          //                             Globals.getUnit(),
                           //                         textDirection: LanguageManager
                           //                             .getTextDirection(),
                           //                         style: TextStyle(
@@ -348,92 +349,112 @@ class _ServicePageState extends State<ServicePage>
                         ],
                       ),
                     )),
-          Container(
-                  padding: EdgeInsets.all(15),
+              isLoading
+                ? Container()
+                : Container(
+                  padding: EdgeInsets.symmetric(horizontal: 15, vertical: 5),
                   child: Row(
                     textDirection: LanguageManager.getTextDirection(),
                     children: [
-                      // Expanded(
-                      //   child: InkWell(
-                      //     onTap: () {},
-                      //     child: Container(
-                      //       height: 46,
-                      //       alignment: Alignment.center,
-                      //       child: Row(
-                      //         mainAxisAlignment: MainAxisAlignment.center,
-                      //         textDirection: LanguageManager.getTextDirection(),
-                      //         children: [
-                      //           Icon(
-                      //             FlutterIcons.phone_faw,
-                      //             color: Colors.white,
-                      //           ),
-                      //           Container(
-                      //             width: 5,
-                      //           ),
-                      //           Text(
-                      //             LanguageManager.getText(96),
-                      //             style: TextStyle(
-                      //                 color: Colors.white,
-                      //                 fontSize: 15,
-                      //                 fontWeight: FontWeight.w600),
-                      //           ),
-                      //         ],
-                      //       ),
-                      //       decoration: BoxDecoration(
-                      //           boxShadow: [
-                      //             BoxShadow(
-                      //                 color: Colors.black.withAlpha(15),
-                      //                 spreadRadius: 2,
-                      //                 blurRadius: 2)
-                      //           ],
-                      //           borderRadius: BorderRadius.circular(12),
-                      //           color: Converter.hexToColor("#344f64")),
-                      //     ),
-                      //   ),
-                      // ),
-                      // Container(
-                      //   width: 10,
-                      // ),
+                           Expanded(
+                              child: InkWell(
+                                onTap: () => PhoneCall.call(data['phone'], context),
+                                child: Column(
+                                  children: [
+                                    Container(
+                                      height: 46,
+                                      alignment: Alignment.center,
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        textDirection: LanguageManager.getTextDirection(),
+                                        children: [
+                                          Icon(
+                                            FlutterIcons.phone_faw,
+                                            color: Colors.white,
+                                          ),
+                                          Container(
+                                            width: 5,
+                                          ),
+                                          Text(
+                                            LanguageManager.getText(96),
+                                            style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 15,
+                                                fontWeight: FontWeight.w600),
+                                          ),
+                                        ],
+                                      ),
+                                      decoration: BoxDecoration(
+                                          boxShadow: [
+                                            BoxShadow(
+                                                color: Colors.black.withAlpha(15),
+                                                spreadRadius: 2,
+                                                blurRadius: 2)
+                                          ],
+                                          borderRadius: BorderRadius.circular(12),
+                                          color: Converter.hexToColor("#344f64")),
+                                    ),
+                                    Text(
+                                      LanguageManager.getText(UserManager.isSubscribe() ? 358 : 348),
+                                      style: TextStyle(
+                                          color: UserManager.isSubscribe() ? Colors.green : Colors.black,
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w600),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                      Container(width: 10),
                       Expanded(
                         child: InkWell(
-                          onTap: () {
-                            startNewConversation(data['user_id']);
-                          },
-                          child: Container(
-                            height: 46,
-                            alignment: Alignment.center,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              textDirection: LanguageManager.getTextDirection(),
-                              children: [
-                                Icon(
-                                  Icons.chat,
-                                  color: Converter.hexToColor("#344f64"),
-                                  size: 20,
-                                ),
-                                Container(
-                                  width: 5,
-                                ),
-                                Text(
-                                  LanguageManager.getText(117),
-                                  style: TextStyle(
+                          onTap: () => Globals.startNewConversation(data['user_id'], context, active: data['active'].toString()),
+                          child: Column(
+                            children: [
+                              Container(
+                                height: 46,
+                                alignment: Alignment.center,
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  textDirection: LanguageManager.getTextDirection(),
+                                  children: [
+                                    Icon(
+                                      Icons.chat,
                                       color: Converter.hexToColor("#344f64"),
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w600),
+                                      size: 20,
+                                    ),
+                                    Container(
+                                      width: 5,
+                                    ),
+                                    Text(
+                                      LanguageManager.getText(117),
+                                      style: TextStyle(
+                                          color: Converter.hexToColor("#344f64"),
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w600),
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
-                            decoration: BoxDecoration(
-                                color: Colors.white,
-                                boxShadow: [
-                                  BoxShadow(
-                                      color: Colors.black.withAlpha(15),
-                                      spreadRadius: 2,
-                                      blurRadius: 2)
-                                ],
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                    color: Converter.hexToColor("#344f64"))),
+                                decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    boxShadow: [
+                                      BoxShadow(
+                                          color: Colors.black.withAlpha(15),
+                                          spreadRadius: 2,
+                                          blurRadius: 2)
+                                    ],
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                        color: Converter.hexToColor("#344f64"))),
+                              ),
+                              Text(
+                                LanguageManager.getText(UserManager.isSubscribe() ? 358 : 348),
+                                style: TextStyle(
+                                    color: Colors.transparent,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w600),
+                              ),
+                            ],
                           ),
                         ),
                       ),
@@ -612,13 +633,4 @@ class _ServicePageState extends State<ServicePage>
     ));
   }
 
-  void startNewConversation(id) {
-    UserManager.currentUser("id").isNotEmpty
-        ? Navigator.push(context, MaterialPageRoute(builder: (_) => LiveChat(id.toString())))
-        : Alert.show(context, LanguageManager.getText(298),
-        premieryText: LanguageManager.getText(30),
-        onYes: () {
-          Navigator.push(context, MaterialPageRoute(builder: (_) => Login()));
-        }, onYesShowSecondBtn: false);
-  }
 }

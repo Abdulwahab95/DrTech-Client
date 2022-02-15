@@ -31,7 +31,7 @@ class _WelcomeState extends State<Welcome> {
   List<dynamic> welcomePages = [];
 
   int currentTabIndex = 0;
-  double opacity = 0.2;
+  double opacity = 1;
   @override
   void initState() {
     welcomePages = Globals.getConfig("welcome");
@@ -49,9 +49,9 @@ class _WelcomeState extends State<Welcome> {
   }
 
   void screenTimer() {
-    Timer(Duration(seconds: 2), () {
+    Timer(Duration(milliseconds: 250), () { // seconds: 2
       setState(() {
-        DatabaseManager.load("welcome") != true ?isInLogoScreen = false : close();
+         DatabaseManager.load("welcome") != true ? isInLogoScreen = false : close();
       });
     });
   }
@@ -280,7 +280,7 @@ class _WelcomeState extends State<Welcome> {
   void close() {
     DatabaseManager.save("welcome", true);
 
-    var forceUpdate = Globals.getValueInConfigSetting('is_force_update_client');
+    var forceUpdate = Globals.getSetting('is_force_update_client');
     var blocked     = UserManager.currentUser('is_blocked');
 
     if (blocked == '1')
@@ -321,7 +321,7 @@ class _WelcomeState extends State<Welcome> {
   }
 
   bool isExistUpdateClient() {
-    String version = Globals.getValueInConfigSetting(Platform.isIOS ? 'client_last_version_ios' : 'client_last_version_android').toString();
+    String version = Globals.getSetting(Platform.isIOS ? 'client_last_version_ios' : 'client_last_version_android').toString();
     print('here_version: server_version: $version');
     version = version.replaceAll('.', '');
     if(version.length > 0){

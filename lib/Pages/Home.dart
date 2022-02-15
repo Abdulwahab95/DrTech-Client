@@ -8,13 +8,14 @@ import 'package:dr_tech/Config/Globals.dart';
 import 'package:dr_tech/Models/DatabaseManager.dart';
 import 'package:dr_tech/Models/LanguageManager.dart';
 import 'package:dr_tech/Models/UserManager.dart';
-import 'package:dr_tech/Pages/Subscription.dart';
 import 'package:dr_tech/Screens/MainScreen.dart';
 import 'package:dr_tech/Screens/NotificationsScreen.dart';
 import 'package:dr_tech/Screens/ProfileScreen.dart';
 import 'package:dr_tech/Screens/ServicesScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
+
+import 'FeatureSubscribe.dart';
 
 class Home extends StatefulWidget {
   final page;
@@ -33,12 +34,29 @@ class _HomeState extends State<Home> {
   HomeSlider homeSlider = HomeSlider();
   @override
   void initState() {
+
     if (widget.page != null) iScreenIndex = widget.page;
-    // Timer(Duration(seconds: 3), () {
-    //   setState(() {
-    //     isOpenMessage = true;
-    //   });
-    // });
+
+    if(
+        Globals.getSetting('active_subscribe') == '1' &&
+        UserManager.currentUser('id').isNotEmpty &&
+        !UserManager.isSubscribe()
+    )
+        Timer(Duration(seconds: 3), () {
+          setState(() {
+            isOpenMessage = true;
+          });
+        });
+
+      Globals.updateVisitableWhySubscribe = (){
+        if(mounted)
+          Future.delayed(Duration.zero, () {
+            setState(() {
+              isOpenMessage = false;
+            });
+          });
+      };
+
     // Timer(Duration(seconds: 10), () {
     //   setState(() {
     //     isOpenMessage = false;
@@ -136,10 +154,16 @@ class _HomeState extends State<Home> {
                 ],
               ),
             ),
-            type: AlertType.WIDGET);
+            type: AlertType.WIDGET, isDismissible: false);
       });
     }
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    Globals.updateVisitableWhySubscribe = (){};
+    super.dispose();
   }
 
   @override
@@ -268,11 +292,15 @@ class _HomeState extends State<Home> {
                                         fontWeight: FontWeight.w600),
                                   ),
                                   InkWell(
-                                    onTap: () {
-                                      Navigator.push(
+                                    onTap: () async{
+                                      var results = await Navigator.push(
                                           context,
                                           MaterialPageRoute(
-                                              builder: (_) => Subscription()));
+                                              builder: (_) => FeatureSubscribe()));
+                                      if(results.toString().contains('success'))
+                                        setState(() {
+                                          isOpenMessage = false;
+                                        });
                                     },
                                     child: Text(
                                       LanguageManager.getText(42),

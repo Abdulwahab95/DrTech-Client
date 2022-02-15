@@ -1,7 +1,6 @@
 import 'package:dr_tech/Components/Alert.dart';
 import 'package:dr_tech/Components/CustomLoading.dart';
 import 'package:dr_tech/Components/EmptyPage.dart';
-import 'package:dr_tech/Components/NotificationIcon.dart';
 import 'package:dr_tech/Components/Recycler.dart';
 import 'package:dr_tech/Components/TitleBar.dart';
 import 'package:dr_tech/Config/Converter.dart';

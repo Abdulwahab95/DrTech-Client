@@ -1,12 +1,16 @@
 import 'dart:io';
 
+import 'package:dr_tech/Components/Alert.dart';
 import 'package:dr_tech/Models/DatabaseManager.dart';
 import 'package:dr_tech/Models/LanguageManager.dart';
 import 'package:dr_tech/Models/UserManager.dart';
 import 'package:dr_tech/Network/NetworkManager.dart';
+import 'package:dr_tech/Pages/LiveChat.dart';
+import 'package:dr_tech/Pages/Login.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vibration/vibration.dart';
@@ -19,8 +23,9 @@ class Globals {
   static var config;
   static var isLocal = false;
   static var urlServerLocal = "http://192.168.43.152";
+  static var urlServerGlobal = "https://www.drtech-api.com";
   // static var urlServerGlobal = "https://drtech.takiddine.co";
-  static var urlServerGlobal = "https://dashboard.drtechapp.com";
+  // static var urlServerGlobal = "https://dashboard.drtechapp.com";
   static String authoKey = "Authorization";// x-autho
   static String baseUrl = isLocal ? "$urlServerLocal/api/" : "$urlServerGlobal/api/";
   static String imageUrl = isLocal ? "$urlServerLocal" : "$urlServerGlobal"; // https://server.drtechapp.com/
@@ -32,6 +37,7 @@ class Globals {
   static Function updateInCartCount;
   static Function updateNotificationCount = (){};
   static Function updateChatCount = (){};
+  static Function updateVisitableWhySubscribe = (){};
   static Function updateConversationCount = (){};
   static var settings;
   // Chat + Notification
@@ -79,7 +85,7 @@ class Globals {
     return false;
   }
 
-  static String getValueInConfigSetting(name){
+  static String getSetting(name){
     for (var item in settings) {
       if(item['name'] == name){
         return item['value'].toString();
@@ -105,12 +111,13 @@ class Globals {
     Map<String, String> header = {
       authoKey: ["Bearer " , DatabaseManager.load(authoKey) ?? ""].join(),
       "x-os": kIsWeb ? "web" : (Platform.isIOS ? "ios" : "Android"),
-      "x-app-version": version,
-      "x-build-number": buildNumber,
+      "x-app-version"     : version,
+      "x-build-number"    : buildNumber,
       "x-token": (isLocal && deviceToken.isEmpty)
           ?'cGWIGoTDRlunHuhL-UTBRb:APA91bGoDrjEsT8uLq8AqGfCNWfpy2SBsFaiWjKwZrcanQVZWwiNVSPKVfySvsAH10wIBPpO7dFK1sPma9w71Lzbb3MLC8Sm-gyCII4pZjlNitGwoSnU5HRZwb1iasQ0VrFuCFm-xrJm':
       deviceToken,
-      "X-Requested-With": "XMLHttpRequest"
+      "x-app-type"        : "CLIENT_APP",
+      "X-Requested-With"  : "XMLHttpRequest"
     };
     if (DatabaseManager.liveDatabase[Globals.authoKey] != null) {
       header[Globals.authoKey] = "Bearer " + DatabaseManager.liveDatabase[Globals.authoKey];
@@ -221,5 +228,20 @@ class Globals {
     //   'info': info
     // + ' | ${kIsWeb ? "web" : (Platform.isIOS ? "ios" : "Android")} | ${UserManager.nameUser("name")} | ${_deviceData}',
     // 'status': status}
+  }
+
+  static void startNewConversation(providerId, context,{message = '', active}) {
+    if(active.toString() == 'false') {
+      Alert.show(context, 349);
+      return;
+    }
+
+    UserManager.currentUser("id").isNotEmpty
+        ? Navigator.push(context, MaterialPageRoute(builder: (_) => LiveChat(providerId.toString(), openSendMessage: message,)))
+        : Alert.show(context, LanguageManager.getText(298),
+        premieryText: LanguageManager.getText(30),
+        onYes: () {
+          Navigator.push(context, MaterialPageRoute(builder: (_) => Login()));
+        }, onYesShowSecondBtn: false);
   }
 }

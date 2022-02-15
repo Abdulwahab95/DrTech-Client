@@ -10,6 +10,7 @@ import 'package:dr_tech/Components/BrokenPage.dart';
 import 'package:dr_tech/Components/CustomBehavior.dart';
 import 'package:dr_tech/Components/CustomLoading.dart';
 import 'package:dr_tech/Components/PaymentOptions.dart';
+import 'package:dr_tech/Components/phoneCall.dart';
 import 'package:dr_tech/Config/Converter.dart';
 import 'package:dr_tech/Config/Globals.dart';
 import 'package:dr_tech/Models/LanguageManager.dart';
@@ -23,10 +24,12 @@ import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'Conversations.dart';
+import 'OpenImage.dart';
 
 class LiveChat extends StatefulWidget {
   final String id;
-  LiveChat(this.id) {
+  final String openSendMessage;
+  LiveChat(this.id, {this.openSendMessage = ''}) {
     LiveChat.currentConversationId = this.id;
   }
 
@@ -232,10 +235,10 @@ class _LiveChatState extends State<LiveChat>  with WidgetsBindingObserver {
                         padding: EdgeInsets.only(
                             left: LanguageManager.getDirection()?25:0,
                             right: LanguageManager.getDirection()?0:25,
-                            bottom: 20, top: 25),
+                            bottom: 10, top: 15),
                         child: Row(
                           textDirection: LanguageManager.getTextDirection(),
-                          // mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             InkWell(
                                 onTap: _close,
@@ -253,50 +256,56 @@ class _LiveChatState extends State<LiveChat>  with WidgetsBindingObserver {
                                   ),
                                 )),
                             Container(width: 25),
-                            Text(
-                              isTyping
-                                  ? LanguageManager.getText(84)
-                                  : user.isNotEmpty
-                                      ? user["username"]??''
-                                      : "",
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white),
+                            Expanded(
+                              child: Text(
+                                isTyping
+                                    ? LanguageManager.getText(84)
+                                    : user.isNotEmpty
+                                        ? user["username"]??''
+                                        : "",
+                                textDirection: LanguageManager.getTextDirection(),
+                                style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white),
+                              ),
                             ),
                             Row(
                               textDirection: LanguageManager.getTextDirection(),
                               children: [
-                                InkWell(
-                                  // onTap: phoneCall,
-                                  child: Container(
-                                    width: 20,
-                                    child: Icon(
-                                      FlutterIcons.phone_faw,
-                                      size: 24,
-                                      // color: Colors.white,
-                                      color: Colors.transparent,
-                                      textDirection: LanguageManager.getTextDirection(),
+                                Material(
+                                  color: Colors.transparent,
+                                  child: InkWell(
+                                    onTap: ()=> PhoneCall.call(user['country']['country_code'] + user['number_phone'], context),
+                                    child: Container(
+                                      width: 40,
+                                      height: 40,
+                                      child: Icon(
+                                        FlutterIcons.phone_faw,
+                                        size: 24,
+                                        color: Colors.white,
+                                        // color: Colors.transparent,
+                                        textDirection: LanguageManager.getTextDirection(),
+                                      ),
                                     ),
                                   ),
                                 ),
-                                Container(
-                                  width: 10,
-                                ),
-                                InkWell(
-                                  // onTap: showOptions,
-                                  child: Container(
-                                    width: 20,
-                                    child: Icon(
-                                      FlutterIcons.dots_vertical_mco,
-                                      size: 28,
-                                      // color: Colors.white,
-                                      color: Colors.transparent,
-                                      textDirection: LanguageManager.getTextDirection(),
-                                    ),
-                                  ),
-                                ),
+                                // Container(
+                                //   width: 10,
+                                // ),
+                                // InkWell(
+                                //   // onTap: showOptions,
+                                //   child: Container(
+                                //     width: 20,
+                                //     child: Icon(
+                                //       FlutterIcons.dots_vertical_mco,
+                                //       size: 28,
+                                //       // color: Colors.white,
+                                //       color: Colors.transparent,
+                                //       textDirection: LanguageManager.getTextDirection(),
+                                //     ),
+                                //   ),
+                                // ),
                               ],
                             ),
                           ],
@@ -397,7 +406,16 @@ class _LiveChatState extends State<LiveChat>  with WidgetsBindingObserver {
     return chat;
   }
 
+  bool isSetOpenSendMessage = true;
+
   Widget getChatInput() {
+
+    if(widget.openSendMessage.isNotEmpty && isSetOpenSendMessage) {
+      isSetOpenSendMessage = false;
+      controller.text = widget.openSendMessage;
+      body['text'] = widget.openSendMessage;
+    }
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -461,9 +479,49 @@ class _LiveChatState extends State<LiveChat>  with WidgetsBindingObserver {
                       textDirection: LanguageManager.getTextDirection(),
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
+                        InkWell(
+                          onTap: () {
+                            print('here_tap on camera');
+                            pickImage(ImageSource.camera);
+                          },
+                          child: Container(
+                            child: Column(
+                              children: [
+                                Container(
+                                  width: 50,
+                                  height: 50,
+                                  padding: EdgeInsets.all(3),
+                                  alignment: Alignment.center,
+                                  decoration: BoxDecoration(
+                                      border: Border.all(
+                                          color: Colors.white, width: 2),
+                                      color: Converter.hexToColor("#344F64"),
+                                      borderRadius: BorderRadius.circular(40)),
+                                  child: Container(
+                                    width: 40,
+                                    height: 40,
+                                    child: Icon(
+                                      Icons.camera_alt,
+                                      color: Converter.hexToColor("#344F64"),
+                                    ),
+                                    decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(40),
+                                        color: Colors.white),
+                                  ),
+                                ),
+                                Text(
+                                  LanguageManager.getText(335),
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(color: Colors.white),
+                                )
+                              ],
+                            ),
+                          ),
+                        ),
                         // pick image
                         InkWell(
                           onTap: () {
+                            print('here_tap on gallery');
                             pickImage(ImageSource.gallery);
                           },
                           child: Container(
@@ -663,6 +721,9 @@ class _LiveChatState extends State<LiveChat>  with WidgetsBindingObserver {
                     },
                     controller: controller,
                     keyboardType: TextInputType.multiline,
+                    maxLines: 6,
+                    minLines: 1,
+                    textDirection: LanguageManager.getTextDirection(),
                     decoration: InputDecoration(
                         border: InputBorder.none,
                         contentPadding:
@@ -1372,74 +1433,77 @@ class _LiveChatState extends State<LiveChat>  with WidgetsBindingObserver {
         children: [
           Expanded(
             child: Container(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                textDirection: direction,
-                children: [
-                  Container(
-                    width: 50,
-                    height: 50,
-                    decoration: BoxDecoration(
-                        image: DecorationImage(
-                            image: CachedNetworkImageProvider(Globals.correctLink(isFromSender
-                                ? user["avatar"]
-                                : UserManager.currentUser("avatar")))),
-                        borderRadius: BorderRadius.circular(50),
-                        color: Converter.hexToColor("#F2F2F2")),
-                  ),
-                  Container(
-                    width: 4,
-                  ),
-                  Expanded(
-                    child: Column(
-                      textDirection: direction,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          alignment: direction == TextDirection.rtl
-                              ? Alignment.centerRight
-                              : Alignment.centerLeft,
-                          child: ConstrainedBox(
-                            constraints: BoxConstraints(minWidth: 40),
-                            child: Container(
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(6),
-                                child: CachedNetworkImage(
-                                    imageUrl: item['message'].toString()),
+              child:InkWell(
+                onTap : (){ Navigator.push(context, MaterialPageRoute(builder: (_) => OpenImage(url: item['message'].toString(),)));},
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  textDirection: direction,
+                  children: [
+                    Container(
+                      width: 50,
+                      height: 50,
+                      decoration: BoxDecoration(
+                          image: DecorationImage(
+                              image: CachedNetworkImageProvider(Globals.correctLink(isFromSender
+                                  ? user["avatar"]
+                                  : UserManager.currentUser("avatar")))),
+                          borderRadius: BorderRadius.circular(50),
+                          color: Converter.hexToColor("#F2F2F2")),
+                    ),
+                    Container(
+                      width: 4,
+                    ),
+                    Expanded(
+                      child: Column(
+                        textDirection: direction,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            alignment: direction == TextDirection.rtl
+                                ? Alignment.centerRight
+                                : Alignment.centerLeft,
+                            child: ConstrainedBox(
+                              constraints: BoxConstraints(minWidth: 40),
+                              child: Container(
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(6),
+                                  child: CachedNetworkImage(
+                                      imageUrl: item['message'].toString()),
+                                ),
+                                padding: EdgeInsets.all(4),
+                                decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(10),
+                                    color: isFromSender
+                                        ? Converter.hexToColor("#F2F2F2")
+                                        : Converter.hexToColor("#03a9f4")),
                               ),
-                              padding: EdgeInsets.all(4),
-                              decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(10),
-                                  color: isFromSender
-                                      ? Converter.hexToColor("#F2F2F2")
-                                      : Converter.hexToColor("#03a9f4")),
                             ),
                           ),
-                        ),
-                        Row(
-                          textDirection: direction,
-                          children: [
-                            !isFromSender
-                                ? SvgPicture.asset(
-                                    "assets/icons/double_check.svg",
-                                    color: item["seen"] == 1
-                                        ? Colors.blue
-                                        : Colors.grey,
-                                  )
-                                : Container(),
-                            Container(
-                              width: 5,
-                            ),
-                            Text(Converter.getRealTime(item['created_at'],
-                                timeOnly: true,
-                                noDelay: true,
-                                formatterPattron: "HH:mm"))
-                          ],
-                        )
-                      ],
+                          Row(
+                            textDirection: direction,
+                            children: [
+                              !isFromSender
+                                  ? SvgPicture.asset(
+                                      "assets/icons/double_check.svg",
+                                      color: item["seen"] == 1
+                                          ? Colors.blue
+                                          : Colors.grey,
+                                    )
+                                  : Container(),
+                              Container(
+                                width: 5,
+                              ),
+                              Text(Converter.getRealTime(item['created_at'],
+                                  timeOnly: true,
+                                  noDelay: true,
+                                  formatterPattron: "HH:mm"))
+                            ],
+                          )
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
             flex: 3,
@@ -1558,80 +1622,7 @@ class _LiveChatState extends State<LiveChat>  with WidgetsBindingObserver {
     });
   }
 
-  void phoneCall() {
-    if (user['phone'] != null) {
-      launch("tel:" + user['phone']);
-    } else {
-      Alert.show(
-          context,
-          Container(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  children: [
-                    InkWell(
-                      onTap: () {
-                        if (Alert.publicClose != null)
-                          Alert.publicClose();
-                        else
-                          Navigator.pop(context);
-                      },
-                      child: Icon(
-                        FlutterIcons.close_ant,
-                        size: 24,
-                      ),
-                    )
-                  ],
-                ),
-                Container(
-                  height: 10,
-                ),
-                Text(
-                  LanguageManager.getText(52),
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  textAlign: TextAlign.center,
-                ),
-                Container(
-                  height: 15,
-                ),
-                Container(
-                  margin: EdgeInsets.only(top: 10, bottom: 15),
-                  child: Row(
-                    textDirection: LanguageManager.getTextDirection(),
-                    children: [
-                      Expanded(
-                        child: InkWell(
-                          onTap: () {},
-                          child: Container(
-                            width: 90,
-                            height: 45,
-                            alignment: Alignment.center,
-                            child: Text(
-                              LanguageManager.getText(75),
-                              style: TextStyle(color: Colors.white),
-                            ),
-                            decoration: BoxDecoration(
-                                boxShadow: [
-                                  BoxShadow(
-                                      color: Colors.black.withAlpha(15),
-                                      spreadRadius: 2,
-                                      blurRadius: 2)
-                                ],
-                                borderRadius: BorderRadius.circular(8),
-                                color: Converter.hexToColor("#344f64")),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                )
-              ],
-            ),
-          ),
-          type: AlertType.WIDGET);
-    }
-  }
+
 
   void sendTypingNotifyer() {
     typingNotifyer = true;
@@ -1860,6 +1851,7 @@ class _LiveChatState extends State<LiveChat>  with WidgetsBindingObserver {
       sendImage(pickedFile);
     } catch (e) {
       // error
+      print('here_pickImage: $e');
     }
   }
 

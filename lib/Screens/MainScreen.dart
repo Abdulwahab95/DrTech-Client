@@ -6,9 +6,11 @@ import 'package:dr_tech/Config/Globals.dart';
 import 'package:dr_tech/Models/LanguageManager.dart';
 import 'package:dr_tech/Models/UserManager.dart';
 import 'package:dr_tech/Pages/Conversations.dart';
+import 'package:dr_tech/Pages/FeatureSubscribe.dart';
 import 'package:dr_tech/Pages/JoinRequest.dart';
 import 'package:dr_tech/Pages/Login.dart';
 import 'package:dr_tech/Pages/Orders.dart';
+import 'package:dr_tech/Pages/Subscription.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -24,17 +26,23 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
 
-  int count = UserManager.currentUser('chat_not_seen').isNotEmpty? int.parse(UserManager.currentUser('chat_not_seen')) : 0;
+  int count = checkCount();
+  bool isSubscribe = checkSubscribe();
 
   @override
   void initState() {
-    Globals.updateChatCount = ()
-    {
+    Globals.updateChatCount = () {
       if(mounted)
         setState(() {
-          count = UserManager.currentUser('chat_not_seen').isNotEmpty? int.parse(UserManager.currentUser('chat_not_seen')) : 0;
+          count = checkCount();
         });
     };
+    // Globals.updateVisitableSubscribe = () {
+    //   if(mounted)
+    //     setState(() {
+    //       isSubscribe = checkSubscribe();
+    //     });
+    // };
     super.initState();
   }
 
@@ -67,12 +75,20 @@ class _MainScreenState extends State<MainScreen> {
           : goLogin();
     }));
 
+
+
+    // if(isSubscribe)
+      items.add(createServices("info", 40, () {
+        Navigator.push(
+            context, MaterialPageRoute(builder: (_) => UserManager.isSubscribe()? Subscription() : FeatureSubscribe()));
+      }));
+    // else
+    //   items.add(createServices("bell", 45, () { // الإشعارات
+    //     widget.goToNotification();
+    //   }));
+
     items.add(createServices(FlutterIcons.server_fea, 61, () { // سجل كمزود خدمة
       Navigator.push(context, MaterialPageRoute(builder: (_) => JoinRequest()));
-    }));
-
-    items.add(createServices("bell", 45, () { // الإشعارات
-      widget.goToNotification();
     }));
 
     items.add(createServices(FlutterIcons.share_fea, 64, () { // شارك التطبيق
@@ -101,10 +117,7 @@ class _MainScreenState extends State<MainScreen> {
     //       context, MaterialPageRoute(builder: (_) => UserFavoritProducts()));
     // }));
     // items.add(createServices("sharing", 39, () {}));
-    // // items.add(createServices("info", 40, () {
-    // //   Navigator.push(
-    // //       context, MaterialPageRoute(builder: (_) => Subscription()));
-    // // }));
+
 
     items.add(Container(
       height: 10,
@@ -244,5 +257,13 @@ class _MainScreenState extends State<MainScreen> {
         children: shearIcons,
       ),
     );
+  }
+
+  static bool checkSubscribe() {
+    return Globals.getSetting('active_subscribe') == '1' && UserManager.currentUser('id').isNotEmpty && UserManager.isSubscribe();
+  }
+
+  static int checkCount() {
+    return UserManager.currentUser('chat_not_seen').isNotEmpty? int.parse(UserManager.currentUser('chat_not_seen')) : 0;
   }
 }

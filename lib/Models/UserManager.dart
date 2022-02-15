@@ -19,6 +19,7 @@ class UserManager {
   static String currentUser(key) {
     if (!UserManager.checkLogin()) return "";
     var v = DatabaseManager.load(key).toString();
+    print('here_currentUser: key: $key, value: $v');
     return v ?? "";
   }
 
@@ -91,5 +92,11 @@ class UserManager {
         }
       }
     }, body: body);
+  }
+
+  static bool isSubscribe(){
+    bool isSubscribe = currentUser('remain_days').isNotEmpty && currentUser('remain_days') != '0';
+    if(isSubscribe) Globals.updateVisitableWhySubscribe();
+    return isSubscribe;
   }
 }

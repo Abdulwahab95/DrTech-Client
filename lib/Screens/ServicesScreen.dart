@@ -70,7 +70,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
             textDirection: LanguageManager.getTextDirection(),
             child: GridView.count(
               mainAxisSpacing: 10,
-              childAspectRatio: 1.45,
+              childAspectRatio: MediaQuery.of(context).size.width > 800 ? 2.45 : 1.45 ,
               primary: false,
               padding: const EdgeInsets.only(right: 10, left: 10),
               crossAxisSpacing: 10,

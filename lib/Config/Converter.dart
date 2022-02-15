@@ -18,6 +18,21 @@ class Converter {
             "ss", s > 9 ? s.toInt().toString() : "0" + s.toInt().toString());
   }
 
+  static String intToTimeWithText(time, {String format: "hh:mm:ss"}) {
+    var b = time % 3600;
+    double h = (time - b) / 3600;
+    double m = (b - (b % 60)) / 60;
+    double s = b - (m * 60);
+
+    return format
+        .replaceAll(
+        "hh", (h > 9 ? h.toInt().toString() : "0" + h.toInt().toString()) + ' ' + LanguageManager.getText((h < 11 && h > 2)? 57 : 345))
+        .replaceAll(
+        "mm", (m > 9 ? m.toInt().toString() : "0" + m.toInt().toString()) + ' ' + LanguageManager.getText((m < 11 && m > 2)? 56 : 344))
+        .replaceAll(
+        "ss", s > 9 ? s.toInt().toString() : "0" + s.toInt().toString());
+  }
+
   static Color hexToColor(String code) {
     try {
       if (code.length == 9) {
@@ -143,12 +158,16 @@ class Converter {
         : item.toString() ?? "";
   }
 
-  static String format(d){
-    if(d.toString().contains('.') && d.toString().length >d.toString().indexOf('.') + 2)
-      return d.toString().substring(0, d.toString().indexOf('.') + 2 );
+  static String format(d, {numAfterComma = 2}){
+    if(d.toString().contains('.') && d.toString().length > (d.toString().indexOf('.') + numAfterComma))
+      return d.toString().substring(0, d.toString().indexOf('.') + numAfterComma );
     else if(!d.toString().contains('.'))
       return d.toString() + '.0';
     else
       return d.toString();
+  }
+
+  static String replaceValue(String text, String to) {
+    return text.replaceFirst('%s', to);
   }
 }

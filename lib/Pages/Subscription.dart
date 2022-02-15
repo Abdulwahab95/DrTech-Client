@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:dr_tech/Components/Alert.dart';
 import 'package:dr_tech/Components/CustomBehavior.dart';
@@ -7,6 +6,7 @@ import 'package:dr_tech/Components/SubscriptionSlider.dart';
 import 'package:dr_tech/Components/TitleBar.dart';
 import 'package:dr_tech/Config/Converter.dart';
 import 'package:dr_tech/Config/Globals.dart';
+import 'package:dr_tech/Config/IconsMap.dart';
 import 'package:dr_tech/Models/LanguageManager.dart';
 import 'package:dr_tech/Models/UserManager.dart';
 import 'package:dr_tech/Network/NetworkManager.dart';
@@ -23,18 +23,13 @@ class Subscription extends StatefulWidget {
 
 class _SubscriptionState extends State<Subscription> {
   bool isLoading = false, isUserSubscriped = false;
-  Map config, data;
+  Map data;
   Map selectedPlan;
   Map coupon;
   String code;
   @override
   void initState() {
-    var validSubscriptions = UserManager.currentUser("validSubscriptions");
-    if (validSubscriptions != "") {
-      loadUserSubscriptions();
-      isUserSubscriped = true;
-    } else
-      loadConfig();
+    loadConfig();
     super.initState();
   }
 
@@ -43,35 +38,26 @@ class _SubscriptionState extends State<Subscription> {
       isLoading = true;
     });
 
-    NetworkManager.httpGet(Globals.baseUrl + "subscription/Config", context, (r) {
+    NetworkManager.httpPost(Globals.baseUrl + "subscribe/data", context, (r) { // subscription/Config
+
       setState(() {
         isLoading = false;
       });
-      if (r['state'] == true) {
-        setState(() {
-          config = r['data'];
-          selectedPlan = config['subscriptions_plans'][r['selected_plan'] ?? 0];
-        });
-      }
-    }, cashable: true);
-  }
 
-  void loadUserSubscriptions() {
-    setState(() {
-      isLoading = true;
-    });
-
-    NetworkManager.httpGet(Globals.baseUrl + "subscription/userSubscriptions",
-        context, (r) {
-      setState(() {
-        isLoading = false;
-      });
       if (r['state'] == true) {
-        setState(() {
-          data = r['data'];
-        });
+
+        data = r['data'];
+        UserManager.updateSp('total_days', data['subscribe']['total_days'].toString());
+        UserManager.updateSp('remain_days', data['subscribe']['remain_days'].toString());
+
+        isUserSubscriped = UserManager.isSubscribe();
+
+        print('here_subscribe: ${UserManager.currentUser('remain_days')}, ${data['subscribe']['remain_days']}');
+        selectedPlan = data['packes'][data['selected_plan'] ?? 0];
+
+        setState(() {});
       }
-    }, cashable: true);
+    }, cachable: false, body: {'user_id': UserManager.currentUser("id")});
   }
 
   void hideKeyBoard() {
@@ -121,24 +107,27 @@ class _SubscriptionState extends State<Subscription> {
       }
     }
     if (price < 0) price = 0;
-    return price.toString();
+    return Converter.format(price.toString(), numAfterComma: 3);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Column(
-          textDirection: LanguageManager.getTextDirection(),
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            TitleBar(() {Navigator.pop(context);}, 40),
-            isUserSubscriped ? getUserSubscription() : getSubscriptionPlans()
-          ]),
+    return WillPopScope(
+      onWillPop: _close,
+      child: Scaffold(
+        body: Column(
+            textDirection: LanguageManager.getTextDirection(),
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              TitleBar(() {_close();}, 40),
+              isUserSubscriped ? getUserSubscription() : getSubscriptionPlans()
+            ]),
+      ),
     );
   }
 
   Widget getUserSubscription() {
-    int totalInSecounds = data["total_days"] * 24 * 60 * 60;
+
     double prograssBarWidth = MediaQuery.of(context).size.width * 0.8;
     return Expanded(
         child: isLoading
@@ -168,7 +157,7 @@ class _SubscriptionState extends State<Subscription> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            LanguageManager.getText(230),
+                            LanguageManager.getText(347),
                             textDirection: LanguageManager.getTextDirection(),
                             style: TextStyle(
                                 color: Converter.hexToColor("#727272"),
@@ -197,7 +186,7 @@ class _SubscriptionState extends State<Subscription> {
                             color: Colors.blueGrey.withAlpha(25)),
                         child: Container(
                           width: prograssBarWidth *
-                              (1 - (data["remain_days"] / totalInSecounds)),
+                              (1 - (data['subscribe']["remain_days"] / totalInSecounds())),
                           height: 12,
                           decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(6),
@@ -208,41 +197,39 @@ class _SubscriptionState extends State<Subscription> {
                     Container(
                       height: 30,
                     ),
-                    InkWell(
-                      onTap: () {
-                        loadConfig();
-                        setState(() {
-                          isUserSubscriped = false;
-                        });
-                      },
-                      child: Container(
-                        width: 200,
-                        height: 46,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                            color: Converter.hexToColor("#344F64"),
-                            borderRadius: BorderRadius.circular(10)),
-                        child: Text(
-                          LanguageManager.getText(231),
-                          style: TextStyle(
-                              color: Colors.white, fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                    ),
+                    // InkWell(
+                    //   onTap: () {
+                    //     loadConfig();
+                    //     setState(() {
+                    //       isUserSubscriped = false;
+                    //     });
+                    //   },
+                    //   child: Container(
+                    //     width: 200,
+                    //     height: 46,
+                    //     alignment: Alignment.center,
+                    //     decoration: BoxDecoration(
+                    //         color: Converter.hexToColor("#344F64"),
+                    //         borderRadius: BorderRadius.circular(10)),
+                    //     child: Text(
+                    //       LanguageManager.getText(231),
+                    //       style: TextStyle(
+                    //           color: Colors.white, fontWeight: FontWeight.bold),
+                    //     ),
+                    //   ),
+                    // ),
                   ],
                 ),
               ));
   }
 
   String getRemainingTime() {
-    if (data["remain_days"] < 24 * 60 * 60) {
-      return Converter.intToTime(data["remain_days"],
-          format:
-              "hh ${LanguageManager.getText(57)} , mm ${LanguageManager.getText(56)}");
+    if (data['subscribe']["remain_days"] < 24 * 60 * 60) {
+      return Converter.intToTimeWithText(data['subscribe']["remain_days"],
+          format: "hh, mm");
     } else
-      return (data["remain_days"] ~/ (24 * 60 * 60)).toString() +
-          " " +
-          LanguageManager.getText(58);
+      return (data['subscribe']["remain_days"] ~/ (24 * 60 * 60)).toString() +
+          " " + LanguageManager.getText(58);
   }
 
   Widget getSubscriptionPlans() {
@@ -260,7 +247,7 @@ class _SubscriptionState extends State<Subscription> {
       child: ListView(
         padding: EdgeInsets.symmetric(horizontal: 0),
         children: [
-          SubscriptionSlider(config["slider"]),
+          SubscriptionSlider(data["sliders"]),
           getContent(),
         ],
       ),
@@ -289,107 +276,133 @@ class _SubscriptionState extends State<Subscription> {
           margin: EdgeInsets.only(left: 10, right: 10),
           decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(15),
-              color: Converter.hexToColor("#F8F8F8")),
+              color: Colors.black.withAlpha(8)),
           child: Wrap(
             textDirection: LanguageManager.getTextDirection(),
             children: getPlans(),
           ),
-        ),
-        createPaymentCard(),
-        createPaymentAppStore(),
-        createPaymentPaypal(),
-        Container(
-          height: 10,
-        ),
-        Container(
-          padding: EdgeInsets.only(left: 5, right: 5),
-          child: Row(
-            textDirection: LanguageManager.getTextDirection(),
-            children: [
-              Text(
-                LanguageManager.getText(86),
-                style: TextStyle(
-                    color: Converter.hexToColor("#707070"),
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold),
-              ),
-              Container(
-                width: 10,
-              ),
-              Text(
-                LanguageManager.getText(87),
-                style: TextStyle(
-                    color: Converter.hexToColor("#2094CD"),
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold),
-              )
-            ],
-          ),
+          // child: Container(
+          //     child: Directionality(
+          //       textDirection: LanguageManager.getTextDirection(),
+          //       child: GridView.count(
+          //         // mainAxisSpacing: 10,
+          //         shrinkWrap: true,
+          //         physics: NeverScrollableScrollPhysics(),
+          //         //childAspectRatio: MediaQuery.of(context).size.width > 800 ? 2.45 : 1.45 ,
+          //         // primary: false,
+          //         // padding: const EdgeInsets.only(right: 10, left: 10),
+          //         crossAxisSpacing: 10,
+          //         crossAxisCount: 2,
+          //         children: getPlans(),
+          //       ),
+          //     )),
         ),
         Container(
-          height: 10,
+          height: 20,
         ),
-        Row(
+        Column(
           textDirection: LanguageManager.getTextDirection(),
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Expanded(
-              child: Container(
-                margin: EdgeInsets.only(left: 10, right: 10, top: 0),
-                padding: EdgeInsets.only(left: 7, right: 7),
-                decoration: BoxDecoration(
-                    color: Converter.hexToColor("#F2F2F2"),
-                    borderRadius: BorderRadius.circular(12)),
-                child: TextField(
-                  onChanged: (t) {
-                    code = t;
-                  },
-                  textDirection: LanguageManager.getTextDirection(),
-                  decoration: InputDecoration(
-                      hintText: "",
-                      hintStyle: TextStyle(color: Colors.grey),
-                      border: InputBorder.none,
-                      hintTextDirection: LanguageManager.getTextDirection(),
-                      contentPadding:
-                          EdgeInsets.symmetric(vertical: 0, horizontal: 0)),
-                ),
-              ),
-            ),
-            InkWell(
-              onTap: () {
-                checkCoupon();
-              },
-              child: Container(
-                width: 120,
-                height: 46,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                    color: Converter.hexToColor("#344F64"),
-                    borderRadius: BorderRadius.circular(10)),
-                child: Text(
-                  LanguageManager.getText(225),
-                  style: TextStyle(
-                      color: Colors.white, fontWeight: FontWeight.bold),
-                ),
-              ),
-            ),
-            Container(
-              width: 20,
-            )
-          ],
+          children: getPaymentMethod(),
         ),
         Container(
-          height: 30,
+          height: 10,
         ),
+        // Container(
+        //   padding: EdgeInsets.only(left: 5, right: 5),
+        //   child: Row(
+        //     textDirection: LanguageManager.getTextDirection(),
+        //     children: [
+        //       Text(
+        //         LanguageManager.getText(86),
+        //         style: TextStyle(
+        //             color: Converter.hexToColor("#707070"),
+        //             fontSize: 14,
+        //             fontWeight: FontWeight.bold),
+        //       ),
+        //       Container(
+        //         width: 10,
+        //       ),
+        //       Text(
+        //         LanguageManager.getText(87),
+        //         style: TextStyle(
+        //             color: Converter.hexToColor("#2094CD"),
+        //             fontSize: 14,
+        //             fontWeight: FontWeight.bold),
+        //       )
+        //     ],
+        //   ),
+        // ),
+        // Container(
+        //   height: 10,
+        // ),
+        // Row(
+        //   textDirection: LanguageManager.getTextDirection(),
+        //   crossAxisAlignment: CrossAxisAlignment.end,
+        //   children: [
+        //     Expanded(
+        //       child: Container(
+        //         margin: EdgeInsets.only(left: 10, right: 10, top: 0),
+        //         padding: EdgeInsets.only(left: 7, right: 7),
+        //         decoration: BoxDecoration(
+        //             color: Converter.hexToColor("#F2F2F2"),
+        //             borderRadius: BorderRadius.circular(12)),
+        //         child: TextField(
+        //           onChanged: (t) {
+        //             code = t;
+        //           },
+        //           textDirection: LanguageManager.getTextDirection(),
+        //           decoration: InputDecoration(
+        //               hintText: "",
+        //               hintStyle: TextStyle(color: Colors.grey),
+        //               border: InputBorder.none,
+        //               hintTextDirection: LanguageManager.getTextDirection(),
+        //               contentPadding:
+        //                   EdgeInsets.symmetric(vertical: 0, horizontal: 0)),
+        //         ),
+        //       ),
+        //     ),
+        //     InkWell(
+        //       onTap: () {
+        //         checkCoupon();
+        //       },
+        //       child: Container(
+        //         width: 120,
+        //         height: 46,
+        //         alignment: Alignment.center,
+        //         decoration: BoxDecoration(
+        //             color: Converter.hexToColor("#344F64"),
+        //             borderRadius: BorderRadius.circular(10)),
+        //         child: Text(
+        //           LanguageManager.getText(225),
+        //           style: TextStyle(
+        //               color: Colors.white, fontWeight: FontWeight.bold),
+        //         ),
+        //       ),
+        //     ),
+        //     Container(
+        //       width: 20,
+        //     )
+        //   ],
+        // ),
+        // Container(
+        //   height: 30,
+        // ),
       ],
     );
   }
 
   List<Widget> getPlans() {
     List<Widget> items = [];
-    if (config["subscriptions_plans"] != null)
-      for (var plan in config["subscriptions_plans"]) {
-        items.add(createSubcriptionsPlan(plan));
+    if (data["packes"] != null)
+      for (var plan in data["packes"]) {
+        // items.add(Text('d'));
+        items.add(Wrap(
+          textDirection: LanguageManager.getTextDirection(),
+          children: [
+            Container(width: MediaQuery.of(context).size.width * 0.05),
+            createSubcriptionsPlan(plan),
+          ],
+        ));
       }
     return items;
   }
@@ -405,7 +418,7 @@ class _SubscriptionState extends State<Subscription> {
       },
       child: Container(
         margin: EdgeInsets.only(bottom: 5),
-        width: MediaQuery.of(context).size.width * 0.5 - 25,
+        width: MediaQuery.of(context).size.width * 0.40 - 25,
         child: Row(
           textDirection: LanguageManager.getTextDirection(),
           children: [
@@ -429,295 +442,13 @@ class _SubscriptionState extends State<Subscription> {
               width: 10,
             ),
             Text(
-              plan['name'],
+              plan[LanguageManager.getDirection() ? "name" :'name_en'],
+              textDirection:  LanguageManager.getTextDirection(),
               style: TextStyle(
                   color: color, fontSize: 18, fontWeight: FontWeight.w600),
             )
           ],
         ),
-      ),
-    );
-  }
-
-  Widget createPaymentCard() {
-    return InkWell(
-      onTap: cartPayment,
-      child: Container(
-        margin: EdgeInsets.all(10),
-        decoration: BoxDecoration(boxShadow: [
-          BoxShadow(
-              color: Colors.black.withAlpha(30),
-              spreadRadius: 2,
-              blurRadius: 2,
-              offset: Offset(0, 1))
-        ], borderRadius: BorderRadius.circular(10), color: Colors.white),
-        child: Stack(
-          children: [
-            Container(
-              padding: EdgeInsets.all(10),
-              child: Row(
-                textDirection: LanguageManager.getTextDirection(),
-                children: [
-                  Container(
-                    width: 50,
-                    height: 50,
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
-                        color: Converter.hexToColor("#F2F2F2")),
-                    child: Icon(FlutterIcons.credit_card_fea,
-                        size: 30, color: Converter.hexToColor("#344F64")),
-                  ),
-                  Container(
-                    width: 20,
-                  ),
-                  Column(
-                    textDirection: LanguageManager.getTextDirection(),
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        LanguageManager.getText(135),
-                        textDirection: LanguageManager.getTextDirection(),
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18,
-                            color: Converter.hexToColor("#2094CD")),
-                      ),
-                      Text(
-                        getRealPrice(selectedPlan["price"]).toString() +
-                            " " +
-                            Globals.getUnit() +
-                            " / " +
-                            selectedPlan["name"],
-                        textDirection: LanguageManager.getTextDirection(),
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            height: 1.3,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                            color: Converter.hexToColor("#424242")),
-                      ),
-                    ],
-                  ),
-                  Expanded(child: Container()),
-                  Container(
-                    padding:
-                        EdgeInsets.only(left: 15, right: 15, top: 2, bottom: 4),
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(15),
-                        color: Converter.hexToColor("#FBEDCD")),
-                    child: Text(
-                      "+" +
-                          selectedPlan["extra_days"].toString() +
-                          " " +
-                          LanguageManager.getText(221),
-                      textDirection: LanguageManager.getTextDirection(),
-                      style: TextStyle(fontSize: 16, color: Colors.black),
-                    ),
-                  ),
-                  Container(
-                    width: 40,
-                    child: Icon(
-                      LanguageManager.getDirection()
-                          ? FlutterIcons.chevron_left_fea
-                          : FlutterIcons.chevron_right_fea,
-                      color: Converter.hexToColor("#2094CD"),
-                    ),
-                  )
-                ],
-              ),
-            ),
-            getCouponBadge()
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget createPaymentPaypal() {
-    return Container(
-      margin: EdgeInsets.all(10),
-      decoration: BoxDecoration(boxShadow: [
-        BoxShadow(
-            color: Colors.black.withAlpha(30),
-            spreadRadius: 2,
-            blurRadius: 2,
-            offset: Offset(0, 1))
-      ], borderRadius: BorderRadius.circular(10), color: Colors.white),
-      child: Stack(
-        children: [
-          Container(
-            padding: EdgeInsets.all(10),
-            child: Row(
-              textDirection: LanguageManager.getTextDirection(),
-              children: [
-                Container(
-                  width: 50,
-                  height: 50,
-                  decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10),
-                      color: Converter.hexToColor("#F2F2F2")),
-                  child: Icon(FlutterIcons.paypal_ent,
-                      size: 30, color: Converter.hexToColor("#344F64")),
-                ),
-                Container(
-                  width: 20,
-                ),
-                Column(
-                  textDirection: LanguageManager.getTextDirection(),
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      LanguageManager.getText(224),
-                      textDirection: LanguageManager.getTextDirection(),
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
-                          color: Converter.hexToColor("#2094CD")),
-                    ),
-                    Text(
-                      getRealPrice(selectedPlan["price"]).toString() +
-                          " " +
-                          Globals.getUnit() +
-                          " / " +
-                          selectedPlan["name"],
-                      textDirection: LanguageManager.getTextDirection(),
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                          height: 1.3,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                          color: Converter.hexToColor("#424242")),
-                    ),
-                  ],
-                ),
-                Expanded(child: Container()),
-                Container(
-                  padding:
-                      EdgeInsets.only(left: 15, right: 15, top: 2, bottom: 4),
-                  decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(15),
-                      color: Converter.hexToColor("#FBEDCD")),
-                  child: Text(
-                    "+" +
-                        selectedPlan["extra_days"].toString() +
-                        " " +
-                        LanguageManager.getText(221),
-                    textDirection: LanguageManager.getTextDirection(),
-                    style: TextStyle(fontSize: 16, color: Colors.black),
-                  ),
-                ),
-                Container(
-                  width: 40,
-                  child: Icon(
-                    LanguageManager.getDirection()
-                        ? FlutterIcons.chevron_left_fea
-                        : FlutterIcons.chevron_right_fea,
-                    color: Converter.hexToColor("#2094CD"),
-                  ),
-                )
-              ],
-            ),
-          ),
-          getCouponBadge()
-        ],
-      ),
-    );
-  }
-
-  Widget createPaymentAppStore() {
-    return Container(
-      margin: EdgeInsets.all(10),
-      decoration: BoxDecoration(boxShadow: [
-        BoxShadow(
-            color: Colors.black.withAlpha(30),
-            spreadRadius: 2,
-            blurRadius: 2,
-            offset: Offset(0, 1))
-      ], borderRadius: BorderRadius.circular(10), color: Colors.white),
-      child: Stack(
-        children: [
-          Container(
-            padding: EdgeInsets.all(10),
-            child: Row(
-              textDirection: LanguageManager.getTextDirection(),
-              children: [
-                Container(
-                  width: 50,
-                  height: 50,
-                  decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10),
-                      color: Converter.hexToColor("#F2F2F2")),
-                  child: Icon(
-                      Platform.isIOS
-                          ? FlutterIcons.app_store_ent
-                          : FlutterIcons.google_play_ent,
-                      size: 30,
-                      color: Converter.hexToColor("#344F64")),
-                ),
-                Container(
-                  width: 20,
-                ),
-                Column(
-                  textDirection: LanguageManager.getTextDirection(),
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      LanguageManager.getText(Platform.isIOS ? 222 : 223),
-                      textDirection: LanguageManager.getTextDirection(),
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
-                          color: Converter.hexToColor("#2094CD")),
-                    ),
-                    Text(
-                      getRealPrice(selectedPlan["price"]).toString() +
-                          " " +
-                          Globals.getUnit() +
-                          " / " +
-                          selectedPlan["name"],
-                      textDirection: LanguageManager.getTextDirection(),
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                          height: 1.3,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                          color: Converter.hexToColor("#424242")),
-                    ),
-                  ],
-                ),
-                Expanded(child: Container()),
-                Container(
-                  padding:
-                      EdgeInsets.only(left: 15, right: 15, top: 2, bottom: 4),
-                  decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(15),
-                      color: Converter.hexToColor("#FBEDCD")),
-                  child: Text(
-                    "+" +
-                        selectedPlan["extra_days"].toString() +
-                        " " +
-                        LanguageManager.getText(221),
-                    textDirection: LanguageManager.getTextDirection(),
-                    style: TextStyle(fontSize: 16, color: Colors.black),
-                  ),
-                ),
-                Container(
-                  width: 40,
-                  child: Icon(
-                    LanguageManager.getDirection()
-                        ? FlutterIcons.chevron_left_fea
-                        : FlutterIcons.chevron_right_fea,
-                    color: Converter.hexToColor("#2094CD"),
-                  ),
-                )
-              ],
-            ),
-          ),
-          getCouponBadge()
-        ],
       ),
     );
   }
@@ -743,7 +474,7 @@ class _SubscriptionState extends State<Subscription> {
         : Container();
   }
 
-  void cartPayment() async {
+  void cartPayment(Map pay) async {
     String url = [
       Globals.baseUrl,
       "payment/subscription/?user=",
@@ -756,15 +487,145 @@ class _SubscriptionState extends State<Subscription> {
       coupon != null ? coupon['id'] : "0"
     ].join();
 
+    url = [Globals.baseUrl ,
+      'subscribe/payment/?method=', pay['method'],
+      '&price=', selectedPlan[pay['price_type']?? "price_usd"],
+      '&days=', selectedPlan['days'],
+      '&user_id=', UserManager.currentUser('id'),
+    ].join();
+
     var results = await Navigator.push(
         context,
         MaterialPageRoute(
-            builder: (_) => WebBrowser(url, LanguageManager.getText(228))));
-    print(results);
-    if (results['status'] == false) {
-      if (results['message'] != null) {
-        Alert.show(context, Converter.getRealText(results['message']));
-      }
+            builder: (_) => WebBrowser(url, LanguageManager.getText(343) + ' ' + pay[LanguageManager.getDirection() ? "name" : "name_en"])));
+
+    print('here_pay_from web results: $results');
+    if (results.toString() == 'success') {
+      isUserSubscriped = true;
+      loadConfig();
     }
   }
+
+
+  List<Widget> getPaymentMethod() {
+    List<Widget> items = [];
+    if (data["pay_methods"] != null)
+      for (var pay in data["pay_methods"]) {
+        print('getPaymentMethod: $pay');
+        items.add(createPayment(pay));
+      }
+    return items;
+  }
+
+  createPayment(pay) {
+    return InkWell(
+      onTap: () => cartPayment(pay),
+      child: Container(
+        margin: EdgeInsets.all(10),
+        decoration: BoxDecoration(boxShadow: [
+          BoxShadow(
+              color: Colors.black.withAlpha(30),
+              spreadRadius: 2,
+              blurRadius: 2,
+              offset: Offset(0, 1))
+        ], borderRadius: BorderRadius.circular(10), color: Colors.white),
+        child: Stack(
+          children: [
+            Container(
+              padding: EdgeInsets.all(10),
+              child: Row(
+                textDirection: LanguageManager.getTextDirection(),
+                children: [
+                  Container(
+                    width: 50,
+                    height: 50,
+                    decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                        color: Converter.hexToColor("#F2F2F2")),
+                    child: Icon(
+                        IconsMap.from[pay['icon_name']],
+                        size: 30, color: Converter.hexToColor("#344F64")),
+                  ),
+                  Container(
+                    width: 20,
+                  ),
+                  Column(
+                    textDirection: LanguageManager.getTextDirection(),
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        pay[LanguageManager.getDirection() ? "name" : "name_en"],//LanguageManager.getText(135),
+                        textDirection: LanguageManager.getTextDirection(),
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                            color: Converter.hexToColor("#2094CD")),
+                      ),
+                      Text(
+                        getRealPrice(selectedPlan[pay['price_type']?? "price_usd"]).toString() +
+                            " " +
+                            (LanguageManager.getDirection()? pay['unit'] : pay['unit_en']) +
+                            " / " +
+                            selectedPlan[LanguageManager.getDirection() ? "name" : "name_en"],
+                        textDirection: LanguageManager.getTextDirection(),
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                            height: 1.3,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                            color: Converter.hexToColor("#424242")),
+                      ),
+                    ],
+                  ),
+                  Expanded(child: Container()),
+                  selectedPlan["extra_days"] != null
+                      ? Container(
+                    padding:
+                    EdgeInsets.only(left: 15, right: 15, top: 2, bottom: 4),
+                    decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(15),
+                        color: Converter.hexToColor("#FBEDCD")),
+                    child: Text(
+                      "+" +
+                          selectedPlan["extra_days"].toString() +
+                          " " +
+                          LanguageManager.getText(221),
+                      textDirection: LanguageManager.getTextDirection(),
+                      style: TextStyle(fontSize: 16, color: Colors.black),
+                    ),
+                  )
+                      :Container(),
+                  Container(
+                    width: 40,
+                    child: Icon(
+                      LanguageManager.getDirection()
+                          ? FlutterIcons.chevron_left_fea
+                          : FlutterIcons.chevron_right_fea,
+                      color: Converter.hexToColor("#2094CD"),
+                    ),
+                  )
+                ],
+              ),
+            ),
+            getCouponBadge()
+          ],
+        ),
+      ),
+    );
+  }
+
+
+  int totalInSecounds() {
+    return data['subscribe']["total_days"] * 24 * 60 * 60;
+  }
+
+  Future<bool> _close() async{
+    if(isUserSubscriped) {
+      Navigator.of(context).pop('success');
+    } else {
+      Navigator.pop(context);
+    }
+  }
+
 }

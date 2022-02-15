@@ -3,9 +3,11 @@ import 'package:dr_tech/Components/CustomBehavior.dart';
 import 'package:dr_tech/Components/CustomLoading.dart';
 import 'package:dr_tech/Components/EmptyPage.dart';
 import 'package:dr_tech/Components/TitleBar.dart';
+import 'package:dr_tech/Components/phoneCall.dart';
 import 'package:dr_tech/Config/Converter.dart';
 import 'package:dr_tech/Config/Globals.dart';
 import 'package:dr_tech/Models/LanguageManager.dart';
+import 'package:dr_tech/Models/UserManager.dart';
 import 'package:dr_tech/Network/NetworkManager.dart';
 import 'package:dr_tech/Pages/OrderDetails.dart';
 import 'package:flutter/material.dart';
@@ -29,6 +31,7 @@ class _OrdersState extends State<Orders> with TickerProviderStateMixin {
   // Map<String, int> pages = {};
   List data = [];
   bool isLoading = false;
+  bool isSubscribe = UserManager.isSubscribe();
 
   @override
   void initState() {
@@ -255,21 +258,7 @@ class _OrdersState extends State<Orders> with TickerProviderStateMixin {
                     textDirection: LanguageManager.getTextDirection(),
                     children: [
                       Expanded(
-                        child: item["service_name"].toString().length < 25 &&
-                                item["service_name"].toString().length > 18
-                            ? FittedBox(
-                                fit: BoxFit.contain,
-                                child: Text(
-                                  item["service_name"].toString(),
-                                  textDirection:
-                                      LanguageManager.getTextDirection(),
-                                  style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold,
-                                      color: Converter.hexToColor("#2094CD")),
-                                ),
-                              )
-                            : Text(
+                        child: Text(
                                 item["service_name"].toString(),
                                 textDirection:
                                     LanguageManager.getTextDirection(),
@@ -391,24 +380,43 @@ class _OrdersState extends State<Orders> with TickerProviderStateMixin {
                   Container(height: 7),
 
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      textDirection: LanguageManager.getTextDirection(),
                       children: [
 
-                    Container(height: 10),
+                    Expanded(
+                      child: Column(children: [// Call Action
+                            customButton(96, () => PhoneCall.call(item['number_phone'], context, allowNotSubscribe : item["status"] == 'PENDING' || item["status"] == 'WAITING' || isSubscribe)
+                            , FlutterIcons.phone_in_talk_mco, FlutterIcons.phone_in_talk_mco),
+                            Text(
+                              LanguageManager.getText(item["status"] == 'PENDING' || item["status"] == 'WAITING' || isSubscribe ? 358 : 348),
+                              style: TextStyle(
+                                  color: item["status"] == 'PENDING' || item["status"] == 'WAITING'  || isSubscribe? Colors.green : Colors.black,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w600),
+                            ),
+                          ]),
+                    ),
 
-                    item["status"] == 'PENDING' || item["status"] == 'WAITING'
-                    ? customButton(96, () {// Call Action
-                      launch('tel:${item['number_phone']}');
-                    }, FlutterIcons.phone_in_talk_mco, FlutterIcons.phone_in_talk_mco)
-                    : Container(),
+                    Container(width: 10),
 
-                    customButton(117, () {// Chat Action
-                      Navigator.push(context, MaterialPageRoute(builder: (_) => LiveChat(item['provider_id'].toString())));
-                    }, FlutterIcons.message_text_mco, FlutterIcons.message_reply_text_mco),
+                    Expanded(
+                      child: Column(children: [customButton(117, () {// Chat Action
+                            Navigator.push(context, MaterialPageRoute(builder: (_) => LiveChat(item['provider_id'].toString())));
+                          }, FlutterIcons.message_text_mco, FlutterIcons.message_reply_text_mco, reversColor: true),
+                            Text(
+                              LanguageManager.getText(348),
+                              style: TextStyle(
+                                  color: Colors.transparent,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w600),
+                            ),
+                          ]),
+                    ),
 
+                    Container(width: 10),
                   ]),
 
-                  Container(height: 10),
+                  Container(height: 3),
 
                 ],
               ),
@@ -419,11 +427,11 @@ class _OrdersState extends State<Orders> with TickerProviderStateMixin {
     );
   }
 
-  customButton(int text, Function() onTap, IconData arIc, IconData enIc) {
+  customButton(int text, Function() onTap, IconData arIc, IconData enIc, {bool reversColor = false}) {
     return InkWell(
       onTap: onTap,
       child: Container(
-        width: (LanguageManager.getText(text).length * (LanguageManager.getDirection()? 15 : 10)).toDouble(),
+        // width: (LanguageManager.getText(text).length * (LanguageManager.getDirection()? 15 : 10)).toDouble(),
         height: 34,
         alignment: Alignment.center,
         child: Row(
@@ -433,16 +441,17 @@ class _OrdersState extends State<Orders> with TickerProviderStateMixin {
             Icon(
               LanguageManager.getDirection()? arIc:enIc,
               size: 18,
-              color: Colors.white,
+              color: !reversColor? Colors.white : Converter.hexToColor("#344f64"),
             ),
             Container(width: 7.5),
             Text(
               LanguageManager.getText(text),
-              style: TextStyle(color: Colors.white),
+              style: TextStyle(color: !reversColor? Colors.white : Converter.hexToColor("#344f64")),
             ),
           ],
         ),
         decoration: BoxDecoration(
+            border: Border.all(color: reversColor? Converter.hexToColor("#344f64") : Colors.white),
             boxShadow: [
               BoxShadow(
                   color: Colors.black.withAlpha(15),
@@ -450,7 +459,7 @@ class _OrdersState extends State<Orders> with TickerProviderStateMixin {
                   blurRadius: 2)
             ],
             borderRadius: BorderRadius.circular(8),
-            color: Converter.hexToColor("#344f64")),
+            color: !reversColor? Converter.hexToColor("#344f64") : Colors.white),
       ),
     );
   }

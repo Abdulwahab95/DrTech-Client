@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dr_tech/Components/Alert.dart';
 import 'package:dr_tech/Components/TitleBar.dart';
+import 'package:dr_tech/Components/phoneCall.dart';
 import 'package:dr_tech/Config/Converter.dart';
 import 'package:dr_tech/Config/Globals.dart';
 import 'package:dr_tech/Models/LanguageManager.dart';
@@ -188,27 +189,28 @@ class _OrderDetailsState extends State<OrderDetails> {
                           Row(
                             textDirection: LanguageManager.getTextDirection(),
                             children: [
-                              // InkWell(
-                              //   onTap: () {
-                              //     // Chat action
-                              //   },
-                              //   child: Icon(
-                              //     FlutterIcons.phone_faw,
-                              //     color: Converter.hexToColor("#344F64"),
-                              //     size: 22,
-                              //   ),
-                              // ),
-                              // Container(
-                              //   width: 5,
-                              // ),
+                              InkWell(
+                                 onTap: () => PhoneCall.call(widget.data['number_phone'], context, allowNotSubscribe: (widget.data["status"] == 'PENDING' || widget.data["status"] == 'WAITING' || UserManager.isSubscribe())),
+                                child: Container(
+                                  padding: EdgeInsets.all(5),
+                                  child: Icon(
+                                    FlutterIcons.phone_faw,
+                                    color: Converter.hexToColor("#344F64"),
+                                    size: 22,
+                                  ),
+                                ),
+                              ),
                               InkWell(
                                 onTap: () {
                                   Navigator.push(context, MaterialPageRoute(builder: (_) => LiveChat(widget.data['provider_id'].toString())));
                                 },
-                                child: Icon(
-                                  Icons.message,
-                                  color: Converter.hexToColor("#344F64"),
-                                  size: 22,
+                                child: Container(
+                                  padding: EdgeInsets.all(5),
+                                  child: Icon(
+                                    Icons.message,
+                                    color: Converter.hexToColor("#344F64"),
+                                    size: 22,
+                                  ),
                                 ),
                               ),
                             ],
