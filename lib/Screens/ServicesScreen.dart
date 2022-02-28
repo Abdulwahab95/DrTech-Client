@@ -51,11 +51,11 @@ class _ServicesScreenState extends State<ServicesScreen> {
     for (var item in servicesApi) {
 
       newWidget.add(createService(item["icon"], Globals.isRtl()? item["name"]: item["name_en"], () {
-          if (item["target"].toString() == "0") {
+          if (item["target"].toString() == "store") {
             Navigator.push(context, MaterialPageRoute(builder: (_) => Store()));
             return;
           }
-          if (item["target"].toString() == "1") {
+          if (item["target"].toString() == "online_services") {
             Navigator.push(context, MaterialPageRoute(builder: (_) => OnlineServices()));
             return;
           }

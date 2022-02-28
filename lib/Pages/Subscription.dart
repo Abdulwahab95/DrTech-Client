@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'dart:io';
 
 import 'package:dr_tech/Components/Alert.dart';
 import 'package:dr_tech/Components/CustomBehavior.dart';
@@ -13,6 +15,8 @@ import 'package:dr_tech/Network/NetworkManager.dart';
 import 'package:dr_tech/Pages/WebBrowser.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
+import 'package:flutter_inapp_purchase/flutter_inapp_purchase.dart';
+import 'package:flutter_inapp_purchase/modules.dart';
 
 class Subscription extends StatefulWidget {
   const Subscription();
@@ -22,15 +26,38 @@ class Subscription extends StatefulWidget {
 }
 
 class _SubscriptionState extends State<Subscription> {
-  bool isLoading = false, isUserSubscriped = false;
-  Map data;
-  Map selectedPlan;
-  Map coupon;
-  String code;
+  bool isLoading = false, isUserSubscriped = false, isLoadingIosPacket = false, isProcessingIos = false;
+  Map data, selectedPlan, coupon;
+  List iosPlan = [];
+  List<IAPItem> itemsIos;
+  String code = '', priceSelectedPlan = '', currencySelectedPlan = '', localizedPriceSelectedPlan = '';
+
+  StreamSubscription _purchaseUpdatedSubscription;
+  StreamSubscription _purchaseErrorSubscription;
+  StreamSubscription _conectionSubscription;
+
   @override
   void initState() {
     loadConfig();
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    if (_conectionSubscription != null) {
+      _conectionSubscription.cancel();
+      _conectionSubscription = null;
+    }
+    // await FlutterInappPurchase.instance.finalize();
+    if (_purchaseUpdatedSubscription != null) {
+      _purchaseUpdatedSubscription.cancel();
+      _purchaseUpdatedSubscription = null;
+    }
+    if (_purchaseErrorSubscription != null) {
+      _purchaseErrorSubscription.cancel();
+      _purchaseErrorSubscription = null;
+    }
+    super.dispose();
   }
 
   void loadConfig() {
@@ -39,10 +66,6 @@ class _SubscriptionState extends State<Subscription> {
     });
 
     NetworkManager.httpPost(Globals.baseUrl + "subscribe/data", context, (r) { // subscription/Config
-
-      setState(() {
-        isLoading = false;
-      });
 
       if (r['state'] == true) {
 
@@ -55,9 +78,105 @@ class _SubscriptionState extends State<Subscription> {
         print('here_subscribe: ${UserManager.currentUser('remain_days')}, ${data['subscribe']['remain_days']}');
         selectedPlan = data['packes'][data['selected_plan'] ?? 0];
 
-        setState(() {});
+        if(!isUserSubscriped) Globals.setSetting('active_subscribe',data['active_subscribe']);
+
+        if(Platform.isIOS && !isUserSubscriped) initPlatformState();
+        else setState(() {isLoading = false;});
+      } else{
+        setState(() {
+          isLoading = false;
+        });
       }
     }, cachable: false, body: {'user_id': UserManager.currentUser("id")});
+  }
+
+  Future<void> initPlatformState() async {
+    var result = await FlutterInappPurchase.instance
+        .initialize()
+        .catchError((e) {
+      print(e.toString());
+    })
+        .whenComplete(() {
+      print('complete connect billing');
+      Timer(Duration(seconds: 1), ()
+      {
+        loadIosPacket();
+      });
+    });
+
+    print('result: $result');
+
+    // If the widget was removed from the tree while the asynchronous platform
+    // message was in flight, we want to discard the reply rather than calling
+    // setState to update our non-existent appearance.
+    if (!mounted) return;
+
+    // setState(() {
+    //   _platformVersion = platformVersion;
+    // });
+
+
+    _conectionSubscription =
+        FlutterInappPurchase.connectionUpdated.listen((connected) {
+          print('connected: $connected');
+        });
+
+    _purchaseUpdatedSubscription =
+        FlutterInappPurchase.purchaseUpdated.listen((productItem) {
+          Alert.endLoading();
+          print('purchase-updated:');
+          print('purchase-updated: ${productItem.productId}');
+          print('purchase-updated: $productItem');
+          if(isProcessingIos){
+            isProcessingIos = false;
+            var body = {
+              'user_id'    : UserManager.currentUser('id'),
+              'amount'     : priceSelectedPlan,
+              'currency'   : currencySelectedPlan,
+              'method'     : 'iosIAP',
+              'payment_id' : productItem.transactionId.toString(),
+              'is_paid'    : '1',
+              'total_days' : selectedPlan['days'].toString(),
+              'die_at'     : DateTime.now().add(Duration(days: int.parse(selectedPlan['days'].toString()))).toString().split('.')[0].toString(),
+            };
+            insertDatabaseIPA(body);
+          }
+        });
+
+    _purchaseErrorSubscription =
+        FlutterInappPurchase.purchaseError.listen((purchaseError) {
+          Alert.endLoading();
+          print('purchase-error:');
+          print('purchase-error: ${purchaseError.message}');
+          print('purchase-error: $purchaseError');
+          isProcessingIos = false;
+        });
+  }
+
+  loadIosPacket() async {
+    isLoadingIosPacket = true;
+
+    List<String> _productLists = List<String>.from((data["packes"] as List).map((e) => e['apple_id']));
+
+    itemsIos = await FlutterInappPurchase.instance.getProducts(_productLists)
+        .catchError((e)  {isLoadingIosPacket = false; setState(() {}); print('loadIosPacket: ' + e.toString());})
+        .whenComplete(() {print('loadIosPacket: $itemsIos');})
+        .then((value) {
+          for (var item in value) {
+            iosPlan.add(data["packes"].firstWhere((e) => e['apple_id'] == item.productId));
+            print('loadIosPacket: ${item.productId}, ${data["packes"].firstWhere((e) => e['apple_id'] == item.productId)}');
+          }
+          if(iosPlan.isNotEmpty){
+            selectedPlan = iosPlan[data['selected_plan'] ?? 0];
+            var iAPItem = value.firstWhere((e) => e.productId == selectedPlan['apple_id']);
+            priceSelectedPlan = iAPItem.price;
+            currencySelectedPlan = iAPItem.currency;
+            localizedPriceSelectedPlan = iAPItem.localizedPrice;
+          }
+          setState(() {isLoading = false; isLoadingIosPacket = false;});
+          return value;
+      });
+
   }
 
   void hideKeyBoard() {
@@ -234,10 +353,39 @@ class _SubscriptionState extends State<Subscription> {
 
   Widget getSubscriptionPlans() {
     return Expanded(
-        child: isLoading
+        child: isLoading || isLoadingIosPacket
             ? Center(
                 child: CustomLoading(),
               )
+            : Globals.getSetting('active_subscribe') != '1'
+            ? Column(children: [
+              Expanded(
+                flex: 10,
+                child: Container(
+                  width: 300,
+                  decoration: BoxDecoration(
+                      image: DecorationImage(
+                          image: AssetImage("assets/images/soon.png"))),
+                ),
+              ),
+              Spacer(flex: 1,),
+              Expanded(
+                flex: 9,
+                child: Container(
+                  padding: EdgeInsets.only(left: 10, right: 10, top: 5, bottom: 0),
+                  child: Text(
+                    LanguageManager.getText(293), // قريباً...
+                    textDirection: LanguageManager.getTextDirection(),
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Converter.hexToColor("#303030")),
+                  ),
+                ),
+              )
+
+            ],)
             : getConntetItems());
   }
 
@@ -279,32 +427,17 @@ class _SubscriptionState extends State<Subscription> {
               color: Colors.black.withAlpha(8)),
           child: Wrap(
             textDirection: LanguageManager.getTextDirection(),
-            children: getPlans(),
+            children: Platform.isIOS? (isLoadingIosPacket? [Container()]: getPlansIos()) : getPlans(),
           ),
-          // child: Container(
-          //     child: Directionality(
-          //       textDirection: LanguageManager.getTextDirection(),
-          //       child: GridView.count(
-          //         // mainAxisSpacing: 10,
-          //         shrinkWrap: true,
-          //         physics: NeverScrollableScrollPhysics(),
-          //         //childAspectRatio: MediaQuery.of(context).size.width > 800 ? 2.45 : 1.45 ,
-          //         // primary: false,
-          //         // padding: const EdgeInsets.only(right: 10, left: 10),
-          //         crossAxisSpacing: 10,
-          //         crossAxisCount: 2,
-          //         children: getPlans(),
-          //       ),
-          //     )),
         ),
         Container(
           height: 20,
         ),
-        Column(
+        Platform.isIOS? Container() : Column(
           textDirection: LanguageManager.getTextDirection(),
           children: getPaymentMethod(),
         ),
-        Container(
+        Platform.isIOS? Container() : Container(
           height: 10,
         ),
         // Container(
@@ -387,6 +520,27 @@ class _SubscriptionState extends State<Subscription> {
         // Container(
         //   height: 30,
         // ),
+      Platform.isIOS?
+        Container(
+          alignment: Alignment.bottomCenter,
+          child: InkWell(
+            onTap: subscribeIos,
+            child: Container(
+              width: 320,
+              height: 56,
+              alignment: Alignment.center,
+              margin: EdgeInsets.only(bottom: 10),
+              child: Text(
+                LanguageManager.getText(75) + (Platform.isIOS? '  ($localizedPriceSelectedPlan) '  : ''),
+                textDirection: LanguageManager.getTextDirection(),
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.normal),
+              ),
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  color: Converter.hexToColor("#344F64")),
+            ),
+          ),
+        ) : Container(),
       ],
     );
   }
@@ -407,13 +561,36 @@ class _SubscriptionState extends State<Subscription> {
     return items;
   }
 
+  List<Widget> getPlansIos() {
+    List<Widget> items = [];
+    if (itemsIos != null)
+      for (var plan in iosPlan) {
+        // items.add(Text(plan.productId));
+        items.add(Wrap(
+          textDirection: LanguageManager.getTextDirection(),
+          children: [
+            Container(width: MediaQuery.of(context).size.width * 0.05),
+            createSubcriptionsPlan(plan),
+          ],
+        ));
+      }
+    return items;
+  }
+
   Widget createSubcriptionsPlan(plan) {
     bool isActive = selectedPlan == plan;
     Color color = isActive ? Colors.green : Converter.hexToColor("#344F64");
     return InkWell(
       onTap: () {
         setState(() {
+          print('here_click_selectedPlan: $selectedPlan');
           selectedPlan = plan;
+          if(Platform.isIOS) {
+            var iAPItem = itemsIos.firstWhere((e) => e.productId == selectedPlan['apple_id']);
+            priceSelectedPlan = iAPItem.price;
+            currencySelectedPlan = iAPItem.currency;
+            localizedPriceSelectedPlan = iAPItem.localizedPrice;
+          }
         });
       },
       child: Container(
@@ -475,19 +652,7 @@ class _SubscriptionState extends State<Subscription> {
   }
 
   void cartPayment(Map pay) async {
-    String url = [
-      Globals.baseUrl,
-      "payment/subscription/?user=",
-      UserManager.currentUser(Globals.authoKey),
-      "&plan_id=",
-      selectedPlan["id"],
-      "&method=",
-      "2",
-      "&coupon_id=",
-      coupon != null ? coupon['id'] : "0"
-    ].join();
-
-    url = [Globals.baseUrl ,
+    String url = [Globals.baseUrl ,
       'subscribe/payment/?method=', pay['method'],
       '&price=', selectedPlan[pay['price_type']?? "price_usd"],
       '&days=', selectedPlan['days'],
@@ -505,7 +670,6 @@ class _SubscriptionState extends State<Subscription> {
       loadConfig();
     }
   }
-
 
   List<Widget> getPaymentMethod() {
     List<Widget> items = [];
@@ -615,7 +779,6 @@ class _SubscriptionState extends State<Subscription> {
     );
   }
 
-
   int totalInSecounds() {
     return data['subscribe']["total_days"] * 24 * 60 * 60;
   }
@@ -626,6 +789,39 @@ class _SubscriptionState extends State<Subscription> {
     } else {
       Navigator.pop(context);
     }
+  }
+
+
+  void subscribeIos() {
+    isProcessingIos = true;
+    Alert.startLoading(context);
+    print('here_subscribeIos: $selectedPlan');
+    FlutterInappPurchase.instance.requestPurchase(selectedPlan['apple_id'])
+        .catchError((e) {
+          Alert.endLoading();
+          Alert.show(context, e.toString());
+          print('subscribeIos_catchError: $e');
+        });
+  }
+
+  void insertDatabaseIPA(Map<String, String> body) {
+    Alert.startLoading(context);
+    NetworkManager.httpPost(Globals.baseUrl + "subscribe/iap_ios", context ,(r) {
+      Alert.endLoading();
+      if (r['state']) {
+        print('here_insertDatabaseIPA: done');
+        data = r['data'];
+        UserManager.updateSp('total_days', data['subscribe']['total_days'].toString());
+        UserManager.updateSp('remain_days', data['subscribe']['remain_days'].toString());
+
+        isUserSubscriped = UserManager.isSubscribe();
+
+        print('here_subscribe: ${UserManager.currentUser('remain_days')}, ${data['subscribe']['remain_days']}');
+        selectedPlan = data['packes'][data['selected_plan'] ?? 0];
+
+        setState(() {});
+      }
+    }, body: body);
   }
 
 }

@@ -33,7 +33,7 @@ class _OnlineServicesState extends State<OnlineServices> {
     });
 
     NetworkManager.httpGet(
-        Globals.baseUrl + "/services/loadSubCatigories?search=$search", context, (r) {
+        Globals.baseUrl + "service/categories/6", context, (r) { // /services/loadSubCatigories?search=$search
       setState(() {
         isLoading = false;
       });
@@ -82,7 +82,7 @@ class _OnlineServicesState extends State<OnlineServices> {
                       NotificationIcon(),
                     ],
                   ))),
-          getSearch(),
+          // getSearch(),
           Expanded(
               child: isLoading ? Center(child: CustomLoading()) : getBody())
         ]));
@@ -141,11 +141,11 @@ class _OnlineServicesState extends State<OnlineServices> {
         },
         child: Container(
           height: MediaQuery.of(context).size.width * 0.46,
-          margin: EdgeInsets.only(left: 15, right: 15, top: 10, bottom: 10),
-          alignment: Alignment.bottomRight,
+          margin: EdgeInsets.only(left: 0, right: 0, top: 0, bottom: 0),
+          alignment: Alignment.center,
           decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(15),
+              // borderRadius: BorderRadius.circular(15),
               boxShadow: [
                 BoxShadow(
                     offset: Offset(0, 2),
@@ -155,29 +155,47 @@ class _OnlineServicesState extends State<OnlineServices> {
               ],
               image: DecorationImage(
                   fit: BoxFit.cover,
+                  // colorFilter: ColorFilter.mode(Colors.white, BlendMode.darken),
                   image: CachedNetworkImageProvider(Globals.correctLink(item['image'])))),
           child: Container(
-            margin: EdgeInsets.all(10),
+            width: double.infinity,
+            color: Colors.blueGrey.withAlpha(100),
+            // margin: EdgeInsets.all(10),
+            // alignment: Alignment.center,
             child: Text(
               item["name"],
+              textAlign: TextAlign.center,
               style: TextStyle(
-                  fontSize: 16,
+                  fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: Converter.hexToColor("#2094CD")),
+                  color: Colors.white),//Converter.hexToColor("#2094CD")
             ),
           ),
         ),
       ));
     }
 
-    return Container(
-      child: ScrollConfiguration(
-        behavior: CustomBehavior(),
-        child: ListView(
-          padding: EdgeInsets.symmetric(vertical: 0, horizontal: 0),
-          children: items,
-        ),
+    return Directionality(
+      textDirection: LanguageManager.getTextDirection(),
+      child: GridView.count(
+        mainAxisSpacing: 10,
+        childAspectRatio: MediaQuery.of(context).size.width > 800 ? 2.45 : 1.45 ,
+        primary: false,
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
+        crossAxisSpacing: 10,
+        crossAxisCount: 2,
+        children: items,
       ),
     );
+
+    // return Container(
+    //   child: ScrollConfiguration(
+    //     behavior: CustomBehavior(),
+    //     child: ListView(
+    //       padding: EdgeInsets.symmetric(vertical: 0, horizontal: 0),
+    //       children: items,
+    //     ),
+    //   ),
+    // );
   }
 }

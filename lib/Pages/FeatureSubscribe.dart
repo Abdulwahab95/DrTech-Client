@@ -68,10 +68,9 @@ class _FeatureSubscribeState extends State<FeatureSubscribe> {
   Widget getContentItems() {
     return ScrollConfiguration(
       behavior: CustomBehavior(),
-      child: Column(
-        // padding: EdgeInsets.symmetric(horizontal: 0),
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: getFeatures()
+      child: ListView(
+        padding: EdgeInsets.symmetric(horizontal: 0, vertical: 0),
+        children: getFeatures(),
       ),
     );
   }
@@ -79,22 +78,26 @@ class _FeatureSubscribeState extends State<FeatureSubscribe> {
   getFeatures() {
     List<Widget> children = [];
 
-    children.add(Expanded(
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [subscribeNow()],
-    )));
+    children.add(Container(
+      margin: EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [subscribeNow()],
+    ),
+    ));
 
     if (config['Features'] != "")
       for (var item in config['Features']) {
         children.add(Container(padding: EdgeInsets.symmetric(vertical: 5, horizontal: 5),child: Text('${item[0]}', textDirection: LanguageManager.getTextDirection(),textAlign: item[2] == '1'? TextAlign.center : TextAlign.start,)));
       }
 
-    children.add(Expanded(
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [subscribeNow()],
-        )));
+    children.add(Container(
+      margin: EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [subscribeNow()],
+      ),
+    ));
 
     return children;
   }

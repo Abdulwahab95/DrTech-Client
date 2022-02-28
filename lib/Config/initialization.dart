@@ -56,7 +56,7 @@ class Initialization {
       // print('settings: ${r['config'].r['settings']}');
       if (r['state'] == true) {
         // read configs
-        Globals.config = r['data']['config'];
+        Globals.config   = r['data']['config'];
         Globals.settings = Globals.getConfig('settings');
         LanguageManager.init(r['data']['localisation']);
         dataSetup();

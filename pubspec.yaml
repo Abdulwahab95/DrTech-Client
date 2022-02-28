@@ -38,6 +38,7 @@ dependencies:
   popup_menu: ^1.0.5
   cupertino_icons: ^1.0.2
   number_to_word_arabic: ^0.0.8
+  flutter_inapp_purchase: ^5.1.2
 
 dev_dependencies:
   flutter_test:

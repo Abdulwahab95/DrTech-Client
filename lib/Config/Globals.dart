@@ -94,6 +94,14 @@ class Globals {
     return '';
   }
 
+  static void setSetting(name, value){
+    for (var item in Globals.settings) {
+      if(item['name'] == name){
+        item['value'] = value;
+      }
+    }
+  }
+
   static String getWebViewUrl() {
     String url = "";
     for (var item in settings) {
@@ -213,6 +221,7 @@ class Globals {
   }
 
   static checkNullOrEmpty(item) {
+    print('here_checkNullOrEmpty: $item');
     return !(item == null || (item != null && (item.toString().isEmpty || item.toString().toLowerCase() == 'null')) );
   }
 

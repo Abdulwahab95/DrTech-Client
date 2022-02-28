@@ -73,28 +73,6 @@ class _ServiceState extends State<Service> {
   void load() {
     print('here_apply_filter: $applyFilter');
     timerLock = false;
-    // var r = {
-    //   "data": [
-    //     {
-    //       "id": "1",
-    //       "provider_name": "عبدالوهاب عبدالهادي",
-    //       "thumbnail": "https://drtech.takiddine.co/images/avatars/2021-10-16_12:58:21.956758.jpeg",
-    //       "phone": "965095703",
-    //       "provider_services_title": "سوفت وير لكل الهواتف	",
-    //       "city_id": "8363",
-    //       "street_id": "633",
-    //       "stars": 5,
-    //       "city_name": "مكة",
-    //       "street_name": "الرياض",
-    //       "verified": true,
-    //       "available": true
-    //     }
-    //   ]
-    // };
-    //       setState(() {
-    //         data[0] = r['data'];
-    //       });
-    //----------------------
 
     if (isLoading) return;
     setState(() {
