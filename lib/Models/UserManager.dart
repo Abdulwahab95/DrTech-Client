@@ -19,7 +19,7 @@ class UserManager {
   static String currentUser(key) {
     if (!UserManager.checkLogin()) return "";
     var v = DatabaseManager.load(key).toString();
-    print('here_currentUser: key: $key, value: $v');
+    //print('here_currentUser: key: $key, value: $v');
     return v ?? "";
   }
 
@@ -46,7 +46,7 @@ class UserManager {
       try {
         if (userInfo['state'] == true) {
           UserManager.proccess(userInfo['data']);
-          Globals.updateNotificationCount();
+          Globals.updateBottomBarNotificationCount();
           Globals.updateChatCount();
           Globals.updateConversationCount();
           if (callBack != null) callBack();

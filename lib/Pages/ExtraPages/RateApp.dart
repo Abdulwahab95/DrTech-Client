@@ -96,8 +96,8 @@ class _RateAppState extends State<RateApp> {
 
     Alert.startLoading(context);
     NetworkManager.httpPost(Globals.baseUrl + "application/rate/create", context ,(r) { // user/app
-      Alert.endLoading();
       if (r['state'] == true) {
+        Alert.endLoading();
         Navigator.pop(context);
         Alert.show(
             context,

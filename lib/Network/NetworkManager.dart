@@ -50,7 +50,7 @@ class NetworkManager {
           log('onError: $e');
 
         if (context != null) {
-          Alert.endLoading();
+          Alert.endLoading(context2: context);
           if (json.decode(responseBody)['state'] != null && json.decode(responseBody)['state'] == false) {
             if (json.decode(responseBody)['message_code'] != null && json.decode(responseBody)['message_code'] != -1)
               Alert.show(context, LanguageManager.getText(int.parse(json.decode(responseBody)['message_code'].toString())));
@@ -75,9 +75,9 @@ class NetworkManager {
       log("-----------END--------");
 
       if (body != null)
-        response = await http.post(Uri.parse(url), headers: header, body: body);
+        response = await http.post(Uri.parse(url), headers: header, body: body).catchError((e) {processError(e, context);});
       else
-        response = await http.get(Uri.parse(url), headers: header);
+        response = await http.get(Uri.parse(url), headers: header).catchError((e) {processError(e, context);});
 
       // log
       try{
@@ -99,7 +99,7 @@ class NetworkManager {
       if (statusCode < 200 || statusCode > 400) {
         if (onError != null) onError("Error while fetching data");
         if(context != null) {
-          Alert.endLoading();
+          Alert.endLoading(context2: context);
           Alert.show(context, response.body.toString().length == 0? '$url\n--------\nstatusCode: ${response.statusCode}': response.body);
         }
         throw new Exception("Error while fetching data");
@@ -113,7 +113,7 @@ class NetworkManager {
 
         var r = json.decode(response.body);
         // r['message_code'] = 10;
-          Alert.endLoading();
+          Alert.endLoading(context2: context);
         if(notInAllow(r, url)){
           if (r['message_code'] != null && r['message_code'] != -1)
             Alert.show(context, LanguageManager.getText(int.parse(r['message_code'].toString())));
@@ -148,6 +148,7 @@ class NetworkManager {
       "url": url
     }).then((payload) {
       if (payload == null) return;
+      //Alert.endLoading(context2: context);
       callbackBody(payload['data'], payload['storageKey']);
     });
 
@@ -244,6 +245,15 @@ class NetworkManager {
       return false;
     else
       return true;
+  }
+
+  void processError(e, context) {
+    Alert.endLoading(context2: context);
+    Alert.show(context,
+        ((e.toString().contains('errno = 7')
+            && LanguageManager.getText(362) != 'NO_LANGUAGE_FOUND'
+            && LanguageManager.getText(362) != 'NO_TEXT_FOUND'
+        )? LanguageManager.getText(362) : Converter.getRealText(e)));
   }
 }
 

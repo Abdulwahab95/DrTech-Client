@@ -13,6 +13,7 @@ import 'package:dr_tech/Pages/ExtraPages/Terms.dart';
 import 'package:dr_tech/Pages/FrequentlyAskedQuestions.dart';
 import 'package:dr_tech/Pages/JoinRequest.dart';
 import 'package:dr_tech/Pages/ProfileEdit.dart';
+import 'package:dr_tech/Pages/Transactions.dart';
 import 'package:dr_tech/main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
@@ -135,11 +136,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ],
             ),
           ),
-          getProfileItem(FlutterIcons.list_fea, 59, () {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => Terms()));
+          UserManager.currentUser("id").isEmpty
+          ? Container()
+          : getProfileItem(FlutterIcons.attach_money_mdi, 185, () {
+            Navigator.push(context, MaterialPageRoute(builder: (_) => Transactions()));
           }),
           getProfileItem(FlutterIcons.info_fea, 60, () {
             Navigator.push(context, MaterialPageRoute(builder: (_) => About()));
+          }),
+          getProfileItem(FlutterIcons.list_fea, 59, () {
+            Navigator.push(context, MaterialPageRoute(builder: (_) => Terms()));
           }),
           getProfileItem(FlutterIcons.server_fea, 61, () {
             Navigator.push(

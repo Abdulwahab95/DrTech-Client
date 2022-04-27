@@ -12,11 +12,11 @@ import 'Alert.dart';
 
 class PhoneCall{
 
-static void call(String phone, BuildContext context, {allowNotSubscribe: false}) {
+static void call(String phone, BuildContext context, {allowNotSubscribe: false, bool isOnlineService = false, bool showDirectOrderButton = false, Function() onTapDirect}) {
 
   if(UserManager.currentUser("id").isEmpty) {
       Alert.show(context, LanguageManager.getText(298),
-          premieryText: LanguageManager.getText(30), onYes: () {
+          premieryText: LanguageManager.getText(30), onYes: () { // تسجيل الدخول
         Navigator.push(context, MaterialPageRoute(builder: (_) => Login()));
       }, onYesShowSecondBtn: false);
       return;
@@ -51,7 +51,8 @@ static void call(String phone, BuildContext context, {allowNotSubscribe: false})
                   height: 10,
                 ),
                 Text(
-                  LanguageManager.getText(52),
+                  LanguageManager.getText(isOnlineService ? 52 : 408),
+                  textDirection: LanguageManager.getTextDirection(),
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   textAlign: TextAlign.center,
                 ),
@@ -75,6 +76,40 @@ static void call(String phone, BuildContext context, {allowNotSubscribe: false})
                             alignment: Alignment.center,
                             child: Text(
                               LanguageManager.getText(75),
+                              style: TextStyle(color: Colors.white),
+                            ),
+                            decoration: BoxDecoration(
+                                boxShadow: [
+                                  BoxShadow(
+                                      color: Colors.black.withAlpha(15),
+                                      spreadRadius: 2,
+                                      blurRadius: 2)
+                                ],
+                                borderRadius: BorderRadius.circular(8),
+                                color: Converter.hexToColor("#344f64")),
+                          ),
+                        ),
+                      ),
+                      !showDirectOrderButton ? Container() :
+                      Container(
+                        width: 15,
+                      ),
+                      !showDirectOrderButton ? Container() :
+                      Expanded(
+                        child: InkWell(
+                          onTap: () {
+                            Navigator.pop(context);
+                            if(onTapDirect != null)
+                              onTapDirect();
+                            else
+                              Navigator.push(context, MaterialPageRoute(builder: (_) => FeatureSubscribe()));
+                          },
+                          child: Container(
+                            width: 90,
+                            height: 45,
+                            alignment: Alignment.center,
+                            child: Text(
+                              LanguageManager.getText(409),
                               style: TextStyle(color: Colors.white),
                             ),
                             decoration: BoxDecoration(

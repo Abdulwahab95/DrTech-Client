@@ -203,9 +203,9 @@ class _OrderSetRatingState extends State<OrderSetRating> {
     body["rated_by"] = UserManager.currentUser("id");
     Alert.startLoading(context);
     NetworkManager.httpPost(Globals.baseUrl + "ratings/create", context ,(r) { // orders/rate
-      Alert.endLoading();
       if (r['state'] == true) {
-        Navigator.of(context, rootNavigator: true)..pop(true)..pop(true);
+        Alert.endLoading();
+        Navigator.of(context).pop(true);
       }
     }, body: body);
   }

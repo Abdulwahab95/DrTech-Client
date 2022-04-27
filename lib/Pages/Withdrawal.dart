@@ -4,11 +4,13 @@ import 'package:dr_tech/Components/TitleBar.dart';
 import 'package:dr_tech/Config/Converter.dart';
 import 'package:dr_tech/Config/Globals.dart';
 import 'package:dr_tech/Models/LanguageManager.dart';
+import 'package:dr_tech/Models/UserManager.dart';
 import 'package:dr_tech/Network/NetworkManager.dart';
-import 'package:dr_tech/Pages/EnterCodeWithdrawal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_icons/flutter_icons.dart';
+
+import 'Home.dart';
 
 class Withdrawal extends StatefulWidget {
   final double balance;
@@ -75,15 +77,15 @@ class _WithdrawalState extends State<Withdrawal> {
                         margin: EdgeInsets.only(left: 10, right: 10, top: 10),
                         padding: EdgeInsets.only(left: 7, right: 7),
                         decoration: BoxDecoration(
-                            color: Converter.hexToColor(errors['email'] != null
+                            color: Converter.hexToColor(errors['paypal_email'] != null
                                 ? "#E9B3B3"
                                 : "#F2F2F2"),
                             borderRadius: BorderRadius.circular(12)),
                         child: TextField(
                           onChanged: (t) {
-                            body["email"] = t;
+                            body["paypal_email"] = t;
                             setState(() {
-                              errors["email"] = null;
+                              errors["paypal_email"] = null;
                             });
                           },
                           style: TextStyle(
@@ -152,7 +154,7 @@ class _WithdrawalState extends State<Withdrawal> {
                           Container(
                             width: 10,
                           ),
-                          Text(Globals.getUnit(),
+                          Text(Globals.getUnit(isUsd: 'online_services'),
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                   fontSize: 18,
@@ -198,18 +200,23 @@ class _WithdrawalState extends State<Withdrawal> {
     setState(() {
       errors = {};
     });
-    if (body["email"] == null || !body["email"].toString().contains("@")) {
+    if (body["paypal_email"] == null || !body["paypal_email"].toString().contains("@")) {
       setState(() {
-        errors['email'] = "_";
+        errors['paypal_email'] = "_";
       });
     }
-    if (body["amount"] == null || int.parse(body["amount"]) > widget.balance) {
+    if (body["amount"] == null || double.parse(body["amount"]) > widget.balance) {
       setState(() {
         errors['amount'] = "_";
       });
+      if(body["amount"] != null && double.parse(body["amount"]) > widget.balance)
+        Alert.show(context, LanguageManager.getText(373));
     }
 
     if (errors.isNotEmpty) return;
+
+    body["user_id"]  =  UserManager.currentUser('id');
+    body["currency"] =  'USD';
 
     Alert.show(
         context,
@@ -240,8 +247,8 @@ class _WithdrawalState extends State<Withdrawal> {
               ),
               Text(
                 LanguageManager.getText(197)
-                    .replaceAll("*", body["amount"] + "  " + Globals.getUnit())
-                    .replaceAll("#", body["email"]),
+                    .replaceAll("*", body["amount"] + "  " + Globals.getUnit(isUsd: 'online_services'))
+                    .replaceAll("#", body["paypal_email"]),
                 textDirection: LanguageManager.getTextDirection(),
                 textAlign: TextAlign.center,
                 style: TextStyle(
@@ -256,31 +263,6 @@ class _WithdrawalState extends State<Withdrawal> {
                 textDirection: LanguageManager.getTextDirection(),
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  InkWell(
-                    onTap: () {
-                      Navigator.pop(context);
-                      withdrawalConferm();
-                    },
-                    child: Container(
-                      width: MediaQuery.of(context).size.width * 0.4,
-                      height: 45,
-                      alignment: Alignment.center,
-                      child: Text(
-                        LanguageManager.getText(194),
-                        style: TextStyle(
-                            color: Colors.white, fontWeight: FontWeight.bold),
-                      ),
-                      decoration: BoxDecoration(
-                          boxShadow: [
-                            BoxShadow(
-                                color: Colors.black.withAlpha(15),
-                                spreadRadius: 2,
-                                blurRadius: 2)
-                          ],
-                          borderRadius: BorderRadius.circular(8),
-                          color: Converter.hexToColor("#2094CD")),
-                    ),
-                  ),
                   InkWell(
                     onTap: () {
                       Alert.publicClose();
@@ -304,7 +286,32 @@ class _WithdrawalState extends State<Withdrawal> {
                           borderRadius: BorderRadius.circular(8),
                           color: Converter.hexToColor("#344f64")),
                     ),
-                  )
+                  ),
+                  InkWell(
+                    onTap: () {
+                      Navigator.pop(context);
+                      withdrawalConfirm();
+                    },
+                    child: Container(
+                      width: MediaQuery.of(context).size.width * 0.4,
+                      height: 45,
+                      alignment: Alignment.center,
+                      child: Text(
+                        LanguageManager.getText(194),
+                        style: TextStyle(
+                            color: Colors.white, fontWeight: FontWeight.bold),
+                      ),
+                      decoration: BoxDecoration(
+                          boxShadow: [
+                            BoxShadow(
+                                color: Colors.black.withAlpha(15),
+                                spreadRadius: 2,
+                                blurRadius: 2)
+                          ],
+                          borderRadius: BorderRadius.circular(8),
+                          color: Converter.hexToColor("#2094CD")),
+                    ),
+                  ),
                 ],
               )
             ],
@@ -320,17 +327,18 @@ class _WithdrawalState extends State<Withdrawal> {
     }
   }
 
-  void withdrawalConferm() {
+  void withdrawalConfirm() {
     Alert.startLoading(context);
-    NetworkManager.httpPost(Globals.baseUrl + "user/withdrawalRequisite", context ,(r) {
-      Alert.endLoading();
-      if (r['state'] == true) {
-        Navigator.push(context,
-            MaterialPageRoute(builder: (_) => EnterCodeWithdrawal(body)));
-      }
-      if (r["message"] != null) {
-        Alert.show(context, Converter.getRealText(r['message']));
+    NetworkManager.httpPost(Globals.baseUrl + "withdraw", context ,(r) { // user/withdrawalRequisite
+      if(r['state'] == true){
+        Alert.endLoading(context2: context);
+        Alert.show(context, Converter.getRealText(r['message_code']),
+            onYesShowSecondBtn: false, isDismissible: false, onYes: () {
+              Navigator.pushReplacement(context,
+                  MaterialPageRoute(builder: (_) => Home(page: 3)));
+            });
       }
     }, body: body);
   }
+
 }

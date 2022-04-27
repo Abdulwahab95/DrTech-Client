@@ -25,6 +25,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
   @override
   void initState() {
+    Globals.reloadPageNotificationLive = (){
+      if(mounted) load();
+    };
     load();
     super.initState();
   }
@@ -59,7 +62,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       setState(() {});
       if (r['state'] == true) {
         UserManager.updateSp('not_seen', 0);
-        Globals.updateNotificationCount();
+        Globals.updateBottomBarNotificationCount();
       }
     });
   }
@@ -93,7 +96,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                     child: Icon(
                       IconsMap.from[item["icon"]],
                       size: 24,
-                      color: Converter.hexToColor("#2094CD"),
+                      color: Converter.hexToColor(item['icon_color']?? "#2094CD"),
                     ),
                     decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(5),

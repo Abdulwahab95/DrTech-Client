@@ -1,7 +1,7 @@
 name: dr_tech
 description: A new Flutter project. 
 publish_to: 'none' 
-version: 5.0.27+77
+version: 5.0.28+78
 environment:
   sdk: ">=2.7.0 <3.0.0"
 

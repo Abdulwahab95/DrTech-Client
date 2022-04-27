@@ -4,10 +4,12 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dr_tech/Components/Alert.dart';
 import 'package:dr_tech/Components/CustomBehavior.dart';
 import 'package:dr_tech/Components/CustomLoading.dart';
-import 'package:dr_tech/Components/RateStars.dart';
+import 'package:dr_tech/Components/PhoneCall.dart';
+import 'package:dr_tech/Components/RateStarsStateless.dart';
 import 'package:dr_tech/Components/Recycler.dart';
+import 'package:dr_tech/Components/SoonWidget.dart';
+import 'package:dr_tech/Components/SplashEffect.dart';
 import 'package:dr_tech/Components/TitleBar.dart';
-import 'package:dr_tech/Components/phoneCall.dart';
 import 'package:dr_tech/Config/Converter.dart';
 import 'package:dr_tech/Config/Globals.dart';
 import 'package:dr_tech/Models/LanguageManager.dart';
@@ -23,6 +25,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'FeatureSubscribe.dart';
 import 'Login.dart';
 import 'Offers.dart';
+import 'ProviderProfile.dart';
 import 'ServicePage.dart';
 
 class OnlineEngineerServices extends StatefulWidget {
@@ -33,7 +36,7 @@ class OnlineEngineerServices extends StatefulWidget {
   _OnlineEngineerServicesState createState() => _OnlineEngineerServicesState();
 }
 
-class _OnlineEngineerServicesState extends State<OnlineEngineerServices> {
+class _OnlineEngineerServicesState extends State<OnlineEngineerServices> with WidgetsBindingObserver{
   Map<String, String> filters = {};
   Map selectOptions = {};
   Map<String, dynamic> selectedFilters = {};
@@ -48,14 +51,29 @@ class _OnlineEngineerServicesState extends State<OnlineEngineerServices> {
 
   @override
   void initState() {
+    WidgetsBinding.instance.addObserver(this);
     getConfig();
     load();
     super.initState();
   }
 
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      print('here_resumed_from: OnlineEngineerServices');
+      load();
+    }
+  }
+
   void getConfig() {
     NetworkManager.httpPost(
-        Globals.baseUrl + "services/filters", context, (r) { // ?target=${widget.target}
+        Globals.baseUrl + "services/filters/online", context, (r) { // ?target=${widget.target}
       if (r['state'] == true) {
         setState(() {
           configFilters = r['data'];
@@ -65,7 +83,7 @@ class _OnlineEngineerServicesState extends State<OnlineEngineerServices> {
           showSelectStreet  = CCS[2] == '1'?   true : false;
         });
       }
-    }, cachable: true, body: {'service_id': '6'}); // widget.target.toString()
+    }, cachable: true, body: {'service_id': '6', 'service_categories_id' : widget.target.toString()}); // //widget.target.toString()
   }
 
   void load() {
@@ -79,11 +97,11 @@ class _OnlineEngineerServicesState extends State<OnlineEngineerServices> {
 
     if(filters.isEmpty && UserManager.currentUser('country_id').isNotEmpty)
       filters['country_id_with_null'] = UserManager.currentUser('country_id');
-      filters['service_categories_id'] = widget.target.toString();
+    filters['service_categories_id'] = widget.target.toString();
+    filters['target'] = 'online_services';
 
 
-    NetworkManager.httpPost(   // services/load?target=${widget.target}&page$page
-        Globals.baseUrl + "services/details/6", context, (r) {
+    NetworkManager.httpPost(Globals.baseUrl + "services/details/6", context, (r) {// services/load?target=${widget.target}&page$page
       if (r['state'] == true) {
         setState(() {
           isLoading = false;
@@ -111,17 +129,17 @@ class _OnlineEngineerServicesState extends State<OnlineEngineerServices> {
         children: [
           Column(
             children: [
-              TitleBar(() {
-                Navigator.pop(context);
-              }, widget.title),
+              TitleBar(() {Navigator.pop(context);}, widget.title),
               data.isNotEmpty && data[0].length != 0 || applyFilter
                   ? getSearchAndFilter()
                   : Container(),
               Expanded(
                   child: isLoading
                       ? Center(child: CustomLoading())
-                      : getEngineersList())
-            ],
+                      : data.isNotEmpty && data[0].length != 0
+                          ? getEngineersList()
+                          : SoonWidget())
+                ],
           ),
           !isFilterOpen
               ? Container()
@@ -289,12 +307,11 @@ class _OnlineEngineerServicesState extends State<OnlineEngineerServices> {
           "street", keyId:'street_id',
           message: LanguageManager.getText(113))); // يرجي اختيار المدينة اولا قبل اختيار الحي
 
-    items.add(getFilterOption(283, configFilters['Categories'], "Categories", keyId: 'service_categories_id'));
-
-    items.add(getSelectedOptions('subcategories',  keyId: 'service_subcategories_id'));
+    items.add(getFilterOption(283, configFilters['subcategories'], "subcategories", keyId: 'service_subcategories_id'));
     items.add(getSelectedOptions('service_sub_2',  keyId: 'sub2_id'));
     items.add(getSelectedOptions('service_sub_3',  keyId: 'sub3_id'));
     items.add(getSelectedOptions('service_sub_4',  keyId: 'sub4_id'));
+    items.add(getFilterOption(275, configFilters['ratings'], "ratings",  keyId: 'ratings'));
     // items.add(getFilterOption(109, configFilters['device'], "device"));
     // items.add(getFilterOption(
     //     110,
@@ -455,34 +472,7 @@ class _OnlineEngineerServicesState extends State<OnlineEngineerServices> {
   Widget getEngineersList() {
     // print('here_getEngineersList: ${data[0].length}');
     if(data[0].length == 0 && !applyFilter){
-      return Column(children: [
-        Expanded(
-          flex: 10,
-          child: Container(
-            width: 300,
-            decoration: BoxDecoration(
-                image: DecorationImage(
-                    image: AssetImage("assets/images/soon.png"))),
-          ),
-        ),
-        Spacer(flex: 1,),
-        Expanded(
-          flex: 9,
-          child: Container(
-            padding: EdgeInsets.only(left: 10, right: 10, top: 5, bottom: 0),
-            child: Text(
-              LanguageManager.getText(293), // قريباً...
-              textDirection: LanguageManager.getTextDirection(),
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Converter.hexToColor("#303030")),
-            ),
-          ),
-        )
-
-      ],);
+      return SoonWidget();
     }
     List<Widget> items = [];
 
@@ -521,25 +511,25 @@ class _OnlineEngineerServicesState extends State<OnlineEngineerServices> {
   }
 
   Widget getEngineerUi(item) {
+    List skills = item['provider_skills'] ?? [];
+    if(skills.isEmpty)
+      skills.add({"id": "0", "name": LanguageManager.getText(424), "name_en": LanguageManager.getText(424)});
 
-    List cct   =
-    (item != null && (item as Map).isNotEmpty && (item as Map).containsKey('country_city_street') && item['country_city_street'] != null)
-        ? item['country_city_street']           .split('-').map(int.parse).toList()
-        : [0,0,0];
     List cssss =
     (item != null && (item as Map).isNotEmpty && (item as Map).containsKey('cat_subcat_sub1_sub2_sub3_sub4') && item['cat_subcat_sub1_sub2_sub3_sub4'] != null)
         ? item['cat_subcat_sub1_sub2_sub3_sub4'].split('-').map(int.parse).toList()
         : [0,0,0,0,0];
 
 
-    print('here_cct: $cct, cssss: $cssss');
+    //print('here_cct: $cct, cssss: $cssss');
 
     return Stack(
+      alignment: LanguageManager.getDirection()? Alignment.topRight : Alignment.topLeft,
       textDirection: LanguageManager.getReversTextDirection(),
       children: [
         Container(
           padding: EdgeInsets.only(top: 7, right: 4, left: 4, bottom: 4),
-          margin: EdgeInsets.all(10),
+          margin: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
           decoration: BoxDecoration(boxShadow: [
             BoxShadow(
                 color: Colors.black.withAlpha(15), spreadRadius: 2, blurRadius: 2)
@@ -548,7 +538,7 @@ class _OnlineEngineerServicesState extends State<OnlineEngineerServices> {
             onTap: () {
               Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => ServicePage(item['id']))); // EngineerPage(item['id'], widget.target)
+                  MaterialPageRoute(builder: (_) => ServicePage(item['id'], isOnlineService: true))); // EngineerPage(item['id'], widget.target)
             },
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -562,10 +552,29 @@ class _OnlineEngineerServicesState extends State<OnlineEngineerServices> {
                   alignment: Alignment.center,
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
+                      item['active'] == true
+                          ? Text(
+                        LanguageManager.getText(100) ,//+ '/' + item['id'].toString() + '/' + item['Country_name'] + '/' + item['service_id'].toString(),
+                        style: TextStyle(
+                            fontSize: 18,
+                            height: 1.2,
+                            color: Colors.green,
+                            fontWeight: FontWeight.normal),
+                      )
+                          : Text(
+                        LanguageManager.getText(101) ,//+ '/' + item['id'].toString() + '/' + item['Country_name'] + '/' + item['service_id'].toString(),
+                        style: TextStyle(
+                            fontSize: 18,
+                            height: 1.2,
+                            color: Colors.red,
+                            fontWeight: FontWeight.normal),
+                      ),
+                      Container(height: 8),
                       Container(
-                        width: 100,
-                        height: 100,
+                        width: 86,
+                        height: 86,
                         alignment: !LanguageManager.getDirection()
                             ? Alignment.bottomRight
                             : Alignment.bottomLeft,
@@ -589,24 +598,7 @@ class _OnlineEngineerServicesState extends State<OnlineEngineerServices> {
                             borderRadius: BorderRadius.circular(10),
                             color: Converter.hexToColor("#F2F2F2")),
                       ),
-                      Container(
-                        height: 15,
-                      ),
-                      item['active'] == true
-                          ? Text(
-                        LanguageManager.getText(100) ,//+ '/' + item['id'].toString() + '/' + item['Country_name'] + '/' + item['service_id'].toString(),
-                        style: TextStyle(
-                            fontSize: 18,
-                            color: Colors.green,
-                            fontWeight: FontWeight.normal),
-                      )
-                          : Text(
-                        LanguageManager.getText(101) ,//+ '/' + item['id'].toString() + '/' + item['Country_name'] + '/' + item['service_id'].toString(),
-                        style: TextStyle(
-                            fontSize: 18,
-                            color: Colors.red,
-                            fontWeight: FontWeight.normal),
-                      )
+                      Container(height: item['quick_offer'].toString() != 'null' ? 140: 15),
                     ],
                   ),
                 ),
@@ -650,7 +642,7 @@ class _OnlineEngineerServicesState extends State<OnlineEngineerServices> {
                         Row(
                           textDirection: LanguageManager.getTextDirection(),
                           children: [
-                            RateStars(
+                            RateStarsStateless(
                               12,
                               stars: item['stars'].toInt(),
                             ),
@@ -688,72 +680,8 @@ class _OnlineEngineerServicesState extends State<OnlineEngineerServices> {
                               ),
                             ),
                           ],
-                        )
-                        // : Container()
-                        ,
+                        ),
 
-                        // Row(
-                        //   textDirection: LanguageManager.getTextDirection(),
-                        //   children: [
-                        //     Container(
-                        //       margin: LanguageManager.getDirection()? EdgeInsets.only(right: 2, left: 5) : EdgeInsets.only(right: 6, left: 0),
-                        //       child: SvgPicture.asset(
-                        //         "assets/icons/services.svg",
-                        //         width: 13,
-                        //         height: 13,
-                        //         color: Colors.grey,
-                        //       ),
-                        //     ),
-                        //
-                        //     Expanded(
-                        //       child: Container(
-                        //         child: Text(
-                        //           LanguageManager.getText(310) +
-                        //               " :  " +
-                        //               (Globals.checkNullOrEmpty(item['brand'].toString())
-                        //                   ? item['brand'].toString()
-                        //                   : Converter.getRealText(112)),
-                        //           textDirection: LanguageManager.getTextDirection(),
-                        //           style: TextStyle(
-                        //               fontWeight: FontWeight.normal, fontSize: 11),
-                        //         ),
-                        //       ),
-                        //     ),
-                        //   ],
-                        // ) ,
-
-
-                        // Row(
-                        //   textDirection: LanguageManager.getTextDirection(),
-                        //   children: [
-                        //     Icon(
-                        //       FlutterIcons.md_cog_ion,
-                        //       color: Colors.grey,
-                        //       size: 15,
-                        //     ),
-                        //     Container(
-                        //       width: 5,
-                        //     ),
-                        //     Expanded(
-                        //       child: Container(
-                        //         child: Text(
-                        //           (
-                        //               (Globals.checkNullOrEmpty(item['provider_services_title'].toString())
-                        //                   ? LanguageManager.getText(309) + " :  " + item['provider_services_title'].toString()
-                        //                   :getServices(cssss, item))
-                        //           ),
-                        //           textDirection: LanguageManager.getTextDirection(),
-                        //           style: TextStyle(
-                        //               fontWeight: FontWeight.normal, fontSize: 11),
-                        //         ),
-                        //       ),
-                        //     ),
-                        //   ],
-                        // )
-
-                        Globals.checkNullOrEmpty(item['city_name']) ||
-                            Globals.checkNullOrEmpty(item['country_name']) ||
-                            Globals.checkNullOrEmpty(getCCT(cct, item))?
                         Row(
                           textDirection: LanguageManager.getTextDirection(),
                           children: [
@@ -768,19 +696,7 @@ class _OnlineEngineerServicesState extends State<OnlineEngineerServices> {
                             Expanded(
                               child: Container(
                                 child: Text(
-
-                                  Globals.checkNullOrEmpty(getCCT(cct, item))
-                                      ? getCCT(cct, item)
-
-                                      : Globals.checkNullOrEmpty(item['city_name'])
-                                      ? item['street_name'].toString().isEmpty
-                                      ? (Globals.checkNullOrEmpty(getCCT([0,0,1], item)) ? getCCT([0,0,1], item) : "")
-                                      : (item['city_name'].toString()  + "  -  " + item['street_name'].toString())
-
-                                      : Globals.checkNullOrEmpty( item['country_name'].toString())
-                                      ? getCCT([0,1,0] , {'country_name': item['country_name'].toString()})
-                                      : getCCT([0,1,0] , {'country_name': item['country_name'].toString()})
-                                  ,
+                                  item['provider_country'],
                                   textDirection: LanguageManager.getTextDirection(),
                                   style: TextStyle(
                                       fontWeight: FontWeight.normal, fontSize: 11),
@@ -788,9 +704,72 @@ class _OnlineEngineerServicesState extends State<OnlineEngineerServices> {
                               ),
                             ),
                           ],
-                        ) : Container(height: 20,),
-                        Container(
-                          height: 15,
+                        ),
+
+                            Container(
+                              margin: EdgeInsets.only(right: 5, left: 5),
+                              child: Text(
+                                LanguageManager.getText(401) + ':',
+                                textDirection: LanguageManager.getTextDirection(),
+                                style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                    color: Converter.hexToColor("#2094CD")),
+                              ),
+                            ),
+                            Container(
+                              margin: EdgeInsets.only(right: 5, left: 5),
+                              child: Wrap(
+                                  textDirection: LanguageManager.getTextDirection(),
+                                  children: List<Widget>.generate(skills.length, (index) {
+                                    return createItemSkill(skills[index][LanguageManager.getDirection() ? 'name' : 'name_en'], index, skills.length);
+                                  })
+                              ),
+                            ),
+
+
+                        SplashEffect(
+                          padding: EdgeInsets.only(top: 5, bottom: 5),
+                          fullMargin: EdgeInsets.only(right: 5, left: 5, bottom: 15, top: 15),
+                          color: Converter.hexToColor("#2094CD").withOpacity(.9),
+                          boxShadow: [const BoxShadow(
+                              offset: Offset(.5, .5),
+                              color: const Color(0x20000000),
+                              spreadRadius: 1,
+                              blurRadius: 1)
+                          ],
+                          onTap: (){
+                            if(item['provider_id'] == null) return;
+                            Navigator.push(context, MaterialPageRoute(
+                                settings: RouteSettings(name: 'ProviderProfile'),
+                                builder: (_) => ProviderProfile(item['provider_id'].toString(),
+                                  active: item['active'].toString(),
+                                )
+                            ));
+                          },
+                          child: Row(
+                            textDirection: LanguageManager.getTextDirection(),
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                FlutterIcons.person_mdi,
+                                color: Colors.white,
+                                size: 15,
+                              ),
+                              Container(
+                                width: 5,
+                              ),
+                              Text(
+                                LanguageManager.getText(407),
+                                textDirection: LanguageManager.getTextDirection(),
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 11,
+                                    height: 1.2,
+                                    fontWeight: FontWeight.w600),
+                              ),
+                            ],
+                          ),
                         ),
                         Row(
                           textDirection: LanguageManager.getTextDirection(),
@@ -799,7 +778,7 @@ class _OnlineEngineerServicesState extends State<OnlineEngineerServices> {
                                 ? Container()
                                 : Expanded(
                               child: InkWell(
-                                onTap: () => PhoneCall.call(item['phone'], context),
+                                onTap: () => PhoneCall.call(item['phone'], context, isOnlineService: true),
                                 child: Column(
                                   children: [
                                     Container(
@@ -917,12 +896,13 @@ class _OnlineEngineerServicesState extends State<OnlineEngineerServices> {
         ),
         item['quick_offer'].toString() != 'null'
             ? Container(
-          width: 55,
-          height: 110,
-          margin: LanguageManager.getDirection()? EdgeInsets.only(left: 18, top: 52) : EdgeInsets.only(right: 18, top: 52),
+          width: 85,
+          height: 130,
+          margin: !LanguageManager.getDirection()? EdgeInsets.only(left: 22, top: 140) : EdgeInsets.only(right: 22, top: 140),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.start,
             children: [
+              Container(height: 6),
               Container(
                 padding: EdgeInsets.all(1),
                 decoration: BoxDecoration(
@@ -954,7 +934,7 @@ class _OnlineEngineerServicesState extends State<OnlineEngineerServices> {
             : item['offers'].toString() != 'false'
             ? Container(
           width: 85,
-          margin: LanguageManager.getDirection() ? EdgeInsets.only(left: 25, top: 70) : EdgeInsets.only(right: 25, top: 70),
+          margin: !LanguageManager.getDirection() ? EdgeInsets.only(left: 21, top: 150) : EdgeInsets.only(right: 21, top: 150),
           child: Column(
             // mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -1049,10 +1029,6 @@ class _OnlineEngineerServicesState extends State<OnlineEngineerServices> {
                           case 'city':
                             filters.remove('street_id');
                             selectedFilters.remove('street');
-                            break;
-                          case 'Categories':
-                            selectOptions['subcategories'] = item['subcategories'];
-                            setNullSO(3);
                             break;
                           case 'subcategories':
                             selectOptions['service_sub_2'] = item['service_sub_2'];
@@ -1366,5 +1342,25 @@ class _OnlineEngineerServicesState extends State<OnlineEngineerServices> {
           ),
         ),
         type: AlertType.WIDGET);
+  }
+
+  createItemSkill(String str, int index, int length) {
+
+    return Container(
+        // margin: EdgeInsets.all(5),
+        // padding: EdgeInsets.symmetric(horizontal: 14),
+        // decoration: BoxDecoration(
+        //   color: Colors.transparent,
+        //   borderRadius: BorderRadius.circular(999),
+        //   border: Border.all(
+        //     color: Converter.hexToColor('#707070'),
+        //     width: 1,
+        //   ),
+        // ),
+    child: Text(
+      str + (index == length - 1? '.' : ', '),
+      style: TextStyle(color: Colors.black, fontSize: 12),
+      textDirection: LanguageManager.getTextDirection(),
+    ));
   }
 }

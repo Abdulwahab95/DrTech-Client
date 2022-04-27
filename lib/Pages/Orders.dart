@@ -3,7 +3,7 @@ import 'package:dr_tech/Components/CustomBehavior.dart';
 import 'package:dr_tech/Components/CustomLoading.dart';
 import 'package:dr_tech/Components/EmptyPage.dart';
 import 'package:dr_tech/Components/TitleBar.dart';
-import 'package:dr_tech/Components/phoneCall.dart';
+import 'package:dr_tech/Components/PhoneCall.dart';
 import 'package:dr_tech/Config/Converter.dart';
 import 'package:dr_tech/Config/Globals.dart';
 import 'package:dr_tech/Models/LanguageManager.dart';
@@ -12,7 +12,6 @@ import 'package:dr_tech/Network/NetworkManager.dart';
 import 'package:dr_tech/Pages/OrderDetails.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import 'LiveChat.dart';
 
@@ -25,7 +24,7 @@ class Orders extends StatefulWidget {
   _OrdersState createState() => _OrdersState();
 }
 
-class _OrdersState extends State<Orders> with TickerProviderStateMixin {
+class _OrdersState extends State<Orders> with TickerProviderStateMixin , WidgetsBindingObserver {
   TabController tabController;
   // Map<String, Map<int, List>> data = {};
   // Map<String, int> pages = {};
@@ -35,6 +34,7 @@ class _OrdersState extends State<Orders> with TickerProviderStateMixin {
 
   @override
   void initState() {
+    WidgetsBinding.instance.addObserver(this);
     tabController = TabController(length: 3, vsync: this);
     tabController.addListener((){
       print('here_listener_index: ${tabController.index}');
@@ -51,14 +51,26 @@ class _OrdersState extends State<Orders> with TickerProviderStateMixin {
       }
     });
     print('here_initState_index: ${tabController.index}');
+    Globals.reloadPageOrder = () {
+      if (mounted) load();
+    };
     load();
     super.initState();
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     tabController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      print('here_resumed_from: Orders');
+      load();
+    }
   }
 
   void load({index}) {
@@ -204,17 +216,22 @@ class _OrdersState extends State<Orders> with TickerProviderStateMixin {
     double size = 90;
     return InkWell(
       onTap: () async {
-        var results = await Navigator.push(context, MaterialPageRoute(builder: (_) => OrderDetails(item)));
-        print('here_1: $results');
+        await Navigator.push(context, MaterialPageRoute(
+                settings: RouteSettings(name: 'OrderDetails'),
+                builder: (_) => OrderDetails(item))).
+        then((value) {
+          print('here_1: ${Globals.result}');
 
-        if (results == true) {
-          setState(() {
-            print('here_setState: from here 1');
-            // pages = {};
-            data = [];
-            load();
-          });
-        }
+          if (Globals.result == true) {
+            Globals.result = null;
+            setState(() {
+              print('here_setState: from here 1');
+              // pages = {};
+              data = [];
+              load();
+            });
+          }
+        });
       },
       child: Container(
         margin: EdgeInsets.only(left: 20, right: 20, top: 15, bottom: 0),
@@ -289,7 +306,7 @@ class _OrdersState extends State<Orders> with TickerProviderStateMixin {
                             ),
                             decoration: BoxDecoration(
                                 color: Converter.hexToColor(
-                                    item["status"] == 'CANCELED'
+                                    item["status"] == 'CANCELED' || item["status"] == 'ONE_SIDED_CANCELED'
                                         ? "#f00000"
                                         : item["status"] == 'WAITING'
                                           ? "#0ec300"
@@ -324,7 +341,16 @@ class _OrdersState extends State<Orders> with TickerProviderStateMixin {
                         width: 10,
                       ),
                       Container(
-                        child: Row(
+                        child: item['price'] == 0
+                        ? Text(
+                          LanguageManager.getText(405),
+                          textDirection: LanguageManager.getTextDirection(),
+                          style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: Converter.hexToColor("#2094CD")),
+                        )
+                        : Row(
                           textDirection: LanguageManager.getTextDirection(),
                           children: [
                             Text(
@@ -339,7 +365,7 @@ class _OrdersState extends State<Orders> with TickerProviderStateMixin {
                               width: 5,
                             ),
                             Text(
-                              Globals.getUnit(),
+                              Globals.getUnit(isUsd: item["service_target"]),
                               textDirection: LanguageManager.getTextDirection(),
                               style: TextStyle(
                                   fontSize: 14,
@@ -398,7 +424,7 @@ class _OrdersState extends State<Orders> with TickerProviderStateMixin {
                     ),
 
                     Container(width: 10),
-
+                    item["service_target"] == 'online_services'?
                     Expanded(
                       child: Column(children: [customButton(117, () {// Chat Action
                             Navigator.push(context, MaterialPageRoute(builder: (_) => LiveChat(item['provider_id'].toString())));
@@ -411,7 +437,7 @@ class _OrdersState extends State<Orders> with TickerProviderStateMixin {
                                   fontWeight: FontWeight.w600),
                             ),
                           ]),
-                    ),
+                    ) : Container(),
 
                     Container(width: 10),
                   ]),
@@ -470,7 +496,8 @@ class _OrdersState extends State<Orders> with TickerProviderStateMixin {
       'PENDING': 93,
       'WAITING': 92,
       'COMPLETED': 94,
-      'CANCELED': 184
+      'CANCELED': 184,
+      'ONE_SIDED_CANCELED': 389,
     }[status.toString().toUpperCase()] ??
         92);
   }

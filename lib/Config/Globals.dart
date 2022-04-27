@@ -7,6 +7,7 @@ import 'package:dr_tech/Models/UserManager.dart';
 import 'package:dr_tech/Network/NetworkManager.dart';
 import 'package:dr_tech/Pages/LiveChat.dart';
 import 'package:dr_tech/Pages/Login.dart';
+import 'package:dr_tech/Pages/OrderDetails.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
@@ -23,7 +24,8 @@ class Globals {
   static var config;
   static var isLocal = false;
   static var urlServerLocal = "http://192.168.43.152";
-  static var urlServerGlobal = "https://www.drtech-api.com";
+  static var urlServerGlobal = "https://drtech-api.com";
+  // static var urlServerGlobal = "https://test.drtech-api.com";
   // static var urlServerGlobal = "https://drtech.takiddine.co";
   // static var urlServerGlobal = "https://dashboard.drtechapp.com";
   static String authoKey = "Authorization";// x-autho
@@ -34,16 +36,20 @@ class Globals {
   static SharedPreferences sharedPreferences;
   static dynamic data = [];
   // Callbacks
-  static Function updateInCartCount;
-  static Function updateNotificationCount = (){};
+  static Function updateBottomBarNotificationCount = (){};
+  static Function updateTitleBarNotificationCount = (){};
   static Function updateChatCount = (){};
   static Function updateVisitableWhySubscribe = (){};
   static Function updateConversationCount = (){};
+  static Function reloadPageNotificationLive = (){};
+  static Function reloadPageOrder = (){};
+  static Function reloadPageOrderDetails = (){};
   static var settings;
   // Chat + Notification
   static String currentConversationId = '';
   static bool isLiveChatOpenFromNotification = false;
   static bool isNotificationOpenFromNotification = false;
+  static var result;
 
   static BuildContext contextLoading;
 
@@ -182,17 +188,19 @@ class Globals {
     return LanguageManager.getTextDirection() == TextDirection.rtl;
   }
 
-  static String getUnit(){
-    if(isRtl())
+  static String getUnit({isUsd}){
+    if(isUsd.toString() == "online_services")
+      return '\$';
+    else if(isRtl())
       return UserManager.currentUser('unit_ar');
     else
       return UserManager.currentUser('unit_en');
   }
 
   static String correctLink(data) {
-    if(!isLocal){
+    if(!isLocal) {
       if (!data.toString().contains('http') ) {
-        return imageUrl + data;
+        return imageUrl + data.toString();
       } else
         return data;
     } else  {
@@ -221,7 +229,7 @@ class Globals {
   }
 
   static checkNullOrEmpty(item) {
-    print('here_checkNullOrEmpty: $item');
+    //print('here_checkNullOrEmpty: $item');
     return !(item == null || (item != null && (item.toString().isEmpty || item.toString().toLowerCase() == 'null')) );
   }
 
@@ -253,4 +261,13 @@ class Globals {
           Navigator.push(context, MaterialPageRoute(builder: (_) => Login()));
         }, onYesShowSecondBtn: false);
   }
+
+  static void hideKeyBoard(BuildContext context) {
+    FocusScopeNode currentFocus = FocusScope.of(context);
+    if (!currentFocus.hasPrimaryFocus && currentFocus.focusedChild != null) {
+      currentFocus.focusedChild.unfocus();
+    }
+  }
+
+
 }

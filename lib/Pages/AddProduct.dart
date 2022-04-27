@@ -207,8 +207,8 @@ class _AddProductState extends State<AddProduct> {
     Alert.startLoading(context);
     Map<String, String> body = {"id": widget.id.toString()};
     NetworkManager.httpPost(Globals.baseUrl + "product/delete",context , (r) {
-      Alert.endLoading();
       if (r['state'] == true) {
+        Alert.endLoading();
         Navigator.pop(context);
       }
     }, body: body);

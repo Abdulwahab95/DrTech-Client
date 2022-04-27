@@ -112,8 +112,8 @@ class MessageHandlerState extends State<MessageHandler> {
   void parse(Map<String, dynamic> data, RemoteNotification notification) {
     print('here_timer: data: $data');
     Map payload = data['payload'].runtimeType == String? json.decode(data['payload']) : data['payload'];
-    if (data["conversation_id"] != null) {
-      print('here_timer: if 1');
+    if (data["conversation_id"] != null && data["conversation_id"] != '') {
+      print('here_timer: if 1 , conversation_id: ${data["conversation_id"]}, ');
       if (LiveChat.currentConversationId == data["conversation_id"].toString()) {
         print('here_timer: if 2');
         if (LiveChat.callback != null) {
@@ -135,16 +135,23 @@ class MessageHandlerState extends State<MessageHandler> {
           print('here_timer: not_seen');
           UserManager.updateSp("not_seen", (int.parse(UserManager.currentUser("not_seen")) + 1));
         }
-        Globals.updateChatCount();
-        Globals.updateConversationCount();
-        Globals.updateNotificationCount();
         print('here_timer: else 2');
         LocalNotifications.send(data['title'],data['message_txt'], payload);
       }
     } else {
       print('here_timer: else 1');
+      if(data['payload_target'] == 'order') {
+        Globals.reloadPageOrder();
+        Globals.reloadPageOrderDetails();
+      }
       LocalNotifications.send(notification.title, notification.body, payload);
     }
+
+    Globals.updateChatCount();
+    Globals.updateConversationCount();
+    Globals.updateTitleBarNotificationCount();
+    Globals.updateBottomBarNotificationCount();
+    Globals.reloadPageNotificationLive();
   }
 
   @override

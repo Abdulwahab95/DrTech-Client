@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:dr_tech/Components/Alert.dart';
 import 'package:dr_tech/Components/CustomBehavior.dart';
 import 'package:dr_tech/Components/CustomLoading.dart';
+import 'package:dr_tech/Components/SoonWidget.dart';
 import 'package:dr_tech/Components/SubscriptionSlider.dart';
 import 'package:dr_tech/Components/TitleBar.dart';
 import 'package:dr_tech/Config/Converter.dart';
@@ -166,6 +167,8 @@ class _SubscriptionState extends State<Subscription> {
             iosPlan.add(data["packes"].firstWhere((e) => e['apple_id'] == item.productId));
             print('loadIosPacket: ${item.productId}, ${data["packes"].firstWhere((e) => e['apple_id'] == item.productId)}');
           }
+          iosPlan.sort((a, b) => a['order_index'].compareTo(b['order_index']));
+
           if(iosPlan.isNotEmpty){
             selectedPlan = iosPlan[data['selected_plan'] ?? 0];
             var iAPItem = value.firstWhere((e) => e.productId == selectedPlan['apple_id']);
@@ -354,39 +357,10 @@ class _SubscriptionState extends State<Subscription> {
   Widget getSubscriptionPlans() {
     return Expanded(
         child: isLoading || isLoadingIosPacket
-            ? Center(
-                child: CustomLoading(),
-              )
+            ? Center(child: CustomLoading())
             : Globals.getSetting('active_subscribe') != '1'
-            ? Column(children: [
-              Expanded(
-                flex: 10,
-                child: Container(
-                  width: 300,
-                  decoration: BoxDecoration(
-                      image: DecorationImage(
-                          image: AssetImage("assets/images/soon.png"))),
-                ),
-              ),
-              Spacer(flex: 1,),
-              Expanded(
-                flex: 9,
-                child: Container(
-                  padding: EdgeInsets.only(left: 10, right: 10, top: 5, bottom: 0),
-                  child: Text(
-                    LanguageManager.getText(293), // قريباً...
-                    textDirection: LanguageManager.getTextDirection(),
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Converter.hexToColor("#303030")),
-                  ),
-                ),
-              )
-
-            ],)
-            : getConntetItems());
+                ? SoonWidget()
+                : getConntetItems());
   }
 
   Widget getConntetItems() {

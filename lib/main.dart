@@ -16,6 +16,7 @@ import 'Models/Firebase.dart';
 import 'Models/LocalNotifications.dart';
 import 'Pages/Home.dart';
 import 'Pages/LiveChat.dart';
+import 'Pages/ProviderProfile.dart';
 
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();

@@ -1,3 +1,4 @@
+import 'package:dr_tech/Config/Globals.dart';
 import 'package:dr_tech/Models/UserManager.dart';
 import 'package:dr_tech/Pages/Home.dart';
 import 'package:flutter/material.dart';
@@ -16,6 +17,18 @@ class _NotificationIconState extends State<NotificationIcon> {
   UserManager.currentUser('not_seen').isNotEmpty
       ? int.parse(UserManager.currentUser('not_seen'))
       : 0;
+
+  @override
+  void initState() {
+    Globals.updateTitleBarNotificationCount = ()
+    {
+      if(mounted)
+        setState(() {
+          countNotSeen = UserManager.currentUser('not_seen').isNotEmpty? int.parse(UserManager.currentUser('not_seen')) : 0;
+        });
+    };
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {

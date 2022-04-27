@@ -517,8 +517,8 @@ class _UserProductsState extends State<UserProducts> {
     Alert.startLoading(context);
     Map<String, String> body = {"id": id.toString()};
     NetworkManager.httpPost(Globals.baseUrl + "product/delete", context ,(r) {
-      Alert.endLoading();
       if (r['state'] == true) {
+        Alert.endLoading();
         setState(() {
           data[page].removeAt(i);
         });

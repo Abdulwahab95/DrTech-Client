@@ -118,11 +118,13 @@ class _FeatureSubscribeState extends State<FeatureSubscribe> {
           Navigator.of(context).pop('success');
       },
       child: Container(
-        width: 90,
+       // width: 90,
         height: 45,
+        padding: EdgeInsets.symmetric(horizontal: 10),
         alignment: Alignment.center,
         child: Text(
           LanguageManager.getText(75),
+          textDirection: LanguageManager.getTextDirection(),
           style: TextStyle(color: Colors.white),
         ),
         decoration: BoxDecoration(

@@ -65,7 +65,7 @@ class _MainScreenState extends State<MainScreen> {
 
     items.add(createServices("checklist", 35, () {
       UserManager.currentUser("id").isNotEmpty
-          ? Navigator.push(context, MaterialPageRoute(builder: (_) => Orders()))
+          ? Navigator.push(context, MaterialPageRoute(settings: RouteSettings(name: 'Orders'), builder: (_) => Orders()))
           : goLogin();
     }));
 

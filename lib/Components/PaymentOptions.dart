@@ -2,18 +2,19 @@ import 'package:dr_tech/Components/Alert.dart';
 import 'package:dr_tech/Components/CustomLoading.dart';
 import 'package:dr_tech/Config/Converter.dart';
 import 'package:dr_tech/Config/Globals.dart';
+import 'package:dr_tech/Config/IconsMap.dart';
 import 'package:dr_tech/Models/LanguageManager.dart';
 import 'package:dr_tech/Models/UserManager.dart';
 import 'package:dr_tech/Network/NetworkManager.dart';
 import 'package:dr_tech/Pages/Orders.dart';
+import 'package:dr_tech/Pages/Transactions.dart';
 import 'package:dr_tech/Pages/WebBrowser.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 class PaymentOptions extends StatefulWidget {
-  final id, messageId, liveChatContext;
-  PaymentOptions(this.id, this.messageId, this.liveChatContext);
+  final messageItem, liveChatContext;
+  PaymentOptions(this.messageItem, this.liveChatContext);
 
   @override
   _PaymentOptionsState createState() => _PaymentOptionsState();
@@ -21,29 +22,29 @@ class PaymentOptions extends StatefulWidget {
 
 class _PaymentOptionsState extends State<PaymentOptions> {
   List data;
-  String selectedPaymentOption = "";
+  Map selectedPaymentOption = {};
+  bool isProcessing = false;
+
   @override
   void initState() {
-    load();
+    print('here_messageItem: ${widget.messageItem}');
     super.initState();
+    Future.delayed(Duration.zero, () {
+      if( widget.messageItem['message']['target'] == 'online_services')
+        offerAccept('');
+      else
+        load();
+    });
+
   }
 
   void load() {
-        setState(() { data = ["CACH"]; });
-    // NetworkManager.httpGet(Globals.baseUrl + "payment/load", (r) {
-    //   if (r['state'] == true) {
-    //     setState(() {
-    //       data = r['data'];
-    //     });
-    //   } else if (r['message'] != null) {
-    //     Alert.show(context, Converter.getRealText(r['message']));
-    //   }
-    // }, cashable: true);
+    setState(() { data = ["CACH"]; });
   }
 
   @override
   Widget build(BuildContext context) {
-    if (data == null)
+    if (data == null || isProcessing)
       return Container(
         height: 30,
         child: CustomLoading(),
@@ -85,8 +86,9 @@ class _PaymentOptionsState extends State<PaymentOptions> {
     items.add(Container(
       height: 20,
     ));
-    for (var item in data) {
-      items.add(getPaymentMethod(item));
+    if( widget.messageItem['message']['target'] != 'online_services')
+    for (var item in widget.messageItem['message']['pay_methods']) {
+      items.add(getPaymentOption(item));
     }
     items.add(Container(
       height: 20,
@@ -116,24 +118,25 @@ class _PaymentOptionsState extends State<PaymentOptions> {
     return items;
   }
 
-  Widget getPaymentMethod(itemKey) {
-    switch (itemKey) {
-      case "CACH":
-        return getPaymentOption(134, "cach", "CACH");
-        break;
-      case "CARD":
-        return getPaymentOption(135, "visa", "CARD");
-        break;
-      default:
-    }
-    return Container();
-  }
+  // Widget getPaymentMethod(itemKey) {
+  //   switch (itemKey) {
+  //     case "CACH":
+  //       return getPaymentOption(134, "cach", "CACH");
+  //       break;
+  //     case "CARD":
+  //       return getPaymentOption(135, "visa", "CARD");
+  //       break;
+  //     default:
+  //   }
+  //   return Container();
+  // }
 
-  Widget getPaymentOption(text, icon, key) {
+  Widget getPaymentOption(itemPay) {
+    print('here_getPaymentOption: $itemPay');
     return InkWell(
         onTap: () {
           setState(() {
-            selectedPaymentOption = key;
+            selectedPaymentOption = itemPay;
           });
         },
         child: Container(
@@ -151,7 +154,7 @@ class _PaymentOptionsState extends State<PaymentOptions> {
                   decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(30),
                       border: Border.all(width: 3, color: Colors.grey)),
-                  child: key == selectedPaymentOption
+                  child: itemPay['method'] == selectedPaymentOption['method']
                       ? Container(
                           width: 12,
                           height: 12,
@@ -167,7 +170,7 @@ class _PaymentOptionsState extends State<PaymentOptions> {
               ),
               Expanded(
                 child: Container(
-                  padding: EdgeInsets.all(25),
+                  padding: EdgeInsets.symmetric(horizontal: 25, vertical: 5),
                   decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(10),
                       color: Colors.white,
@@ -180,12 +183,15 @@ class _PaymentOptionsState extends State<PaymentOptions> {
                   child: Row(
                     textDirection: LanguageManager.getTextDirection(),
                     children: [
-                      SvgPicture.asset("assets/icons/$icon.svg"),
+                      Icon(
+                        IconsMap.from[itemPay['icon_name']],
+                        size: 45, color: Converter.hexToColor("#344F64")),
                       Container(
                         width: 30,
                       ),
                       Text(
-                        LanguageManager.getText(text),
+                        itemPay[ LanguageManager.getDirection() ? 'name' : 'name_en'],
+                        textDirection: LanguageManager.getTextDirection(),
                         style: TextStyle(fontWeight: FontWeight.bold),
                       )
                     ],
@@ -198,46 +204,55 @@ class _PaymentOptionsState extends State<PaymentOptions> {
   }
 
   void excutePayment() async {
+    print('here_excutePayment: $selectedPaymentOption');
     if (selectedPaymentOption.isEmpty) {
       return;
     }
-    if (selectedPaymentOption == "CACH")
+    if (selectedPaymentOption['method'] == "cash") {
+      setState(() {
+        isProcessing = true;
+      });
       offerAccept('');
-    else {
+    } else {
+      // /payment/myfatoorah?offer_id=79&user_id=3
       String url = [
-        Globals.baseUrl,
-        "payment/offer/?user=", UserManager.currentUser(Globals.authoKey),
-        "&id=", widget.id,
-        "&message_id=", widget.messageId,
-        "&method=", "2"
+        Globals.urlServerGlobal,
+        // "test.drtech-api.com",
+        "/payment/${selectedPaymentOption['method']}",
+        "?user_id=", UserManager.currentUser('id'),
+        "&offer_id=", widget.messageItem["message"]['id'],
+        "&currency=USD",
+        "&message_id=", widget.messageItem['id']
       ].join();
 
       var results = await Navigator.push(
           context,
-          MaterialPageRoute(
-              builder: (_) => WebBrowser(url, LanguageManager.getText(228))));
+          MaterialPageRoute(builder: (_) =>
+              WebBrowser(url, LanguageManager.getText(343) + ' ' + selectedPaymentOption[LanguageManager.getDirection() ? "name" : "name_en"])));
       if (results == null) {
         Alert.show(context, LanguageManager.getText(240));
         return;
       }
-      onResponce(results);
+
+      print('here_pay_from web results: $results');
+      if (results.toString() == 'success') {
+        onResponse({'state':true});
+      }
     }
   }
 
   void offerAccept(paymentToken) {
     Map<String, String> body = {
-      "message_id": widget.messageId.toString(),
-      "offer_id": widget.id.toString(),
+      "message_id": widget.messageItem["id"].toString(),
+      "offer_id": widget.messageItem["message"]['id'].toString(),
       "token": paymentToken
     };
-    Alert.startLoading(context);
     NetworkManager.httpPost(Globals.baseUrl + "orders/create",context, (r) { // orders/set
-      Alert.endLoading();
-      onResponce(r);
+      onResponse(r);
     }, body: body);
   }
 
-  void onResponce(r) {
+  void onResponse(r) {
     if (r['state'] == true) {
       Navigator.of(context).pop(true);
       Alert.show(widget.liveChatContext, Converter.getRealText(299),
@@ -245,8 +260,112 @@ class _PaymentOptionsState extends State<PaymentOptions> {
           premieryText: Converter.getRealText(300),
           onYes: () {
             Navigator.of(widget.liveChatContext).pop(true);
-            Navigator.push(widget.liveChatContext, MaterialPageRoute(builder: (_) => Orders()));
+            Navigator.push(widget.liveChatContext, MaterialPageRoute(settings: RouteSettings(name: 'Orders'), builder: (_) => Orders()));
           });
+    }else{
+      Navigator.of(context)..pop();
+      Alert.show(context,getNotEnoughMoneyWidget(r['message'].toString().replaceAll('\\n', '\n')),type: AlertType.WIDGET);
     }
   }
+
+  getNotEnoughMoneyWidget(message) {
+    return Container(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        textDirection: LanguageManager.getTextDirection(),
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          Row(
+            textDirection: LanguageManager.getTextDirection(),
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(),
+              InkWell(
+                onTap: () {
+                  Navigator.pop(widget.liveChatContext);
+                },
+                child: Icon(
+                  FlutterIcons.x_fea,
+                  size: 24,
+                ),
+              )
+            ],
+          ),
+          Container(
+            child: Icon(
+              FlutterIcons.cancel_mdi,
+              size: 50,
+              color: Converter.hexToColor("#F5A623"),
+            ),
+          ),
+          Container(height: 30),
+          Text(
+            message,
+            textDirection: LanguageManager.getTextDirection(),
+            style: TextStyle(
+                fontSize: 16,
+                //color: Converter.hexToColor("#707070"),
+                fontWeight: FontWeight.bold),
+          ),
+          Container(height: 30),
+          Row(
+            textDirection: LanguageManager.getTextDirection(),
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              InkWell(
+                onTap: () {
+                  Alert.publicClose();
+                },
+                child: Container(
+                  width: MediaQuery.of(widget.liveChatContext).size.width * 0.45,
+                  height: 45,
+                  alignment: Alignment.center,
+                  child: Text(
+                    LanguageManager.getText(172),
+                    style: TextStyle(
+                        color: Colors.white, fontWeight: FontWeight.bold),
+                  ),
+                  decoration: BoxDecoration(
+                      boxShadow: [
+                        BoxShadow(
+                            color: Colors.black.withAlpha(15),
+                            spreadRadius: 2,
+                            blurRadius: 2)
+                      ],
+                      borderRadius: BorderRadius.circular(8),
+                      color: Converter.hexToColor("#344f64")),
+                ),
+              ),
+              InkWell(
+                onTap: () {
+                  Navigator.of(widget.liveChatContext).pop();
+                  Navigator.push(widget.liveChatContext, MaterialPageRoute(builder: (_) => Transactions()));
+                },
+                child: Container(
+                  width: MediaQuery.of(widget.liveChatContext).size.width * 0.45,
+                  height: 45,
+                  alignment: Alignment.center,
+                  child: Text(
+                    LanguageManager.getText(370), // الغاء الطلب
+                    style: TextStyle(
+                        color: Colors.white, fontWeight: FontWeight.bold),
+                  ),
+                  decoration: BoxDecoration(
+                      boxShadow: [
+                        BoxShadow(
+                            color: Colors.black.withAlpha(15),
+                            spreadRadius: 2,
+                            blurRadius: 2)
+                      ],
+                      borderRadius: BorderRadius.circular(8),
+                      color: Converter.hexToColor("#F5A623")),
+                ),
+              ),
+            ],
+          )
+        ],
+      ),
+    );
+  }
+
 }

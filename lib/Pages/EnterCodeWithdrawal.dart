@@ -247,8 +247,8 @@ class _EnterCodeWithdrawalState extends State<EnterCodeWithdrawal> {
 
     Alert.startLoading(context);
     NetworkManager.httpPost(Globals.baseUrl + "user/withdrawalRequisite", context ,(r) {
-      Alert.endLoading();
       if (r['state'] == true) {
+        Alert.endLoading();
         setState(() {
           resendTime = r['time'];
           tick();
@@ -276,14 +276,9 @@ class _EnterCodeWithdrawalState extends State<EnterCodeWithdrawal> {
 
     Alert.startLoading(context);
     NetworkManager.httpPost(Globals.baseUrl + "user/withdrawal", context ,(r) {
-      Alert.endLoading();
       if (r['state'] == true) {
-        Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-                builder: (_) => Home(
-                      page: 3,
-                    )));
+        Alert.endLoading();
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => Home(page: 3)));
         // success
       }
     }, body: body);

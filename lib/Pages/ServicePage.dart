@@ -1,9 +1,10 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dr_tech/Components/Alert.dart';
 import 'package:dr_tech/Components/CustomLoading.dart';
-import 'package:dr_tech/Components/RateStars.dart';
+import 'package:dr_tech/Components/RateStarsStateless.dart';
+import 'package:dr_tech/Components/SplashEffect.dart';
 import 'package:dr_tech/Components/TitleBar.dart';
-import 'package:dr_tech/Components/phoneCall.dart';
+import 'package:dr_tech/Components/PhoneCall.dart';
 import 'package:dr_tech/Config/Converter.dart';
 import 'package:dr_tech/Config/Globals.dart';
 import 'package:dr_tech/Models/LanguageManager.dart';
@@ -11,29 +12,46 @@ import 'package:dr_tech/Models/ShareManager.dart';
 import 'package:dr_tech/Models/UserManager.dart';
 import 'package:dr_tech/Network/NetworkManager.dart';
 import 'package:dr_tech/Pages/EngineerRatings.dart';
-import 'package:dr_tech/Pages/LiveChat.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 
 import 'Login.dart';
+import 'Orders.dart';
+import 'ProviderProfile.dart';
 
 class ServicePage extends StatefulWidget {
   final id;
-  ServicePage(this.id);
+  final int serviceId;
+  final bool isOnlineService;
+  ServicePage(this.id, {this.isOnlineService = false, this.serviceId = 0});
 
   @override
   _ServicePageState createState() => _ServicePageState();
 }
 
-class _ServicePageState extends State<ServicePage>
-    with TickerProviderStateMixin {
+class _ServicePageState extends State<ServicePage> with TickerProviderStateMixin, WidgetsBindingObserver {
   bool isLoading;
   Map data = {};
   TabController controller;
   @override
   void initState() {
+    WidgetsBinding.instance.addObserver(this);
     load();
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      print('here_resumed_from: ServicePage');
+      load();
+    }
   }
 
   void load() {
@@ -96,7 +114,7 @@ class _ServicePageState extends State<ServicePage>
                                 textDirection:
                                     LanguageManager.getTextDirection(),
                                 children: [
-                                  RateStars(
+                                  RateStarsStateless(
                                     14,
                                     stars: data['rate'],
                                   ),
@@ -137,7 +155,7 @@ class _ServicePageState extends State<ServicePage>
                           Container(
                             padding: EdgeInsets.only(left: 10, right: 10),
                             child: Text(
-                              LanguageManager.getText(119),
+                              LanguageManager.getText(119), // نبذة عن مزود الخدمة
                               textDirection:
                               LanguageManager.getTextDirection(),
                               style: TextStyle(
@@ -307,6 +325,55 @@ class _ServicePageState extends State<ServicePage>
                               color: Colors.black.withAlpha(
                                 10,
                               )),
+                          SplashEffect(
+                            onTap: (){
+                              Navigator.push(context, MaterialPageRoute(
+                                  settings: RouteSettings(name: 'ProviderProfile'),
+                                  builder: (_) => ProviderProfile(
+                                      data['user_id'].toString(),
+                                    providerServiceId: data['id'].toString(),
+                                    serviceId: widget.serviceId.toString(),
+                                    active: data['active'].toString(),
+                                  )
+                              ));
+                            },
+                            color: Converter.hexToColor('#344f64').withOpacity(.09),
+                            showShadow: false,
+                            borderRadius: false,
+                            child: Container(
+                              height: 50,
+                              padding: EdgeInsets.only(left: 25, right: 10),
+                              child: Row(
+                                textDirection: LanguageManager.getTextDirection(),
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Container(
+                                    child: Text(
+                                      LanguageManager.getText(403), // الإطلاع على معلومات المزود
+                                      textDirection:
+                                      LanguageManager.getTextDirection(),
+                                      style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.blue),
+                                    ),
+                                  ),
+                                  Icon(
+                                    FlutterIcons.arrow_alt_circle_left_faw5,
+                                    color: Converter.hexToColor('#344f64'),
+                                    size: 17,
+                                  )
+                                ],
+                              ),
+                            ),
+                          ),
+                          Container(
+                              height: 1,
+                              margin: EdgeInsets.only(top: 2, bottom: 2),
+                              color: Colors.black.withAlpha(
+                                10,
+                              )),
+                          (data['ratings'] ?? [] ).isEmpty? Container():
                           Container(
                             padding: EdgeInsets.only(left: 10, right: 10),
                             child: Row(
@@ -358,7 +425,7 @@ class _ServicePageState extends State<ServicePage>
                     children: [
                            Expanded(
                               child: InkWell(
-                                onTap: () => PhoneCall.call(data['phone'], context),
+                                onTap: () => PhoneCall.call(data['phone'], context, isOnlineService: widget.isOnlineService, showDirectOrderButton: !widget.isOnlineService, onTapDirect:(){createDirectOrder(data);}),
                                 child: Column(
                                   children: [
                                     Container(
@@ -408,7 +475,13 @@ class _ServicePageState extends State<ServicePage>
                       Container(width: 10),
                       Expanded(
                         child: InkWell(
-                          onTap: () => Globals.startNewConversation(data['user_id'], context, active: data['active'].toString()),
+                          onTap: () {
+                            if(widget.isOnlineService)
+                              Globals.startNewConversation(data['user_id'], context, active: data['active'].toString());
+                            else
+                              createDirectOrder(data);
+                          },
+                          //onTap: () => Globals.startNewConversation(data['user_id'], context, active: data['active'].toString()),
                           child: Column(
                             children: [
                               Container(
@@ -427,10 +500,11 @@ class _ServicePageState extends State<ServicePage>
                                       width: 5,
                                     ),
                                     Text(
-                                      LanguageManager.getText(117),
+                                      LanguageManager.getText(widget.isOnlineService? 117: 404), // 117
                                       style: TextStyle(
                                           color: Converter.hexToColor("#344f64"),
                                           fontSize: 15,
+                                          height: 1.2,
                                           fontWeight: FontWeight.w600),
                                     ),
                                   ],
@@ -631,6 +705,46 @@ class _ServicePageState extends State<ServicePage>
         ),
       ],
     ));
+  }
+
+  void createDirectOrder(item) {
+    if (!UserManager.checkLogin()) {
+      Alert.show(context, LanguageManager.getText(298),
+          premieryText: LanguageManager.getText(30),
+          onYes: () {
+            Navigator.push(context, MaterialPageRoute(builder: (_) => Login()));
+          }, onYesShowSecondBtn: false);
+      return;
+    }
+
+    Alert.show(context, LanguageManager.getText(422),// شكرا على ثقتك بي\nأكد طلبك لاتمكن من خدمتك
+        premieryText: LanguageManager.getText(21), // تأكيد
+        secondaryText: LanguageManager.getText(172), // تراجع
+        onYes: () {
+          Navigator.pop(context);
+          Map<String, String> body = {
+            "provider_id"           : item['user_id'].toString(),
+            "service_id"            : widget.serviceId.toString(),
+            "provider_service_id"   : item['id'].toString()
+          };
+          Alert.startLoading(context);
+          NetworkManager.httpPost(Globals.baseUrl + "orders/create/direct",context, (r) { // orders/set
+            if (r['state'] == true) {
+              Alert.endLoading(context2: context);
+              Alert.show(context, Converter.getRealText(r['data'] is int? r['data'] : 299),
+                  onYesShowSecondBtn: false,
+                  premieryText: Converter.getRealText(300),
+                  onYes: () {
+                    Navigator.of(context).pop(true);
+                    Navigator.push(context, MaterialPageRoute(settings: RouteSettings(name: 'Orders'), builder: (_) => Orders()));
+                  });
+            }
+          }, body: body);
+        }, onClickSecond: (){
+          Navigator.pop(context);
+        });
+
+
   }
 
 }

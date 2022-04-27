@@ -2,6 +2,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dr_tech/Components/CustomBehavior.dart';
 import 'package:dr_tech/Components/CustomLoading.dart';
 import 'package:dr_tech/Components/NotificationIcon.dart';
+import 'package:dr_tech/Components/SoonWidget.dart';
+import 'package:dr_tech/Components/SplashEffect.dart';
 import 'package:dr_tech/Config/Converter.dart';
 import 'package:dr_tech/Config/Globals.dart';
 import 'package:dr_tech/Models/LanguageManager.dart';
@@ -17,14 +19,29 @@ class OnlineServices extends StatefulWidget {
   _OnlineServicesState createState() => _OnlineServicesState();
 }
 
-class _OnlineServicesState extends State<OnlineServices> {
+class _OnlineServicesState extends State<OnlineServices> with WidgetsBindingObserver{
   bool isLoading = false;
   String search = "";
   List data = [];
   @override
   void initState() {
+    WidgetsBinding.instance.addObserver(this);
     load();
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      print('here_resumed_from: OnlineServices');
+      load();
+    }
   }
 
   void load() {
@@ -128,24 +145,26 @@ class _OnlineServicesState extends State<OnlineServices> {
   }
 
   Widget getBody() {
+    if(data.isEmpty) return SoonWidget();
+
     List<Widget> items = [];
 
     for (var item in data) {
-      items.add(InkWell(
+      items.add(
+      SplashEffect(
         onTap: () {
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (_) =>
-                      OnlineEngineerServices(item['id'], item['name'])));
+          Navigator.push(context, MaterialPageRoute(
+              builder: (_) => OnlineEngineerServices(item['id'], item['name'])));
         },
+        showShadow: false,
+        radius: 10,
         child: Container(
-          height: MediaQuery.of(context).size.width * 0.46,
+          //height: MediaQuery.of(context).size.width * 0.46,
           margin: EdgeInsets.only(left: 0, right: 0, top: 0, bottom: 0),
           alignment: Alignment.center,
           decoration: BoxDecoration(
               color: Colors.white,
-              // borderRadius: BorderRadius.circular(15),
+              borderRadius: BorderRadius.circular(10),
               boxShadow: [
                 BoxShadow(
                     offset: Offset(0, 2),
@@ -157,19 +176,13 @@ class _OnlineServicesState extends State<OnlineServices> {
                   fit: BoxFit.cover,
                   // colorFilter: ColorFilter.mode(Colors.white, BlendMode.darken),
                   image: CachedNetworkImageProvider(Globals.correctLink(item['image'])))),
-          child: Container(
-            width: double.infinity,
-            color: Colors.blueGrey.withAlpha(100),
-            // margin: EdgeInsets.all(10),
-            // alignment: Alignment.center,
-            child: Text(
-              item["name"],
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white),//Converter.hexToColor("#2094CD")
-            ),
+          child: Text(
+            item["name"],
+            textAlign: TextAlign.center,
+            style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.transparent),//Converter.hexToColor("#2094CD")
           ),
         ),
       ));
@@ -178,24 +191,15 @@ class _OnlineServicesState extends State<OnlineServices> {
     return Directionality(
       textDirection: LanguageManager.getTextDirection(),
       child: GridView.count(
-        mainAxisSpacing: 10,
-        childAspectRatio: MediaQuery.of(context).size.width > 800 ? 2.45 : 1.45 ,
+        mainAxisSpacing: 15,
+        childAspectRatio: MediaQuery.of(context).size.width > 800 ? 2.45 : 1.275 ,
         primary: false,
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
-        crossAxisSpacing: 10,
+        crossAxisSpacing: 20,
         crossAxisCount: 2,
         children: items,
       ),
     );
 
-    // return Container(
-    //   child: ScrollConfiguration(
-    //     behavior: CustomBehavior(),
-    //     child: ListView(
-    //       padding: EdgeInsets.symmetric(vertical: 0, horizontal: 0),
-    //       children: items,
-    //     ),
-    //   ),
-    // );
   }
 }

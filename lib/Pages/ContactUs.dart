@@ -121,9 +121,9 @@ class _ContactUsState extends State<ContactUs> {
 
     Alert.startLoading(context);
     NetworkManager.httpPost(Globals.baseUrl + "reports/create", context ,(r) { // information/contact
-      Alert.endLoading();
       // if (r['state'] == true) Navigator.pop(context);
       if (r["message"] != null) {
+        Alert.endLoading();
         Alert.show(context, Converter.getRealText(r['message']), onYes: (){
           Navigator.pop(context);
           Navigator.pop(context);

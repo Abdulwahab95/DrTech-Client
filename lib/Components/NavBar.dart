@@ -27,7 +27,7 @@ class _NavBarState extends State<NavBar> {
   void initState() {
     activeColor = Converter.hexToColor("#2094CD");
     if(widget.page != null) iSelectedIndex = widget.page;
-    Globals.updateNotificationCount = ()
+    Globals.updateBottomBarNotificationCount = ()
     {
       if(mounted)
         setState(() {

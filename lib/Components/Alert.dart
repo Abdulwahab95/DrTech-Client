@@ -86,10 +86,21 @@ class Alert extends StatefulWidget {
         });
   }
 
-  static void endLoading() {
+  static void endLoading({context2, String withName = ''}) {
+    if(context2 != null) {
+      if(withName.isNotEmpty) {
+        Navigator.popUntil(context2, ModalRoute.withName(withName));
+      }else {
+        if(Navigator.canPop(context2))
+        Navigator.pop(context2);
+      }
+      currentLoader = false;
+      return;
+    }
     if (!currentLoader) return;
     currentLoader = false;
-    Navigator.pop(currentLoaderContext);
+    if(Navigator.canPop(currentLoaderContext))
+      Navigator.pop(currentLoaderContext);
   }
 
 }
@@ -193,6 +204,7 @@ class _AlertState extends State<Alert> {
     return Container(
       child: SingleChildScrollView(
         child: Column(
+          textDirection: LanguageManager.getTextDirection(),
           mainAxisSize: MainAxisSize.min,
           children: [
             Row(
@@ -214,7 +226,7 @@ class _AlertState extends State<Alert> {
             Container(
               margin: EdgeInsets.only(top: 10, bottom: 15),
               child: Row(
-                textDirection: LanguageManager.getTextDirection(),
+               // textDirection: LanguageManager.getTextDirection(),
                 children: [
                   Expanded(
                     child: InkWell(
@@ -227,7 +239,7 @@ class _AlertState extends State<Alert> {
                           widget.premieryText != null
                               ? Converter.getRealText(widget.premieryText)
                               : Converter.getRealText(22),
-                          style: TextStyle(color: Colors.white),
+                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                         ),
                         decoration: BoxDecoration(
                             boxShadow: [
@@ -249,14 +261,13 @@ class _AlertState extends State<Alert> {
                           ? InkWell(
                               onTap: widget.onClickSecond != null? widget.onClickSecond : close,
                               child: Container(
-                                width: 90,
+                                width: MediaQuery.of(context).size.width * 0.45,
                                 height: 45,
                                 alignment: Alignment.center,
                                 child: Text(
-                                  widget.secondaryText != null
-                                      ? Converter.getRealText(widget.secondaryText)
-                                      : Converter.getRealText(21),
-                                  style: TextStyle(color: Colors.white),
+                                  LanguageManager.getText(172),
+                                  style: TextStyle(
+                                      color: Colors.white, fontWeight: FontWeight.bold),
                                 ),
                                 decoration: BoxDecoration(
                                     boxShadow: [
@@ -266,7 +277,7 @@ class _AlertState extends State<Alert> {
                                           blurRadius: 2)
                                     ],
                                     borderRadius: BorderRadius.circular(8),
-                                    color: Converter.hexToColor("#344f64")),
+                                    color: Colors.red),
                               ),
                             )
                           : Container())

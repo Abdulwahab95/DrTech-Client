@@ -56,12 +56,17 @@ class BaseWebview extends State<WebBrowser> {
                     onPageFinished: (a) {
                       print('here_WebView_onPageFinished: $a');
                       setState(() {
+                        print('here_WebView_onPageFinished #1');
                         loading = false;
                       });
-                      if(a.toString().contains('success'))
+                      print('here_WebView_onPageFinished #2');
+                      if(a.toString().contains('success')) {
+                        print('here_WebView_onPageFinished #3');
                         Timer(Duration(seconds: 1), () {
+                          print('here_WebView_onPageFinished #4');
                           Navigator.of(context).pop('success');
                         });
+                      }
                     },
                     javascriptChannels: <JavascriptChannel>[
                       JavascriptChannel(

@@ -1,7 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dr_tech/Components/Alert.dart';
 import 'package:dr_tech/Components/TitleBar.dart';
-import 'package:dr_tech/Components/phoneCall.dart';
+import 'package:dr_tech/Components/PhoneCall.dart';
 import 'package:dr_tech/Config/Converter.dart';
 import 'package:dr_tech/Config/Globals.dart';
 import 'package:dr_tech/Models/LanguageManager.dart';
@@ -21,19 +21,50 @@ class OrderDetails extends StatefulWidget {
   _OrderDetailsState createState() => _OrderDetailsState();
 }
 
-class _OrderDetailsState extends State<OrderDetails> {
+class _OrderDetailsState extends State<OrderDetails> with WidgetsBindingObserver {
 
-  Map cancel = {}, errors = {};
+  Map cancel = {}, errors = {}, data = {};
 
   @override
   void initState() {
     print('here_OrderDetails: ${widget.data}' );
+    WidgetsBinding.instance.addObserver(this);
+    data = widget.data;
+    Globals.reloadPageOrderDetails = (){
+      if(mounted) load();
+    };
     super.initState();
   }
 
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      print('here_resumed_from: OrderDetails');
+      load();
+    }
+  }
+
+  void load() {
+    NetworkManager.httpGet(Globals.baseUrl + "orders/details/${widget.data['id']}", context, (r){// orders/load?page=$page&status=$status
+      if(mounted)
+        setState(() {
+          data['status'] = r['data']['status'];
+          data['canceled_reason'] = r['data']['canceled_reason'];
+          data['who_canceled'] = r['data']['who_canceled'];
+          data['price'] = r['data']['price'];
+        });
+    }, cashable: false);
+  }
 
   @override
   Widget build(BuildContext context) {
+    print('here_OrderDetails_build: $data');
     return Scaffold(
         body: Column(
             textDirection: LanguageManager.getTextDirection(),
@@ -50,7 +81,7 @@ class _OrderDetailsState extends State<OrderDetails> {
                     color: Converter.hexToColor("#F2F2F2"),
                     image: DecorationImage(
                         // fit: BoxFit.cover,
-                        image: CachedNetworkImageProvider(Globals.correctLink(widget.data['service_icon'])))
+                        image: CachedNetworkImageProvider(Globals.correctLink(data['service_icon'])))
                 ),
                 alignment: LanguageManager.getDirection()? Alignment.topLeft: Alignment.topRight,
                 child: Row(
@@ -63,7 +94,7 @@ class _OrderDetailsState extends State<OrderDetails> {
                       margin: EdgeInsets.only(top: 5),
                       alignment: Alignment.center,
                       child: Text(
-                        getStatusText(widget.data["status"]).replaceAll('\n', ' '),
+                        getStatusText(data["status"]).replaceAll('\n', ' '),
                         style: TextStyle(
                             color: Colors.white,
                             fontSize: 12,
@@ -71,9 +102,9 @@ class _OrderDetailsState extends State<OrderDetails> {
                       ),
                       decoration: BoxDecoration(
                           color: Converter.hexToColor(
-                              widget.data["status"] == 'CANCELED'
+                              data["status"] == 'CANCELED' || data["status"] == 'ONE_SIDED_CANCELED'
                                   ? "#f00000"
-                                  : widget.data["status"] == 'WAITING'
+                                  : data["status"] == 'WAITING'
                                     ? "#0ec300"
                                     : "#2094CD"),
                           borderRadius: LanguageManager.getDirection()
@@ -98,7 +129,7 @@ class _OrderDetailsState extends State<OrderDetails> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        widget.data["service_name"].toString(),
+                        data["service_name"].toString(),
                         textDirection: LanguageManager.getTextDirection(),
                         style: TextStyle(
                             fontSize: 16,
@@ -123,11 +154,20 @@ class _OrderDetailsState extends State<OrderDetails> {
                             width: 30,
                           ),
                           Container(
-                            child: Row(
+                            child: data['price'] == 0
+                                ? Text(
+                              LanguageManager.getText(405),
+                              textDirection: LanguageManager.getTextDirection(),
+                              style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                  color: Converter.hexToColor("#2094CD")),
+                            )
+                            : Row(
                               textDirection: LanguageManager.getTextDirection(),
                               children: [
                                 Text(
-                                  widget.data["price"].toString(),
+                                  data["price"].toString(),
                                   textDirection:
                                   LanguageManager.getTextDirection(),
                                   style: TextStyle(
@@ -139,7 +179,7 @@ class _OrderDetailsState extends State<OrderDetails> {
                                   width: 5,
                                 ),
                                 Text(
-                                  Globals.getUnit(),
+                                  Globals.getUnit(isUsd: data['service_target']),
                                   textDirection:
                                   LanguageManager.getTextDirection(),
                                   style: TextStyle(
@@ -176,7 +216,7 @@ class _OrderDetailsState extends State<OrderDetails> {
                                 width: 7,
                               ),
                               Text(
-                                widget.data['name'].toString(),
+                                data['name'].toString(),
                                 style: TextStyle(
                                     color: Converter.hexToColor("#707070"),
                                     fontWeight: FontWeight.normal,
@@ -190,7 +230,7 @@ class _OrderDetailsState extends State<OrderDetails> {
                             textDirection: LanguageManager.getTextDirection(),
                             children: [
                               InkWell(
-                                 onTap: () => PhoneCall.call(widget.data['number_phone'], context, allowNotSubscribe: (widget.data["status"] == 'PENDING' || widget.data["status"] == 'WAITING' || UserManager.isSubscribe())),
+                                 onTap: () => PhoneCall.call(data['number_phone'], context, allowNotSubscribe: (data["status"] == 'PENDING' || data["status"] == 'WAITING' || UserManager.isSubscribe())),
                                 child: Container(
                                   padding: EdgeInsets.all(5),
                                   child: Icon(
@@ -200,9 +240,10 @@ class _OrderDetailsState extends State<OrderDetails> {
                                   ),
                                 ),
                               ),
+                              data["service_target"] == 'online_services'?
                               InkWell(
                                 onTap: () {
-                                  Navigator.push(context, MaterialPageRoute(builder: (_) => LiveChat(widget.data['provider_id'].toString())));
+                                  Navigator.push(context, MaterialPageRoute(builder: (_) => LiveChat(data['provider_id'].toString())));
                                 },
                                 child: Container(
                                   padding: EdgeInsets.all(5),
@@ -212,7 +253,7 @@ class _OrderDetailsState extends State<OrderDetails> {
                                     size: 22,
                                   ),
                                 ),
-                              ),
+                              ) : Container(),
                             ],
                           )
                         ],
@@ -221,19 +262,36 @@ class _OrderDetailsState extends State<OrderDetails> {
                         height: 10,
                       ),
                       Text(
-                        widget.data['description'].toString(),
+                        LanguageManager.getText(258) + ': ' + data['description'].toString(),
                         style: TextStyle(
                             color: Converter.hexToColor("#707070"),
                             fontWeight: FontWeight.normal,
                             fontSize: 14),
                         textDirection: LanguageManager.getTextDirection(),
-                      )
+                      ),
+                      data['status'] == 'ONE_SIDED_CANCELED' || data['status'] == 'CANCELED'
+                          ? Container(height: 1,color: Colors.red.withAlpha(20), margin: EdgeInsets.symmetric(vertical: 15),)
+                          : Container(),
+                      data['status'] == 'ONE_SIDED_CANCELED' || data['status'] == 'CANCELED'
+                          ? Text(
+                          LanguageManager.getText(data['who_canceled'] == 'user'? 391 : 392) + ': ',
+                          textDirection: LanguageManager.getTextDirection(),
+                          style: TextStyle(color: Colors.red),
+                        )
+                      : Container(),
+                      data['status'] == 'ONE_SIDED_CANCELED' || data['status'] == 'CANCELED'
+                      ? Container(
+                          margin: EdgeInsets.symmetric(vertical: 5),
+                          child: Text(data['canceled_reason'] ?? '',
+                          textDirection: LanguageManager.getTextDirection()))
+                      : Container(),
+
                     ],
                   ),
                 ),
               ),
-              // widget.data['status'] != 'PENDING' &&
-              //     widget.data['status'] != 'WAITING'
+              // data['status'] != 'PENDING' &&
+              //     data['status'] != 'WAITING'
               //     ? Container()
               //     :
               Row(
@@ -241,7 +299,7 @@ class _OrderDetailsState extends State<OrderDetails> {
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   Container(width: 30),
-                widget.data['status'] == 'WAITING'
+                data['status'] == 'WAITING'
                   ? Expanded(
                   flex: 1,
                     child: InkWell(
@@ -268,21 +326,25 @@ class _OrderDetailsState extends State<OrderDetails> {
                     ),
                   )
                     :Container(),
-                  widget.data['status'] != 'WAITING'
+                  data['status'] != 'WAITING'
                       ? Container()
                       : Container(width: 15),
-                  widget.data['status'] == 'PENDING' || widget.data['status'] == 'WAITING'
+                  data['status'] == 'PENDING' || data['status'] == 'WAITING' || data['status'] == 'ONE_SIDED_CANCELED'
                   ? Expanded(
                     flex: 1,
                     child: InkWell(
                       onTap: () {
-                        cancelOrder();
+                        data['status'] == 'ONE_SIDED_CANCELED' && data['who_canceled'] == 'user'? pendingOrder() : cancelOrder();
                       },
                       child: Container(
                         height: 45,
                         alignment: Alignment.center,
                         child: Text(
-                          LanguageManager.getText(180), // الغاء الطلب
+                          LanguageManager.getText(data['service_target'] == 'online_services'
+                                ? data['status'] == 'ONE_SIDED_CANCELED'
+                                  ? data['who_canceled'] == 'user' ? 390 : 180 // طلب إكمال الخدمة
+                                  : 388 // أرسل طلب إلغاء
+                                : 180), // إلغاء الطلب
                           style: TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.bold),
@@ -295,7 +357,7 @@ class _OrderDetailsState extends State<OrderDetails> {
                                   blurRadius: 2)
                             ],
                             borderRadius: BorderRadius.circular(8),
-                            color: Converter.hexToColor("#FF0000")),
+                            color: Converter.hexToColor( data['status'] == 'ONE_SIDED_CANCELED' && data['who_canceled'] == 'user'  ? "#0ec300" : "#FF0000")),
                       ),
                     ),
                   )
@@ -316,7 +378,7 @@ class _OrderDetailsState extends State<OrderDetails> {
     Alert.setStateCall = () {};
     Alert.callSetState();
 
-    if(cancel.isEmpty) {
+    if(cancel.isEmpty && data['status'].toString() != 'ONE_SIDED_CANCELED') {
       errors['canceled_reason'] = true;
       Alert.staticContent = getCancelWidget();
       Alert.setStateCall = () {};
@@ -333,28 +395,36 @@ class _OrderDetailsState extends State<OrderDetails> {
     Navigator.pop(context);
 
     Alert.startLoading(context);
-    cancel["status"] = "CANCELED";
-    cancel["canceled_by"] = UserManager.currentUser("id");
-    NetworkManager.httpPost(Globals.baseUrl + "orders/status/${widget.data['id']}", context ,(r) { // orders/cancel
-      Alert.endLoading();
+
+    cancel["status"] = data['service_target'].toString() == 'online_services' &&
+        data['status'].toString() != 'ONE_SIDED_CANCELED'
+        ? 'ONE_SIDED_CANCELED'
+        : 'CANCELED';
+
+    if(data['status'].toString() != 'ONE_SIDED_CANCELED')
+      cancel["canceled_by"] = UserManager.currentUser("id");
+
+    NetworkManager.httpPost(Globals.baseUrl + "orders/status/${data['id']}", context ,(r) { // orders/cancel
       if (r['state'] == true) {
-        Navigator.of(context, rootNavigator: true)..pop(true)..pop(true);
+        Globals.result = true;
+        Navigator.popUntil(context, ModalRoute.withName('Orders'));
       }
     }, body: cancel);
   }
 
   void completedOrderConferm() {
     Alert.startLoading(context);
-    // Map<String, String> body = {"id": widget.data['id'].toString()};
-    NetworkManager.httpPost(Globals.baseUrl + "orders/status/${widget.data['id']}", context ,(r) async { //orders/completed
-      Alert.endLoading();
+    // Map<String, String> body = {"id": data['id'].toString()};
+    NetworkManager.httpPost(Globals.baseUrl + "orders/status/${data['id']}", context ,(r) async { //orders/completed
       if (r['state'] == true) {
-        // Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => OrderSetRating(widget.data['id'])));
-        var results = await Navigator.push(context, MaterialPageRoute(builder: (_) => OrderSetRating(widget.data['id'])));
+        Alert.endLoading();
+        // Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => OrderSetRating(data['id'])));
+        var results = await Navigator.push(context, MaterialPageRoute(builder: (_) => OrderSetRating(data['id'])));
         print('here_2: $results');
         if (results == true) {
-          Navigator.of(context, rootNavigator: true)..pop(true)..pop(true);
-            Alert.show(context, Converter.getRealText(237));
+          Globals.result = true;
+          Navigator.popUntil(context, ModalRoute.withName('Orders'));
+          Alert.show(context, Converter.getRealText(237));
         }
       }
     }, body: {"status":"COMPLETED"});
@@ -397,7 +467,9 @@ class _OrderDetailsState extends State<OrderDetails> {
                 color: Converter.hexToColor("#707070"),
                 fontWeight: FontWeight.bold),
           ),
-          Container(
+          data['status'] == 'ONE_SIDED_CANCELED' && data['who_canceled'] != 'user'
+          ? Container()
+          : Container(
             margin: EdgeInsets.only(left: 20, right: 20, top: 10, bottom: 10),
             padding: EdgeInsets.all(5),
             decoration: BoxDecoration(
@@ -457,7 +529,11 @@ class _OrderDetailsState extends State<OrderDetails> {
                   height: 45,
                   alignment: Alignment.center,
                   child: Text(
-                    LanguageManager.getText(180), // الغاء الطلب
+                    LanguageManager.getText(
+                        data['service_target'].toString() == 'online_services' &&
+                        data['who_canceled'] == 'user'
+                        ? 388 // أرسل طلب إلغاء
+                        : 180), // الغاء الطلب
                     style: TextStyle(
                         color: Colors.white, fontWeight: FontWeight.bold),
                   ),
@@ -596,12 +672,24 @@ class _OrderDetailsState extends State<OrderDetails> {
         type: AlertType.WIDGET);
   }
 
+  pendingOrder() {
+    Alert.startLoading(context);
+    NetworkManager.httpPost(Globals.baseUrl + "orders/status/${data['id']}",  context, (r) { // orders/completed
+      print('here_response: ${r['state'] == true}, r $r');
+      if (r['state'] == true) {
+        Globals.result = true;
+        Navigator.popUntil(context, ModalRoute.withName('Orders'));
+      }
+    }, body: {"status":"PENDING"});
+  }
+
   String getStatusText(status) {
     return LanguageManager.getText({
       'PENDING': 93,
       'WAITING': 92,
       'COMPLETED': 94,
-      'CANCELED': 184
+      'CANCELED': 184,
+      'ONE_SIDED_CANCELED': 389,
     }[status.toString().toUpperCase()] ??
         92);
   }

@@ -11,6 +11,7 @@ import 'package:dr_tech/Models/LanguageManager.dart';
 import 'package:dr_tech/Models/UserManager.dart';
 import 'package:dr_tech/Network/NetworkManager.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_icons/flutter_icons.dart';
 import 'package:image_picker/image_picker.dart';
 
 class ProfileEdit extends StatefulWidget {
@@ -59,27 +60,41 @@ class _ProfileEditState extends State<ProfileEdit> {
                           await pickImage(ImageSource.gallery);
                           if(selectedImage != null) updateImage();
                         },
-                        child: Container(
-                            width: imageSize,
-                            height: imageSize,
-                            child: isUploading
-                                ? Container(
+                        child: Stack(
+                          alignment: Alignment.bottomRight,
+                          children: [
+                            Container(
+                                width: imageSize,
+                                height: imageSize,
+                                margin: EdgeInsets.all(10),
+                                child: isUploading
+                                    ? Container(
+                                    decoration: BoxDecoration(
+                                        color: Converter.hexToColor("#000000")
+                                            .withAlpha(70),
+                                        borderRadius:
+                                        BorderRadius.circular(10)),
+                                    alignment: Alignment.center,
+                                    child: CustomLoading())
+                                    : Container(),
                                 decoration: BoxDecoration(
-                                    color: Converter.hexToColor("#000000")
-                                        .withAlpha(70),
-                                    borderRadius:
-                                    BorderRadius.circular(10)),
-                                alignment: Alignment.center,
-                                child: CustomLoading())
-                                : Container(),
-                            decoration: BoxDecoration(
-                              color: Converter.hexToColor("#F2F2F2"),
-                              borderRadius: BorderRadius.circular(10),
-                              image: DecorationImage(
-                                  fit: BoxFit.cover,
-                                  image: CachedNetworkImageProvider(
-                                      Globals.correctLink(UserManager.currentUser("avatar")))),
-                            )),
+                                  color: Converter.hexToColor("#F2F2F2"),
+                                  borderRadius: BorderRadius.circular(10),
+                                  image: DecorationImage(
+                                      fit: BoxFit.cover,
+                                      image: CachedNetworkImageProvider(
+                                          Globals.correctLink(UserManager.currentUser("avatar")))),
+                                )),
+                            Container(
+                                width: 30,
+                                height: 30,
+                                padding: EdgeInsets.all(4),
+                                child: Icon(MaterialIcons.edit, color: Colors.white, size: 20),
+                                decoration: BoxDecoration(
+                                    color: Converter.hexToColor("#344f64"),
+                                    borderRadius: BorderRadius.circular(99)))
+                          ],
+                        ),
                       ),
                     ),
                     createInput("username", 243, readOnly: selectedTexts['username'] != null ? true : false),
