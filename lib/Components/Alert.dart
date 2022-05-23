@@ -216,11 +216,18 @@ class _AlertState extends State<Alert> {
               ],
             ),
             Container(height: 10),
-            Text(
-              Converter.getRealText(widget.content),
+            Row(
               textDirection: LanguageManager.getTextDirection(),
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.normal),
-              textAlign: TextAlign.center,
+              children: [
+                Expanded(
+                  child: Text(
+                    Converter.getRealText(widget.content),
+                    textDirection: LanguageManager.getTextDirection(),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.normal),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ],
             ),
             Container(height: 15),
             Container(

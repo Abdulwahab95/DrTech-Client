@@ -6,14 +6,14 @@ import 'package:dr_tech/Models/LanguageManager.dart';
 import 'package:dr_tech/Network/NetworkManager.dart';
 import 'package:flutter/material.dart';
 
-class Terms extends StatefulWidget {
-  const Terms();
+class PrivacyPolicy extends StatefulWidget {
+  const PrivacyPolicy();
 
   @override
-  _TermsState createState() => _TermsState();
+  _PrivacyPolicyState createState() => _PrivacyPolicyState();
 }
 
-class _TermsState extends State<Terms> {
+class _PrivacyPolicyState extends State<PrivacyPolicy> {
   bool isLoading = false;
   var data;
   @override
@@ -26,7 +26,7 @@ class _TermsState extends State<Terms> {
     setState(() {
       isLoading = true;
     });
-    NetworkManager.httpGet(Globals.baseUrl + "terms", context, (r) { // information/terms
+    NetworkManager.httpGet(Globals.baseUrl + "privacy/policy", context, (r) { // information/terms
       setState(() {
         isLoading = false;
         data = r['data'];
@@ -39,7 +39,7 @@ class _TermsState extends State<Terms> {
     return Scaffold(
         backgroundColor: Colors.white,
         body: Column(children: [
-          TitleBar((){Navigator.pop(context);}, 425, without: true),
+          TitleBar((){Navigator.pop(context);}, 59, without: true),
           Expanded(
               child: isLoading
                   ? Center(

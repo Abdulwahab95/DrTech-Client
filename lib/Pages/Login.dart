@@ -14,7 +14,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:keyboard_visibility/keyboard_visibility.dart';
 
-import 'ExtraPages/Terms.dart';
+import 'ExtraPages/PrivacyPolicy.dart';
 
 class Login extends StatefulWidget {
   const Login();
@@ -243,7 +243,7 @@ class _LoginState extends State<Login> {
       );
   }
 
-  void goToTerms() {Navigator.push(context, MaterialPageRoute(builder: (_) => Terms()));}
+  void goToTerms() {Navigator.push(context, MaterialPageRoute(builder: (_) => PrivacyPolicy()));}
 
   void login() {
     hideKeyBoard();

@@ -411,12 +411,12 @@ class _OrdersState extends State<Orders> with TickerProviderStateMixin , Widgets
 
                     Expanded(
                       child: Column(children: [// Call Action
-                            customButton(96, () => PhoneCall.call(item['number_phone'], context, allowNotSubscribe : item["status"] == 'PENDING' || item["status"] == 'WAITING' || isSubscribe)
+                            customButton(96, () => PhoneCall.call(item['number_phone'], context, allowNotSubscribe : ((item["status"] == 'PENDING' || item["status"] == 'WAITING') && item["service_target"] != 'online_services' ) || isSubscribe, isOnlineService: item["service_target"] == 'online_services')
                             , FlutterIcons.phone_in_talk_mco, FlutterIcons.phone_in_talk_mco),
                             Text(
-                              LanguageManager.getText(item["status"] == 'PENDING' || item["status"] == 'WAITING' || isSubscribe ? 358 : 348),
+                              LanguageManager.getText(((item["status"] == 'PENDING' || item["status"] == 'WAITING') && item["service_target"] != 'online_services' ) || isSubscribe ? 358 : 348),
                               style: TextStyle(
-                                  color: item["status"] == 'PENDING' || item["status"] == 'WAITING'  || isSubscribe? Colors.green : Colors.black,
+                                  color: ((item["status"] == 'PENDING' || item["status"] == 'WAITING') && item["service_target"] != 'online_services' )   || isSubscribe? Colors.green : Colors.black,
                                   fontSize: 10,
                                   fontWeight: FontWeight.w600),
                             ),

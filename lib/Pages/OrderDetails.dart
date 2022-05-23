@@ -230,7 +230,7 @@ class _OrderDetailsState extends State<OrderDetails> with WidgetsBindingObserver
                             textDirection: LanguageManager.getTextDirection(),
                             children: [
                               InkWell(
-                                 onTap: () => PhoneCall.call(data['number_phone'], context, allowNotSubscribe: (data["status"] == 'PENDING' || data["status"] == 'WAITING' || UserManager.isSubscribe())),
+                                 onTap: () => PhoneCall.call(data['number_phone'], context, allowNotSubscribe: ((data["status"] == 'PENDING' || data["status"] == 'WAITING') && data["service_target"] != 'online_services' ) || UserManager.isSubscribe(), isOnlineService: data["service_target"] == 'online_services'),
                                 child: Container(
                                   padding: EdgeInsets.all(5),
                                   child: Icon(

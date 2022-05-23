@@ -15,6 +15,7 @@ class SplashEffect extends StatelessWidget {
   final bool showShadow;
   final bool borderRadius;
   final List<BoxShadow> boxShadow;
+  final BoxBorder border;
 
 
   const SplashEffect(
@@ -33,7 +34,8 @@ class SplashEffect extends StatelessWidget {
             spreadRadius: 2,
             blurRadius: 2)
         ],
-        this.borderRadius = true})
+        this.borderRadius = true,
+        this.border})
       : super(key: key);
 
   @override
@@ -47,7 +49,9 @@ class SplashEffect extends StatelessWidget {
           decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(borderRadius? (radius != null? radius : 999) : 0),
               color: color,
-              boxShadow: !showShadow? [] : boxShadow),
+              boxShadow: !showShadow? [] : boxShadow,
+            border:  border,
+          ),
           child: child,
         ),
         new Positioned.fill(

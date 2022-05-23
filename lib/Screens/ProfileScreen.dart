@@ -9,6 +9,7 @@ import 'package:dr_tech/Models/UserManager.dart';
 import 'package:dr_tech/Pages/ContactUs.dart';
 import 'package:dr_tech/Pages/ExtraPages/About.dart';
 import 'package:dr_tech/Pages/ExtraPages/RateApp.dart';
+import 'package:dr_tech/Pages/ExtraPages/PrivacyPolicy.dart';
 import 'package:dr_tech/Pages/ExtraPages/Terms.dart';
 import 'package:dr_tech/Pages/FrequentlyAskedQuestions.dart';
 import 'package:dr_tech/Pages/JoinRequest.dart';
@@ -145,6 +146,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Navigator.push(context, MaterialPageRoute(builder: (_) => About()));
           }),
           getProfileItem(FlutterIcons.list_fea, 59, () {
+            Navigator.push(context, MaterialPageRoute(builder: (_) => PrivacyPolicy()));
+          }),
+          getProfileItem(MaterialIcons.panorama_horizontal, 425, () {
             Navigator.push(context, MaterialPageRoute(builder: (_) => Terms()));
           }),
           getProfileItem(FlutterIcons.server_fea, 61, () {

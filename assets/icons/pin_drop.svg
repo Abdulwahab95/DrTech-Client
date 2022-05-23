@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="13.186" height="15.89" viewBox="0 0 13.186 15.89">
+  <defs>
+    <clipPath id="clip-path">
+      <rect x="2" width="13.186" height="15.89" fill="none"/>
+    </clipPath>
+  </defs>
+  <g id="baseline_pin_drop" transform="translate(-2)" clip-path="url(#clip-path)" style="isolation: isolate">
+    <g id="baseline-pin_drop-24px">
+      <path id="Path_1928" data-name="Path 1928" d="M14.8,6.521a4.521,4.521,0,1,0-9.042,0c0,3.391,4.521,8.288,4.521,8.288S14.8,9.911,14.8,6.521Zm-6.028,0a1.507,1.507,0,1,1,1.507,1.507A1.511,1.511,0,0,1,8.767,6.521ZM5,15.562v1.507H15.549V15.562Z" transform="translate(-1.233 -0.493)"/>
+      <path id="Path_1929" data-name="Path 1929" d="M0,0H18.083V18.083H0Z" fill="none"/>
+    </g>
+  </g>
+</svg>

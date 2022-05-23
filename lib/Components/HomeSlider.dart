@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:dr_tech/Components/popup_menu.dart';
+import 'package:dr_tech/Components/popup_menu.dart' as popMenu;
 import 'package:dr_tech/Config/Converter.dart';
 import 'package:dr_tech/Config/Globals.dart';
 import 'package:dr_tech/Config/IconsMap.dart';
@@ -19,12 +19,12 @@ class HomeSlider extends StatefulWidget {
 class _HomeSliderState extends State<HomeSlider> {
 
   ScrollController controller = ScrollController();
-  List<PopupMenu> menus = [];
+  List<popMenu.PopupMenu> menus = [];
   List<GlobalKey> btnKeyList = [];
 
   @override
   void initState() {
-    PopupMenu.context = context;
+    popMenu.PopupMenu.context = context;
     tick();
     super.initState();
   }
@@ -60,11 +60,11 @@ class _HomeSliderState extends State<HomeSlider> {
       for (var item in slides) {
 
         btnKeyList.add(GlobalKey());
-        List<MenuItem> menuItems = [];
+        List<popMenu.MenuItem> menuItems = [];
         for (var slidesUrlsItem in item['urls'])
           {
             print('here_slidesUrlsItem: $slidesUrlsItem');
-            menuItems.add(MenuItem(
+            menuItems.add(popMenu.MenuItem(
               title: slidesUrlsItem[LanguageManager.getDirection() ? 'text' : 'text_en'],
               image: slidesUrlsItem['icon_name_or_url'].toString().contains('/')
                   ? getIcon(slidesUrlsItem)
@@ -77,10 +77,10 @@ class _HomeSliderState extends State<HomeSlider> {
         }
         print('here_menuItems: ${menuItems.length}');
         if(menuItems.isNotEmpty)
-          menus.add(PopupMenu(
+          menus.add(popMenu.PopupMenu(
             items: menuItems,
             backgroundColor: Converter.hexToColor("#344f64"),
-            onClickMenu: (MenuItemProvider itemProvider) async {
+            onClickMenu: (popMenu.MenuItemProvider itemProvider) async {
               print('Click menu -> ${itemProvider.menuTitle}, ${itemProvider.menuItem}');
               await _launchURL(Uri.encodeFull(itemProvider.menuItem['url']));
             },

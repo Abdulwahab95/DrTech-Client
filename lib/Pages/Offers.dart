@@ -353,16 +353,17 @@ class _OffersState extends State<Offers> {
     };
     Alert.startLoading(context);
     NetworkManager.httpPost(Globals.baseUrl + "orders/create/from/offer",context, (r) { // orders/set
-      if (r['state'] == true) {
+      if (r['state'] == true || r['data'] == 420) {
         Alert.endLoading();
-        Alert.show(context, Converter.getRealText(299),
+        if(r['state'] != true) Navigator.of(context).pop();
+        Alert.show(context, Converter.getRealText(r['data'] is int? r['data'] : 299),
             onYesShowSecondBtn: false,
             premieryText: Converter.getRealText(300),
             onYes: () {
               Navigator.of(context).pop(true);
               Navigator.push(context, MaterialPageRoute(settings: RouteSettings(name: 'Orders'), builder: (_) => Orders()));
             });
-      }else{
+      }else if(r['code'] == 0){
         Navigator.of(context).pop();
         Alert.show(context,getNotEnoughMoneyWidget(r['message'].toString().replaceAll('\\n', '\n')),type: AlertType.WIDGET);
         }

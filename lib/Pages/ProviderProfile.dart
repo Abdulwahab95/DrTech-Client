@@ -18,6 +18,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import 'FeatureSubscribe.dart';
 import 'Login.dart';
+import 'OpenImage.dart';
 import 'Orders.dart';
 
 class ProviderProfile extends StatefulWidget {
@@ -123,37 +124,42 @@ class _ProviderProfileState extends State<ProviderProfile> with WidgetsBindingOb
                             )),
                       ],
                     ),
-                    Container(
-                      width: 143,
-                      height: 143,
-                      alignment: LanguageManager.getDirection()
-                          ? Alignment.bottomRight
-                          : Alignment.bottomLeft,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(999),
-                        border: Border.all(
-                          color: Converter.hexToColor('#2094CD'),
-                          width: 3,
-                        ),
-                        image: DecorationImage(image: CachedNetworkImageProvider(Globals.correctLink(data['avatar']))),
-                      ),
-                      child:
-                      data['verified'] == true || data['verified'] == 1
-                      ?
-                      Container(
-                        width: 28,
-                        height: 28,
-                        margin: EdgeInsets.all(5),
-                        child: Icon(
-                          FlutterIcons.check_fea,
-                          color: Colors.white,
-                          size: 15,
-                        ),
+                    SplashEffect(
+                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => OpenImage(url: (data['avatar'] as String)))),
+                      showShadow: false,
+                      borderRadius: false,
+                      child: Container(
+                        width: 143,
+                        height: 143,
+                        alignment: LanguageManager.getDirection()
+                            ? Alignment.bottomRight
+                            : Alignment.bottomLeft,
                         decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(20),
-                            color: Colors.blue),
-                      )
-                      : Container(),
+                          borderRadius: BorderRadius.circular(999),
+                          border: Border.all(
+                            color: Converter.hexToColor('#2094CD'),
+                            width: 3,
+                          ),
+                          image: DecorationImage(image: CachedNetworkImageProvider(Globals.correctLink(data['avatar']))),
+                        ),
+                        child:
+                        data['verified'] == true || data['verified'] == 1
+                        ?
+                        Container(
+                          width: 28,
+                          height: 28,
+                          margin: EdgeInsets.all(5),
+                          child: Icon(
+                            FlutterIcons.check_fea,
+                            color: Colors.white,
+                            size: 15,
+                          ),
+                          decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(20),
+                              color: Colors.blue),
+                        )
+                        : Container(),
+                      ),
                     ),
                     Container(
                         margin: EdgeInsets.all(16),

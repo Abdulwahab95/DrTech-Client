@@ -1,4 +1,3 @@
-import 'package:dr_tech/Models/LanguageManager.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'dart:math' as math; // import this

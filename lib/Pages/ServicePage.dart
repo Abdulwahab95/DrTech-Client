@@ -16,6 +16,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 
 import 'Login.dart';
+import 'OpenImage.dart';
 import 'Orders.dart';
 import 'ProviderProfile.dart';
 
@@ -657,12 +658,17 @@ class _ServicePageState extends State<ServicePage> with TickerProviderStateMixin
                     controller: controller,
                   children: (data['images'] as String)
                       .split('||')
-                      .map<Widget>((String url) => Container(
-                    width: size - 20,
-                    height: size * 0.5 - 10,
-                    decoration: BoxDecoration(image: DecorationImage(image: CachedNetworkImageProvider(Globals.correctLink(url)))),
-                  ))
-                      .toList()),
+                      .map<Widget>((String url) =>
+                      SplashEffect(
+                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => OpenImage(url: (data['images'] as String)))),
+                        showShadow: false,
+                        borderRadius: false,
+                        child: Container(
+                          width: size - 20,
+                          height: size * 0.5 - 10,
+                          decoration: BoxDecoration(image: DecorationImage(image: CachedNetworkImageProvider(Globals.correctLink(url)))),
+                        ),
+                      )).toList()),
                 decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(20),
                     color: Converter.hexToColor("#F2F2F2")),
@@ -674,18 +680,35 @@ class _ServicePageState extends State<ServicePage> with TickerProviderStateMixin
                   textDirection: LanguageManager.getTextDirection(),
                   children: [
                     Container(),
-                    Row(
-                        textDirection: LanguageManager.getTextDirection(),
-                        children: (data['images'] as String).split('||')
-                            .map<Widget>((String url) => Container(
+                    // '||'.allMatches(data['images'].toString()).length + 1 <= 1 ? Container() :
+                    Container(
+                      padding: EdgeInsets.all(10),
+                      // color: Colors.grey.withOpacity(.5),
+                      child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          textDirection: LanguageManager.getTextDirection(),
+                          children: List.generate(
+                              ('||'.allMatches(data['images']).length + 1),
+                                  (index) {
+                                return Container(
                                   width: 7,
                                   height: 7,
+                                  margin: EdgeInsets.all(2),
                                   decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(20),
-                                      color: controller.index == (data['images'] as String).split('||').indexOf(url)
+                                      borderRadius: BorderRadius.circular(10),
+                                      boxShadow: [
+                                        BoxShadow(
+                                            color: Colors.black.withAlpha(30),
+                                            spreadRadius: 2,
+                                            blurRadius: 2)
+                                      ],
+                                      color: controller.index == index
                                           ? Colors.white
                                           : Converter.hexToColor("#344F64")),
-                                )).toList()),
+                                );
+                              }).toList()),
+                    ),
                     Container(
                       child: InkWell(
                         onTap: () {

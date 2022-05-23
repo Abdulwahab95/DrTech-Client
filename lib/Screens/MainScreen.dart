@@ -16,6 +16,8 @@ import 'package:flutter_icons/flutter_icons.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../Pages/UserFavoritServices.dart';
+
 class MainScreen extends StatefulWidget {
   final slider;
   final goToNotification;
@@ -87,6 +89,14 @@ class _MainScreenState extends State<MainScreen> {
     //     widget.goToNotification();
     //   }));
 
+    Globals.getSetting('show_favourite_services') == 'false' ? Container() :
+    items.add(createServices("sharing", 39, () {
+      UserManager.currentUser("id").isNotEmpty
+          ? Navigator.push(context, MaterialPageRoute(builder: (_) => UserFavoriteServices()))
+      : goLogin();
+    })); // الخدمات المفضلة
+
+    Globals.getSetting('show_record_as_provider') == 'false' ? Container() :
     items.add(createServices(FlutterIcons.server_fea, 61, () { // سجل كمزود خدمة
       Navigator.push(context, MaterialPageRoute(builder: (_) => JoinRequest()));
     }));
@@ -116,7 +126,6 @@ class _MainScreenState extends State<MainScreen> {
     //   Navigator.push(
     //       context, MaterialPageRoute(builder: (_) => UserFavoritProducts()));
     // }));
-    // items.add(createServices("sharing", 39, () {}));
 
 
     items.add(Container(

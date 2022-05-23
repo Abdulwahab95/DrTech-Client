@@ -10,12 +10,12 @@ import 'package:dr_tech/Network/NetworkManager.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 
-class UserFavoritProducts extends StatefulWidget {
+class UserFavoriteProducts extends StatefulWidget {
   @override
-  _UserFavoritProductsState createState() => _UserFavoritProductsState();
+  _UserFavoriteProductsState createState() => _UserFavoriteProductsState();
 }
 
-class _UserFavoritProductsState extends State<UserFavoritProducts> {
+class _UserFavoriteProductsState extends State<UserFavoriteProducts> {
   Map<int, List> data = {};
   int page = 0;
   bool isLoading;
