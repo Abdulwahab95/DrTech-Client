@@ -63,7 +63,7 @@ class _HomeSliderState extends State<HomeSlider> {
         List<popMenu.MenuItem> menuItems = [];
         for (var slidesUrlsItem in item['urls'])
           {
-            print('here_slidesUrlsItem: $slidesUrlsItem');
+            // print('here_slidesUrlsItem: $slidesUrlsItem');
             menuItems.add(popMenu.MenuItem(
               title: slidesUrlsItem[LanguageManager.getDirection() ? 'text' : 'text_en'],
               image: slidesUrlsItem['icon_name_or_url'].toString().contains('/')

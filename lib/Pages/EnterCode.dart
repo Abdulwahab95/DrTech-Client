@@ -398,7 +398,7 @@ class _EnterCodeState extends State<EnterCode> {
     print('heree: signIn');
     var errorStr = '';
     await FirebaseAuth.instance.signInWithCredential(
-        PhoneAuthProvider.credential(verificationId: verificationId, smsCode: otp)).
+        PhoneAuthProvider.credential(verificationId: verificationId, smsCode: Converter.replaceArabicNumber(otp))).
     onError((error, stackTrace) {errorStr = error.toString(); return;}).
     then((value) {
       Alert.endLoading();

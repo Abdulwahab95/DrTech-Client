@@ -274,12 +274,11 @@ class _LoginState extends State<Login> {
     body["role"] = 'USER';
     //Navigator.push(context, MaterialPageRoute(builder: (_) => EnterCode(body, selectedCountrieCode["phone_code"] )));
 
-    replaceArabicNumber(body["number_phone"]);
+    body["number_phone"] = Converter.replaceArabicNumber(body["number_phone"]);
 
     fullNum = selectedCountrieCode["phone_code"] + body["number_phone"];
 
     sendSms();
-
 
   }
 
@@ -338,16 +337,6 @@ class _LoginState extends State<Login> {
       },
 
     );
-  }
-
-  Map replaceArabicNumber(String offerNum) {
-    const en = ['0','1','2','3','4','5','6','7','8','9'];
-    const ar = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
-    for (int i = 0; i< en.length; i++){
-      offerNum = offerNum.replaceAll(ar[i], en[i]);
-    }
-    body["number_phone"] =  offerNum;
-    return    body;
   }
 
   void hideKeyBoard() {

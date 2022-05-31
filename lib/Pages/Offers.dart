@@ -82,6 +82,7 @@ class _OffersState extends State<Offers> {
   }
 
   Widget createItem(item, int i) {
+    print('here_item_offer: $item');
     return Container(
       // padding: EdgeInsets.all(10),
       margin: EdgeInsets.symmetric(vertical: 5,horizontal: 15),
@@ -337,6 +338,7 @@ class _OffersState extends State<Offers> {
   }
 
   void offerAccept(item) {
+    print('here_item_offer 2: $item');
     if (!UserManager.checkLogin()) {
       Alert.show(context, LanguageManager.getText(298),
           premieryText: LanguageManager.getText(30),
@@ -347,10 +349,13 @@ class _OffersState extends State<Offers> {
     }
 
     Map<String, String> body = {
-     // "message_id": widget.messageItem["id"].toString(),
       "offer_id" : item['id'].toString(),
       "token"    : ''
     };
+    if(item['service_target'] == "online_services"){
+      body['is_online_services'] = 'true';
+      body['service_categories_id'] = item['service_categories_id'].toString();
+    }
     Alert.startLoading(context);
     NetworkManager.httpPost(Globals.baseUrl + "orders/create/from/offer",context, (r) { // orders/set
       if (r['state'] == true || r['data'] == 420) {

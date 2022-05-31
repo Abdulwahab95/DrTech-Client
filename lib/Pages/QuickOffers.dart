@@ -126,8 +126,6 @@ class _QuickOffersState extends State<QuickOffers> {
             ),
             visibleCities ? InkWell(
               onTap: ()=> setState(() {visibleCities = !visibleCities;}),
-              // highlightColor: Colors.green,
-              // splashColor: Colors.red,
               child: Container(
                 margin: EdgeInsets.only(top: 238, right: 20, left: 20),
                 width: double.infinity,
@@ -155,7 +153,7 @@ class _QuickOffersState extends State<QuickOffers> {
                   ],
                 ),
               ),
-            ) : Container(height: 1)
+            ) : Container(height: 1),
           ],
         ));
   }
@@ -298,7 +296,6 @@ class _QuickOffersState extends State<QuickOffers> {
     List<Widget> contents = [];
 
     for (var item in data['cities']) {
-      // print('here_Alert_getListOptions: $item');
       contents.add(InkWell(
         onTap: () {
           filters = {};
@@ -361,7 +358,11 @@ class _QuickOffersState extends State<QuickOffers> {
             "service_id"            : widget.serviceId.toString(),
             "provider_service_id"   : item['provider_service_id'].toString()
           };
-          if(isQuickOffer){
+          if(widget.isOnlineServices) {
+            body['is_online_services'] = 'true';
+            body['service_categories_id'] = item['service_categories_id'].toString();
+          }
+      if(isQuickOffer){
             body['quick_offer_id'] = item['quick_offer_id'].toString();
           }
           Alert.startLoading(context);

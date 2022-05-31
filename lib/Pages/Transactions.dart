@@ -24,7 +24,7 @@ class Transactions extends StatefulWidget {
   _TransactionsState createState() => _TransactionsState();
 }
 
-class _TransactionsState extends State<Transactions> {
+class _TransactionsState extends State<Transactions> with WidgetsBindingObserver{
   Map<int, List> data = {};
   bool isLoading = false;
   Map errors = {},body = {}, selectedPaymentOption = {};
@@ -34,8 +34,23 @@ class _TransactionsState extends State<Transactions> {
 
   @override
   void initState() {
+    WidgetsBinding.instance.addObserver(this);
     load();
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      print('here_resumed_from: Service');
+      load();
+    }
   }
 
   void load() {
