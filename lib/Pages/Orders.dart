@@ -403,7 +403,59 @@ class _OrdersState extends State<Orders> with TickerProviderStateMixin , Widgets
                       )
                     ],
                   ),
-                  Container(height: 7),
+                  Container(
+                    height: 1,
+                  ),
+                  Row(
+                    textDirection: LanguageManager.getTextDirection(),
+                    children: [
+                      Icon(
+                        Icons.assignment_late_outlined,
+                        color: Converter.hexToColor("#C4C4C4"),
+                        size: 20,
+                      ),
+                      Container(
+                        width: 7,
+                      ),
+                      Text(
+                        '${LanguageManager.getText(426)}${item['id'].toString()}',
+                        style: TextStyle(
+                            color: Converter.hexToColor("#707070"),
+                            fontWeight: FontWeight.normal,
+                            //height: 1.6,
+                            fontSize: 14),
+                        textDirection: LanguageManager.getTextDirection(),
+                      ),
+                    ],
+                  ),
+
+                  Container(
+                    height: 1,
+                  ),
+                  Row(
+                    textDirection: LanguageManager.getTextDirection(),
+                    children: [
+                      Icon(
+                        Icons.access_time_sharp,
+                        color: Converter.hexToColor("#C4C4C4"),
+                        size: 20,
+                      ),
+                      Container(
+                        width: 7,
+                      ),
+                      Text(
+                        Converter.getRealTime(item['created_at'].toString()),
+                        style: TextStyle(
+                            color: Converter.hexToColor("#707070"),
+                            fontWeight: FontWeight.normal,
+                            fontSize: 14),
+                        textDirection: LanguageManager.getTextDirection(),
+                      )
+                    ],
+                  ),
+                  Container(
+                    height: 7,
+                  ),
 
                   Row(
                       textDirection: LanguageManager.getTextDirection(),
