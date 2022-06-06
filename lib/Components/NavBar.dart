@@ -146,7 +146,7 @@ class _NavBarState extends State<NavBar> {
                 color: Colors.white,
               ),
               decoration: BoxDecoration(
-                  color: activeColor,
+                  color: isActive ? activeColor : Colors.grey,
                   borderRadius: BorderRadius.circular(homeIconSize)),
             ),
             Container(
@@ -157,7 +157,7 @@ class _NavBarState extends State<NavBar> {
               child: Text(
                 LanguageManager.getText(text),
                 style: TextStyle(
-                    color: activeColor,
+                    color: isActive ? activeColor : Colors.grey,
                     fontSize: 16,
                     fontWeight: FontWeight.bold),
               ),

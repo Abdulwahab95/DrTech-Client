@@ -16,7 +16,7 @@ class CustomSwitchStateless extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return  Container(
-          width: isActive? 55.0: 60.0,
+          width: isActive? (LanguageManager.getDirection()? 55.0 : 71.0): 60.0,
           height: 20.0,
           decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(20.0),

@@ -119,8 +119,8 @@ class _ServiceState extends State<Service> with WidgetsBindingObserver {
           isLoading = false;
           data[0] = r['data']['services']; // r['page']
           if (!(cities.isNotEmpty && cities.length > (r['data']['cities'] as List).length))
-          cities = r['data']['cities'];
-          if(selectedCity.isEmpty) selectedCity = cities[0]?? {};
+            cities = r['data']['cities'];
+          // if(selectedCity.isEmpty || selectedCity != cities[0]) selectedCity = cities[0]?? {};
         });
       }
     }, body: filters, cachable: true);
@@ -518,13 +518,16 @@ class _ServiceState extends State<Service> with WidgetsBindingObserver {
                           width: 55,
                           // alignment: Alignment.center,
                           child: Text(
-                            selectedCity['name'] ?? '',
+                            (selectedCity.isEmpty? cities[0]['name'] : selectedCity['name']) ?? '',
                             textDirection: LanguageManager.getTextDirection(),
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                                 fontSize: 14,
-                                color: !selectedCity['name'].toString().contains('كل') || visibleCities ? Colors.black : Colors.grey,
-                            ),
+                              color: !selectedCity['name'].toString().contains(LanguageManager.getDirection() ? 'كل' : 'All') ||
+                                            visibleCities
+                                        ? Colors.black
+                                        : Colors.grey,
+                                  ),
                           ),
                         ),
                         Icon(
@@ -752,7 +755,7 @@ class _ServiceState extends State<Service> with WidgetsBindingObserver {
                             showShadow: false,
                             child: createItemSvgText('directions_run', 14, 18, LanguageManager.getText(407), colorText: Converter.hexToColor('#B90404'), height: 1.1),
                           ),
-                          SvgPicture.asset("assets/icons/line_point.svg", width: 130),
+                          SvgPicture.asset("assets/icons/line_point.svg", width: LanguageManager.getDirection()? 130 : 90),
                       ],
                     )),
                     Column(children: [
@@ -771,6 +774,7 @@ class _ServiceState extends State<Service> with WidgetsBindingObserver {
                                     item['phone'], item['active'].toString())));
                       }) : Container(height: 42, width: 42,),
                     ]),
+                    Container(width: LanguageManager.getDirection()? 0 : 5 ),
                   ],
                 ),
                 Container(height: 15),
@@ -898,7 +902,7 @@ class _ServiceState extends State<Service> with WidgetsBindingObserver {
           ),
         ),
         Container(
-          margin: EdgeInsets.only(top: 23, left: 25),
+          margin: LanguageManager.getDirection()? EdgeInsets.only(top: 23, left: 25) : EdgeInsets.only(top: 23, right: 25),
           child: CustomSwitchStateless(
             activeText: LanguageManager.getText(100),
             notActiveText: LanguageManager.getText(101),

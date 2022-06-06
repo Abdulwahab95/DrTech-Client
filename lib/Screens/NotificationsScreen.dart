@@ -10,6 +10,8 @@ import 'package:dr_tech/Models/UserManager.dart';
 import 'package:dr_tech/Network/NetworkManager.dart';
 import 'package:flutter/material.dart';
 
+import '../Models/DatabaseManager.dart';
+
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen();
 
@@ -28,7 +30,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     Globals.reloadPageNotificationLive = (){
       if(mounted) load();
     };
-    load();
+    // print('here_NotificationsScreen: ${DatabaseManager.liveDatabase[Globals.authoKey]}');
+    if(DatabaseManager.liveDatabase[Globals.authoKey] != null)
+      load();
     super.initState();
   }
 
