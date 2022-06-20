@@ -59,7 +59,7 @@ class _OffersState extends State<Offers> {
         body: Column(
           textDirection: LanguageManager.getTextDirection(),
           children: [
-            TitleBar((){Navigator.pop(context);}, LanguageManager.getText(354), without: true), // عروض هذه الخدمة
+            TitleBar((){Navigator.pop(context);}, LanguageManager.getText(354), withoutBell: true), // عروض هذه الخدمة
             isLoading
             ? Expanded(child: Center(child: CustomLoading()))
             : Expanded(child: Container(child: getBodyContents())),

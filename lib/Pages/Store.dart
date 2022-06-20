@@ -9,8 +9,9 @@ import 'package:dr_tech/Config/Converter.dart';
 import 'package:dr_tech/Config/Globals.dart';
 import 'package:dr_tech/Models/LanguageManager.dart';
 import 'package:dr_tech/Network/NetworkManager.dart';
-import 'package:dr_tech/Pages/AddProduct.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -26,15 +27,18 @@ class _StoreState extends State<Store> {
       mainController = ScrollController();
   Map selectedFilters = {},
       filters = {},
-      data = {},
-      config,
+      config = {},
       selectedCatigory,
       selectedSubCatigory = {};
+  List data = [];
   bool isFilterOpen = false, isConfigLoading = false, isLoading = false;
   int sliderSelectedIndex = -1, pageIndex = 0;
+
   @override
   void initState() {
-    loadConfig();
+    Future.delayed(Duration.zero, () {
+      loadConfig();
+    });
     super.initState();
   }
 
@@ -44,19 +48,116 @@ class _StoreState extends State<Store> {
     });
 
     NetworkManager.httpGet(Globals.baseUrl + "store/configuration", context, (r) {
+//     var r = {
+//   "state": true,
+//   "sliders": [
+//     {
+//       "id": "3",
+//       "image": "https:\/\/server.drtechapp.com\/storage\/images\/slide_1.jpg",
+//       "url": "",
+//       "target": "STORE",
+//       "created_at": "2021-07-06 10:01:52"
+//     },
+//     {
+//       "id": "4",
+//       "image": "https:\/\/server.drtechapp.com\/storage\/images\/slide_1.png",
+//       "url": "",
+//       "target": "STORE",
+//       "created_at": "2021-07-06 10:01:52"
+//     },
+//     {
+//       "id": "5",
+//       "image": "https:\/\/server.drtechapp.com\/storage\/images\/slide_2.jpg",
+//       "url": "",
+//       "target": "STORE",
+//       "created_at": "2021-07-06 10:01:52"
+//     }
+//   ],
+//   "catigories": [
+//     {
+//       "id": "1",
+//       "name": "قسم الجوالات",
+//       "name_en": "",
+//       "parent_id": "0",
+//       "icon": "https:\/\/server.drtechapp.com\/storage\/images\/camera.svg",
+//       "created_at": "2021-07-12 08:09:42",
+//       "children": [
+//         {
+//           "id": "3",
+//           "name": "ايفون",
+//           "name_en": "",
+//           "parent_id": "1",
+//           "icon": "https:\/\/server.drtechapp.com\/storage\/images\/camera.svg",
+//           "created_at": "2021-07-12 08:09:42",
+//           "children": [
+//             {
+//               "id": "6",
+//               "name": "iphone 5S",
+//               "name_en": "",
+//               "parent_id": "3",
+//               "icon": "https:\/\/server.drtechapp.com\/storage\/images\/",
+//               "created_at": "2021-07-12 08:09:42",
+//               "children": []
+//             }
+//           ]
+//         },
+//         {
+//           "id": "4",
+//           "name": "سامسونج",
+//           "name_en": "",
+//           "parent_id": "1",
+//           "icon": "https:\/\/server.drtechapp.com\/storage\/images\/camera.svg",
+//           "created_at": "2021-07-12 08:09:42",
+//           "children": []
+//         },
+//         {
+//           "id": "5",
+//           "name": "هواوي",
+//           "name_en": "",
+//           "parent_id": "1",
+//           "icon": "https:\/\/server.drtechapp.com\/storage\/images\/camera.svg",
+//           "created_at": "2021-07-12 08:09:42",
+//           "children": []
+//         }
+//       ]
+//     },
+//     {
+//       "id": "2",
+//       "name": "قسم الاكسسوارات ",
+//       "name_en": "",
+//       "parent_id": "0",
+//       "icon": "https:\/\/server.drtechapp.com\/storage\/images\/camera.svg",
+//       "created_at": "2021-07-12 08:09:42",
+//       "children": []
+//     },
+//     {
+//       "id": "3",
+//       "name": "قسم اللابتوبات ",
+//       "name_en": "",
+//       "parent_id": "0",
+//       "icon": "https:\/\/server.drtechapp.com\/storage\/images\/camera.svg",
+//       "created_at": "2021-07-12 08:09:42",
+//       "children": []
+//     }
+//   ]
+// };
       setState(() {
         isConfigLoading = false;
       });
       if (r['state'] == true) {
         setState(() {
-          config = r;
+          config = r['data'];
           selectedCatigory = config['catigories'][0];
           selectedSubCatigory['id'] = '_ALL';
-          init();
+
+          print('here_getProducts: $selectedCatigory');
+          print('here_getProducts: $selectedSubCatigory');
+          // init();
           load();
         });
       }
     }, cashable: true);
+
   }
 
   void init() {
@@ -83,26 +184,81 @@ class _StoreState extends State<Store> {
       isLoading = true;
     });
     Map<String, String> body = {
-      "catigory_id": selectedCatigory['id'],
-      "product_type_id": selectedSubCatigory['id'],
-      "page": pageIndex.toString()
+      "catigory_id": selectedCatigory['id'].toString(),
+      "product_type_id": selectedSubCatigory['id'].toString(),
+      // "page": pageIndex.toString()
     };
     NetworkManager.httpGet(Globals.baseUrl + "store/load", context, (r) {
+    //  var r =   {
+    //   "state": true,
+    // "page": "0",
+    // "catigory_id": 1,
+    // "product_type_id": "_ALL",
+    // "data": [
+    //   { 'id': 1,
+    //     'name': 'iphone 6s for sale',
+    //     'price': '160',
+    //     'location': 'مكة',
+    //     'status': 'USED',
+    //     'color': 'احمر',
+    //     'brand': 'قسم الجوالات',
+    //     'created_at': '2021-07-12 08:09:42',
+    //     'is_guaranteed': '1',
+    //     'memory': '128',
+    //     'description': 'thanks for the invite',
+    //     'expires_at': '2021-08-12 08:09:42',
+    //     'unit': 'ر.س',
+    //     'isLiked': true,
+    //     'user': {
+    //       'id': '30',
+    //       'name': 'عبدالوهاب',
+    //       'phone': '123456789',
+    //     },
+    //     'active': '1',
+    //     'images': ['https:\/\/server.drtechapp.com\/storage\/images\/slide_1.jpg']
+    //   },
+    // ]
+    // };
+
+    // $this->id = $row['id'];
+    // $this->name = $row['titel'];
+    // $this->price = $row['price'];
+    // $this->location = $row['location'];
+    // $this->status = $row['product_status'];
+    // $this->color = $row['color'];
+    // $this->brand = $row['brand'];
+    // $this->created_at = $row['created_at'];
+    // $this->is_guaranteed = $row['is_guaranteed'];
+    // $this->memory = $row['memory'];
+    // $this->description = $row['description'];
+    // $this->expires_at  = $row['expires_at'];
+    // $this->unit = 'ر.س';
+    // $this->isLiked  = Database::Whare("users_favorite_products", ['user_id' => $user->id, 'product_id' => $this->id], true)->RowCount() > 0;
+    // $this->user = new stdClass();
+    // $this->user->id = $row['user_id'];
+    // $this->user->name = $row['name'];
+    // $this->user->phone = $row['phone'];
+    // $this->active =   strtotime(date("Y-m-d H:i:s")) <= strtotime($this->expires_at);
+    // $this->images = [];
+    // $images = Database::Whare('images', ['target_id' => $this->id])->FetchAll(true);
+    // foreach ($images as $value) {
+    // $this->images[] = IMAGES_URL . $value->name;
+    // }
+
       setState(() {
         isLoading = false;
       });
       if (r['state'] == true) {
         setState(() {
-          if (data[r['catigory_id']] == null) data[r['catigory_id']] = {};
-          if (data[r['catigory_id']][r['product_type_id']] == null)
-            data[r['catigory_id']][r['product_type_id']] = {};
-          data[r['catigory_id']][r['product_type_id']][r['page']] = r['data'];
+          // if (data[r['catigory_id']] == null) data[r['catigory_id']] = {};
+          // if (data[r['catigory_id']][r['product_type_id']] == null)  data[r['catigory_id']][r['product_type_id']] = {};
+          data = r['data'];
         });
       }
     }, body: body, cashable: true);
   }
 
-  void setSelectedCatigory(item) {
+  void setSelectedCategory(item) {
     setState(() {
       selectedCatigory = item;
       selectedSubCatigory = {"id": '_ALL'};
@@ -111,7 +267,7 @@ class _StoreState extends State<Store> {
     });
   }
 
-  void setSelectedSubCatigory(item) {
+  void setSelectedSubcategory(item) {
     setState(() {
       selectedSubCatigory = item;
       pageIndex = 0;
@@ -125,12 +281,13 @@ class _StoreState extends State<Store> {
       backgroundColor: Colors.white,
       body: Column(
         children: [
-          TitleBar(() {Navigator.pop(context);}, 138),
+          TitleBar(() {Navigator.pop(context);}, 451, withoutBell: true, withoutBack: true),
           isConfigLoading
               ? Expanded(
                   child: Center(
                   child: CustomLoading(),
                 ))
+              :config.isEmpty ? Container()
               : Expanded(
                   child: Stack(
                     alignment: Alignment.bottomLeft,
@@ -140,9 +297,9 @@ class _StoreState extends State<Store> {
                         child: ListView(
                           padding: EdgeInsets.symmetric(vertical: 0),
                           children: [
-                            getSearchAndFilter(),
+                            // getSearchAndFilter(),
                             Container(
-                              padding: EdgeInsets.only(left: 15, right: 15),
+                              padding: EdgeInsets.only(left: 15, right: 15, top: 5),
                               child: Row(
                                 textDirection:
                                     LanguageManager.getTextDirection(),
@@ -164,44 +321,51 @@ class _StoreState extends State<Store> {
                             ),
                             getSlider(),
                             getCatigories(),
+                            // Container(height: 5),
                             getSubCatigories(),
-                            Wrap(
+                            // Container(height: 5),
+                            Center (child: Wrap(
+                              textDirection: LanguageManager.getTextDirection(),
+                              spacing: 10,
+                              // alignment: WrapAlignment.spaceEvenl,
+
                               children: getProducts(),
-                            )
+                            ))
                           ],
                         ),
                       ),
-                      InkWell(
-                        onTap: () {
-                          Navigator.push(context,
-                              MaterialPageRoute(builder: (_) => AddProduct()));
-                        },
-                        child: Container(
-                          margin: EdgeInsets.only(bottom: 15),
-                          padding: EdgeInsets.only(
-                              left: LanguageManager.getDirection() ? 20 : 12,
-                              right: LanguageManager.getDirection() ? 12 : 20,
-                              top: 5,
-                              bottom: 7),
-                          child: Icon(
-                            FlutterIcons.plus_circle_fea,
-                            size: 22,
-                            color: Colors.white,
-                          ),
-                          decoration: BoxDecoration(
-                              borderRadius: LanguageManager.getDirection()
-                                  ? BorderRadius.only(
-                                      topRight: Radius.circular(20),
-                                      bottomRight: Radius.circular(20))
-                                  : BorderRadius.only(
-                                      topLeft: Radius.circular(20),
-                                      bottomLeft: Radius.circular(20)),
-                              color: Converter.hexToColor("#344F64")),
-                        ),
-                      ),
+                      // InkWell(
+                      //   onTap: () {
+                      //     Navigator.push(context,
+                      //         MaterialPageRoute(builder: (_) => AddProduct()));
+                      //   },
+                      //   child: Container(
+                      //     margin: EdgeInsets.only(bottom: 15),
+                      //     padding: EdgeInsets.only(
+                      //         left: LanguageManager.getDirection() ? 20 : 12,
+                      //         right: LanguageManager.getDirection() ? 12 : 20,
+                      //         top: 5,
+                      //         bottom: 7),
+                      //     child: Icon(
+                      //       FlutterIcons.plus_circle_fea,
+                      //       size: 22,
+                      //       color: Colors.white,
+                      //     ),
+                      //     decoration: BoxDecoration(
+                      //         borderRadius: LanguageManager.getDirection()
+                      //             ? BorderRadius.only(
+                      //                 topRight: Radius.circular(20),
+                      //                 bottomRight: Radius.circular(20))
+                      //             : BorderRadius.only(
+                      //                 topLeft: Radius.circular(20),
+                      //                 bottomLeft: Radius.circular(20)),
+                      //         color: Converter.hexToColor("#344F64")),
+                      //   ),
+                      // ),
                     ],
                   ),
                 ),
+          // Container(height: 10),
         ],
       ),
     );
@@ -209,32 +373,31 @@ class _StoreState extends State<Store> {
 
   List<Widget> getProducts() {
     List<Widget> products = [];
-    if (data[selectedCatigory['id']] != null) if (data[selectedCatigory['id']]
-            [selectedSubCatigory['id']] !=
-        null)
-      for (var page
-          in data[selectedCatigory['id']][selectedSubCatigory['id']].keys) {
-        for (var item in data[selectedCatigory['id']][selectedSubCatigory['id']]
-            [page]) {
+        for (var item in data) {
           products.add(Product(item));
         }
-      }
+
     if (isLoading) {
-      products.add(Container(
+      return [Container(
         width: MediaQuery.of(context).size.width,
         child: CustomLoading(),
         alignment: Alignment.center,
-      ));
+      )];
+    }else if(products.isEmpty){
+      return [Container(margin: EdgeInsets.only(top: 15),child: Text('لا يوجد منتجات لهذا القسم حالياً, سيتم الإضافة لاحقاً.. ', textDirection: LanguageManager.getTextDirection(),))];
     }
+
+    if(products.length == 1)
+      products.add((Container(width: MediaQuery.of(context).size.width * 0.5 - 20)));
+
+
     return products;
   }
 
   Widget getSubCatigories() {
     List<Widget> catigories = [];
-    catigories.add(createSubCatigory(
-        {"id": "_ALL", "name": LanguageManager.getText(140)}));
-    catigories.add(createSubCatigory(
-        {"id": "_OFFERS", "name": LanguageManager.getText(141)}));
+    catigories.add(createSubCatigory({"id": "_ALL", "name": LanguageManager.getText(140)}));
+    catigories.add(createSubCatigory({"id": "_OFFERS", "name": LanguageManager.getText(141)}));
     for (var item in selectedCatigory['children']) {
       catigories.add(createSubCatigory(item));
     }
@@ -254,7 +417,7 @@ class _StoreState extends State<Store> {
     bool selected = selectedSubCatigory['id'] == item['id'];
     return InkWell(
         onTap: () {
-          setSelectedSubCatigory(item);
+          setSelectedSubcategory(item);
         },
         child: Container(
             padding: EdgeInsets.only(left: 20, right: 20, top: 0, bottom: 0),
@@ -276,15 +439,16 @@ class _StoreState extends State<Store> {
   }
 
   Widget getCatigories() {
+
     List<Widget> catigories = [];
     for (var item in config['catigories']) {
       bool selected = selectedCatigory == item;
       catigories.add(InkWell(
         onTap: () {
-          setSelectedCatigory(item);
+          setSelectedCategory(item);
         },
         child: Container(
-          padding: EdgeInsets.all(10),
+          padding: EdgeInsets.only(left: 10, right: 10),
           margin: EdgeInsets.only(left: 5, right: 5),
           decoration: BoxDecoration(
               border: Border.all(
@@ -300,7 +464,7 @@ class _StoreState extends State<Store> {
             children: [
               item["icon"] != null && item["icon"].toString().isNotEmpty
                   ? SvgPicture.network(
-                      item['icon'],
+                      Globals.correctLink(item['icon']),
                       width: 20,
                       height: 20,
                       color: selected ? Colors.white : Colors.grey,
@@ -325,7 +489,7 @@ class _StoreState extends State<Store> {
 
     return Container(
       margin: EdgeInsets.only(top: 10, bottom: 10),
-      height: 50,
+      height: 45,
       child: ListView(
         scrollDirection: Axis.horizontal,
         reverse: LanguageManager.getDirection(),
@@ -339,11 +503,22 @@ class _StoreState extends State<Store> {
     return Center(
       child: Container(
         width: size,
-        height: size * 0.45,
+        height: 150,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(15),
+          boxShadow: [
+            BoxShadow(color: Colors.black.withAlpha(30), spreadRadius: 3, blurRadius: 3)
+          ],
+        ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(15),
           child: Container(
-            decoration: BoxDecoration(color: Converter.hexToColor("#F2F2F2")),
+            decoration: BoxDecoration(color: Converter.hexToColor("#F2F2F2"), boxShadow: [
+              BoxShadow(
+                  color: Colors.black,
+                  spreadRadius: 2,
+                  blurRadius: 2)
+            ],),
             child: Stack(
               alignment: Alignment.bottomCenter,
               children: [
@@ -443,38 +618,38 @@ class _StoreState extends State<Store> {
                   ),
                 ),
               ),
-              InkWell(
-                onTap: () {
-                  setState(() {
-                    isFilterOpen = true;
-                  });
-                },
-                child: Column(
-                  textDirection: LanguageManager.getTextDirection(),
-                  children: [
-                    SvgPicture.asset(
-                      "assets/icons/filter.svg",
-                      width: 24,
-                      height: 24,
-                    ),
-                    Text(
-                      LanguageManager.getText(103),
-                      style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                          color: Converter.hexToColor("#2094CD")),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                width: 10,
-              ),
+              // InkWell(
+              //   onTap: () {
+              //     setState(() {
+              //       isFilterOpen = true;
+              //     });
+              //   },
+              //   child: Column(
+              //     textDirection: LanguageManager.getTextDirection(),
+              //     children: [
+              //       SvgPicture.asset(
+              //         "assets/icons/filter.svg",
+              //         width: 24,
+              //         height: 24,
+              //       ),
+              //       Text(
+              //         LanguageManager.getText(103),
+              //         style: TextStyle(
+              //             fontSize: 10,
+              //             fontWeight: FontWeight.bold,
+              //             color: Converter.hexToColor("#2094CD")),
+              //       ),
+              //     ],
+              //   ),
+              // ),
+              // Container(
+              //   width: 10,
+              // ),
             ],
           ),
-          Container(
-            height: 10,
-          ),
+          // Container(
+          //   height: 10,
+          // ),
           selectedFilters.keys.length > 0
               ? Container(
                   margin: EdgeInsets.only(top: 5),

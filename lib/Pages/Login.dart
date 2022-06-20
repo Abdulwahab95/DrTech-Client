@@ -79,7 +79,7 @@ class _LoginState extends State<Login> {
         children: [
           TitleBar(() {
             Navigator.pop(context);
-          }, 276, without: true), // أدخل رقم هاتفك
+          }, 276, withoutBell: true), // أدخل رقم هاتفك
           Container(
             // color: Colors.red,
             child: AnimatedContainer(

@@ -21,7 +21,7 @@ class _ContactUsState extends State<ContactUs> {
         body: Column(
           textDirection: LanguageManager.getTextDirection(),
           children: [
-            TitleBar((){Navigator.pop(context);}, 63, without: true),
+            TitleBar((){Navigator.pop(context);}, 63, withoutBell: true),
             Expanded(child: getBodyContents()),
           ],
         ));

@@ -31,7 +31,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       if(mounted) load();
     };
     // print('here_NotificationsScreen: ${DatabaseManager.liveDatabase[Globals.authoKey]}');
-    if(DatabaseManager.liveDatabase[Globals.authoKey] != null)
+    if((DatabaseManager.load(Globals.authoKey) ?? "").toString().isNotEmpty)
       load();
     super.initState();
   }

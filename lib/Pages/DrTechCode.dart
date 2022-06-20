@@ -35,7 +35,7 @@ class _DrTechCodeState extends State<DrTechCode> {
     return Scaffold(
       body: Column(
         children: [
-          TitleBar(null, 16, without: true),
+          TitleBar(null, 16, withoutBell: true),
           Container(height: 15),
           Text(
             'اطلب الكود عبر الواتس اب:',

@@ -58,6 +58,7 @@ class _NavBarState extends State<NavBar> {
         Container(
           margin: EdgeInsets.only(bottom: 10),
           height: homeIconSize * 0.5,
+          color: Colors.transparent,
           child: Row(
             textDirection: LanguageManager.getTextDirection(),
             mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -70,12 +71,16 @@ class _NavBarState extends State<NavBar> {
               createIcon("services", 35, () {setState(() {iSelectedIndex = 1;});
                 widget.onUpdate(iSelectedIndex);
               }, iSelectedIndex == 1, count: countChatNotSeen),
+              if(Globals.getSetting('show_store') == 'true')
+                createIcon("store", 451, () {setState(() {iSelectedIndex = 2;});
+                widget.onUpdate(iSelectedIndex);
+              }, iSelectedIndex == 2, count: countChatNotSeen),
               createIcon("bell", 45, () {
                 goToNotification();
-              }, iSelectedIndex == 2, count: countNotSeen),
-              createIcon("menu", 46, () {setState(() {iSelectedIndex = 3;});
+              }, iSelectedIndex == 3, count: countNotSeen),
+              createIcon("menu", 46, () {setState(() {iSelectedIndex = 4;});
                 widget.onUpdate(iSelectedIndex);
-              }, iSelectedIndex == 3),
+              }, iSelectedIndex == 4),
             ],
           ),
         ),
@@ -128,11 +133,12 @@ class _NavBarState extends State<NavBar> {
     return InkWell(
       onTap: onTap,
       child: Container(
-        width: homeIconSize,
+        // width: homeIconSize,
         child: Row(
           textDirection: LanguageManager.getTextDirection(),
           crossAxisAlignment: CrossAxisAlignment.end,
           mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
             Container(
               margin: EdgeInsets.only(bottom: homeIconSize * 0.04),
@@ -158,7 +164,7 @@ class _NavBarState extends State<NavBar> {
                 LanguageManager.getText(text),
                 style: TextStyle(
                     color: isActive ? activeColor : Colors.grey,
-                    fontSize: 16,
+                    fontSize: 14,
                     fontWeight: FontWeight.bold),
               ),
             )
@@ -170,7 +176,7 @@ class _NavBarState extends State<NavBar> {
 
 
    goToNotification(){
-    setState(() {iSelectedIndex = 2;});
+    setState(() {iSelectedIndex = 3;});
     widget.onUpdate(iSelectedIndex);
   }
 

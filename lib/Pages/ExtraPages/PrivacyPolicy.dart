@@ -39,7 +39,7 @@ class _PrivacyPolicyState extends State<PrivacyPolicy> {
     return Scaffold(
         backgroundColor: Colors.white,
         body: Column(children: [
-          TitleBar((){Navigator.pop(context);}, 59, without: true),
+          TitleBar((){Navigator.pop(context);}, 59, withoutBell: true),
           Expanded(
               child: isLoading
                   ? Center(

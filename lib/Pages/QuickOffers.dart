@@ -72,7 +72,7 @@ class _QuickOffersState extends State<QuickOffers> {
               mainAxisSize: MainAxisSize.min,
               textDirection: LanguageManager.getTextDirection(),
               children: [
-                TitleBar((){Navigator.pop(context);}, LanguageManager.getText(354), without: true), // عروض هذه الخدمة
+                TitleBar((){Navigator.pop(context);}, LanguageManager.getText(354), withoutBell: true), // عروض هذه الخدمة
                 showFilterCity()? Container() : Container(height: 20),
                 showFilterCity()? Container() :
                 Row(
@@ -127,7 +127,7 @@ class _QuickOffersState extends State<QuickOffers> {
             visibleCities ? InkWell(
               onTap: ()=> setState(() {visibleCities = !visibleCities;}),
               child: Container(
-                margin: EdgeInsets.only(top: 238, right: 20, left: 20),
+                margin: EdgeInsets.only(top: MediaQuery.of(context).size.height * .28, right: 20, left: 20), //238
                 width: double.infinity,
                 height: double.infinity,
                 child: Column(

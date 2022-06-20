@@ -25,7 +25,7 @@ class _RateAppState extends State<RateApp> {
       backgroundColor: Colors.white,
       body: Column(
         children: [
-          TitleBar((){Navigator.pop(context);}, 65, without: true),
+          TitleBar((){Navigator.pop(context);}, 65, withoutBell: true),
           Container(
             height: MediaQuery.of(context).size.height * 0.15,
             alignment: Alignment.center,

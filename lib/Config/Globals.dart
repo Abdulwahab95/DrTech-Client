@@ -198,10 +198,11 @@ class Globals {
   static String correctLink(data) {
     if(!isLocal) {
       if (!data.toString().contains('http') ) {
+        // print('here_correct: ${imageUrl + data.toString()}');
         return imageUrl + data.toString();
       } else
         return data;
-    } else  {
+    } else {
       String url = data.toString();
       // print('here_correct1: $url');
       if(!url.contains('http')) {
@@ -216,6 +217,7 @@ class Globals {
       } else {
         url = data.toString();
       }
+      print('here_correct2: $url');
       return url;
     }
   }

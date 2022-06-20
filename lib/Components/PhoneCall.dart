@@ -12,9 +12,14 @@ import 'Alert.dart';
 
 class PhoneCall{
 
-static void call(String phone, BuildContext context, {allowNotSubscribe: false, bool isOnlineService = false, bool showDirectOrderButton = false, Function() onTapDirect}) {
-
-  if(UserManager.currentUser("id").isEmpty) {
+  static void call(String phone, BuildContext context,
+      {allowNotSubscribe: false,
+      bool isOnlineService = false,
+      bool showDirectOrderButton = false,
+      Function() onTapDirect,
+      int indexTextDirectOrder = 409,
+      }) {
+    if(UserManager.currentUser("id").isEmpty) {
       Alert.show(context, LanguageManager.getText(298),
           premieryText: LanguageManager.getText(30), onYes: () { // تسجيل الدخول
         Navigator.push(context, MaterialPageRoute(builder: (_) => Login()));
@@ -109,7 +114,7 @@ static void call(String phone, BuildContext context, {allowNotSubscribe: false, 
                             height: 45,
                             alignment: Alignment.center,
                             child: Text(
-                              LanguageManager.getText(409),
+                              LanguageManager.getText(indexTextDirectOrder), // طلب صيانه المباشر 409
                               style: TextStyle(color: Colors.white),
                             ),
                             decoration: BoxDecoration(

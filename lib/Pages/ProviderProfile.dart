@@ -105,7 +105,24 @@ class _ProviderProfileState extends State<ProviderProfile> with WidgetsBindingOb
                     Row(
                       textDirection: LanguageManager.getTextDirection(),
                       mainAxisSize: MainAxisSize.max,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
+                        SplashEffect(
+                            onTap: () => Navigator.pop(context),
+                            showShadow: false,
+                            child: Container(
+                              padding: EdgeInsets.only(
+                                left: LanguageManager.getDirection()?0:25,
+                                right: LanguageManager.getDirection()?25:0,
+                              ),
+                              child: Icon(
+                                LanguageManager.getDirection()
+                                    ? FlutterIcons.chevron_right_fea
+                                    : FlutterIcons.chevron_left_fea,
+                                color: Converter.hexToColor('#2094CD'),
+                                size: 26,
+                              ),
+                            )),
                         Container(
                             margin: EdgeInsets.all(20),
                             padding: EdgeInsets.symmetric(horizontal: 20),
@@ -121,7 +138,8 @@ class _ProviderProfileState extends State<ProviderProfile> with WidgetsBindingOb
                               style: TextStyle(
                                 color: Converter.hexToColor(data['active'] == 1? '#00A85F' : '#FF0000'),
                               ),
-                            )),
+                            )
+                        ),
                       ],
                     ),
                     SplashEffect(

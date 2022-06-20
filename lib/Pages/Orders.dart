@@ -13,6 +13,7 @@ import 'package:dr_tech/Pages/OrderDetails.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 
+import '../Config/IconsMap.dart';
 import 'LiveChat.dart';
 
 class Orders extends StatefulWidget {
@@ -276,7 +277,7 @@ class _OrdersState extends State<Orders> with TickerProviderStateMixin , Widgets
                     children: [
                       Expanded(
                         child: Text(
-                                item["service_name"].toString(),
+                                item[LanguageManager.getDirection()?  'service_name' : 'service_name_en'].toString(),
                                 textDirection:
                                     LanguageManager.getTextDirection(),
                                 style: TextStyle(
@@ -382,79 +383,12 @@ class _OrdersState extends State<Orders> with TickerProviderStateMixin , Widgets
                       )
                     ],
                   ),
-                  Row(
-                    textDirection: LanguageManager.getTextDirection(),
-                    children: [
-                      Icon(
-                        Icons.person,
-                        color: Converter.hexToColor("#C4C4C4"),
-                        size: 20,
-                      ),
-                      Container(
-                        width: 7,
-                      ),
-                      Text(
-                        item['name'].toString(),
-                        style: TextStyle(
-                            color: Converter.hexToColor("#707070"),
-                            fontWeight: FontWeight.normal,
-                            fontSize: 14),
-                        textDirection: LanguageManager.getTextDirection(),
-                      )
-                    ],
-                  ),
-                  Container(
-                    height: 1,
-                  ),
-                  Row(
-                    textDirection: LanguageManager.getTextDirection(),
-                    children: [
-                      Icon(
-                        Icons.assignment_late_outlined,
-                        color: Converter.hexToColor("#C4C4C4"),
-                        size: 20,
-                      ),
-                      Container(
-                        width: 7,
-                      ),
-                      Text(
-                        '${LanguageManager.getText(426)}${item['id'].toString()}',
-                        style: TextStyle(
-                            color: Converter.hexToColor("#707070"),
-                            fontWeight: FontWeight.normal,
-                            //height: 1.6,
-                            fontSize: 14),
-                        textDirection: LanguageManager.getTextDirection(),
-                      ),
-                    ],
-                  ),
+                  for(var iconInfo in item['info'])
+                    if(iconInfo.runtimeType.toString() == '_InternalLinkedHashMap<String, dynamic>')
+                      createInfoIcon(iconInfo['icon'], iconInfo[LanguageManager.getDirection()? 'text_ar' : 'text_en'] ?? ''),
 
                   Container(
-                    height: 1,
-                  ),
-                  Row(
-                    textDirection: LanguageManager.getTextDirection(),
-                    children: [
-                      Icon(
-                        Icons.access_time_sharp,
-                        color: Converter.hexToColor("#C4C4C4"),
-                        size: 20,
-                      ),
-                      Container(
-                        width: 7,
-                      ),
-                      Text(
-                        Converter.getRealTime(item['created_at'].toString()),
-                        style: TextStyle(
-                            color: Converter.hexToColor("#707070"),
-                            fontWeight: FontWeight.normal,
-                            fontSize: 14),
-                        textDirection: LanguageManager.getTextDirection(),
-                      )
-                    ],
-                  ),
-                  Container(
-                    height: 7,
+                    height: 5,
                   ),
 
                   Row(
@@ -554,4 +488,32 @@ class _OrdersState extends State<Orders> with TickerProviderStateMixin , Widgets
         92);
   }
 
+  Widget createInfoIcon(icon, text) {
+    return Container(
+      padding: EdgeInsets.only(left: 7, right: 7, bottom: 3),
+      child: Row(
+        textDirection: LanguageManager.getTextDirection(),
+        children: [
+          Icon(
+            IconsMap.from[icon],
+            color: Converter.hexToColor("#C4C4C4"),
+            size: 18,
+          ),
+          Container(
+            width: 7,
+          ),
+          Expanded(
+              child: Text(
+                Converter.getRealTime(text),
+                textDirection: LanguageManager.getTextDirection(),
+                style: TextStyle(
+                    fontSize: 14,
+                    color: Converter.hexToColor("#707070"),
+                    fontWeight: FontWeight.normal),
+              ))
+        ],
+      ),
+    );
+  }
 }
+

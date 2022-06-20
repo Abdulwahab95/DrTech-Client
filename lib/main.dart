@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:dr_tech/Config/initialization.dart';
 import 'package:dr_tech/Models/LanguageManager.dart';
 import 'package:dr_tech/Pages/Welcome.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -72,12 +73,15 @@ void main() async {
 }
 
 class App extends StatelessWidget {
+  FirebaseAnalytics analytics = FirebaseAnalytics.instance;
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(fontFamily: "Cario", primarySwatch: Colors.blue,),
       navigatorKey: LocalNotifications.reminderScreenNavigatorKey,
+      navigatorObservers: [FirebaseAnalyticsObserver(analytics: analytics),],
       routes: {
         "WelcomePage": (context) => MessageHandler(child: Welcome()),
         "LiveChat": (context) => LiveChat(Globals.currentConversationId),

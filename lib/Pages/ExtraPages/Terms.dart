@@ -39,7 +39,7 @@ class _TermsState extends State<Terms> {
     return Scaffold(
         backgroundColor: Colors.white,
         body: Column(children: [
-          TitleBar((){Navigator.pop(context);}, 425, without: true),
+          TitleBar((){Navigator.pop(context);}, 425, withoutBell: true),
           Expanded(
               child: isLoading
                   ? Center(

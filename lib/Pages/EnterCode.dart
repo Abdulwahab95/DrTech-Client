@@ -135,7 +135,7 @@ class _EnterCodeState extends State<EnterCode> {
     return Scaffold(
         body: Column(
           children: [
-            TitleBar((){Navigator.pop(context);}, 16, without: true),
+            TitleBar((){Navigator.pop(context);}, 16, withoutBell: true),
             Container(
                 child: Column(
                   children: [

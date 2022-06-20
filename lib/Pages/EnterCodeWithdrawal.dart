@@ -76,7 +76,7 @@ class _EnterCodeWithdrawalState extends State<EnterCodeWithdrawal> {
     return Scaffold(
         body: Column(
           children: [
-            TitleBar((){Navigator.pop(context);}, 198, without: true),
+            TitleBar((){Navigator.pop(context);}, 198, withoutBell: true),
             Container(
                 height: MediaQuery.of(context).size.height * 0.4,
                 child: Column(

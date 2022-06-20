@@ -81,6 +81,6 @@ class _JoinRequestState extends State<JoinRequest> {
 
   void openStore() {
     // print('provider_store_app_link ${Globals.getConfig('provider_store_app_link')}');
-    launch(Globals.getConfig('provider_store_app_link')[Platform.isIOS ?'url_ios':'url_android']);
+    launch(Uri.encodeFull(Globals.getConfig('provider_store_app_link')[Platform.isIOS ?'url_ios':'url_android']));
   }
 }

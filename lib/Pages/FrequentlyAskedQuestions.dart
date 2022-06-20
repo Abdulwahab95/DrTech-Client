@@ -47,7 +47,7 @@ class _FrequentlyAskedQuestionsState extends State<FrequentlyAskedQuestions> {
         body: Column(
           textDirection: LanguageManager.getTextDirection(),
           children: [
-            TitleBar((){Navigator.pop(context);}, 62, without: true),
+            TitleBar((){Navigator.pop(context);}, 62, withoutBell: true),
             Expanded(child: Container(child: isLoading ? Center(child: CustomLoading(),) : getBodyContents())),
           ],
         ));

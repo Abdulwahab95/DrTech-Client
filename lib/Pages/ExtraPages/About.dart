@@ -41,7 +41,7 @@ class _AboutState extends State<About> {
     return Scaffold(
         backgroundColor: Colors.white,
         body: Column(children: [
-          TitleBar((){Navigator.pop(context);}, 60, without: true),
+          TitleBar((){Navigator.pop(context);}, 60, withoutBell: true),
           Expanded(
               child: isLoading
                   ? Center(

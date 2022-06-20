@@ -8,9 +8,11 @@ import 'package:dr_tech/Models/LanguageManager.dart';
 import 'package:dr_tech/Models/UserManager.dart';
 import 'package:dr_tech/Network/NetworkManager.dart';
 import 'package:dr_tech/Pages/OrderSetRating.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 
+import '../Config/IconsMap.dart';
 import 'LiveChat.dart';
 
 class OrderDetails extends StatefulWidget {
@@ -71,222 +73,218 @@ class _OrderDetailsState extends State<OrderDetails> with WidgetsBindingObserver
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               TitleBar(() {Navigator.pop(context);}, 178),
-              Container(
-                width: MediaQuery.of(context).size.width * 0.95,
-                height: MediaQuery.of(context).size.width * 0.455,
-                margin:
-                EdgeInsets.all(MediaQuery.of(context).size.width * 0.025),
-                decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    color: Converter.hexToColor("#F2F2F2"),
-                    image: DecorationImage(
-                        // fit: BoxFit.cover,
-                        image: CachedNetworkImageProvider(Globals.correctLink(data['service_icon'])))
-                ),
-                alignment: LanguageManager.getDirection()? Alignment.topLeft: Alignment.topRight,
-                child: Row(
-                  textDirection: LanguageManager.getDirection()? TextDirection.ltr : TextDirection.rtl,
-                  children: [
-                    Container(
-                      height: 30,
-                      padding: EdgeInsets.only(left: 5, right: 10),
-                      // width: 60,
-                      margin: EdgeInsets.only(top: 5),
-                      alignment: Alignment.center,
-                      child: Text(
-                        getStatusText(data["status"]).replaceAll('\n', ' '),
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold),
-                      ),
-                      decoration: BoxDecoration(
-                          color: Converter.hexToColor(
-                              data["status"] == 'CANCELED' || data["status"] == 'ONE_SIDED_CANCELED'
-                                  ? "#f00000"
-                                  : data["status"] == 'WAITING'
-                                    ? "#0ec300"
-                                    : "#2094CD"),
-                          borderRadius: LanguageManager.getDirection()
-                              ? BorderRadius.only(
-                              topRight: Radius.circular(15),
-                              bottomRight: Radius.circular(15))
-                              : BorderRadius.only(
-                              topLeft: Radius.circular(15),
-                              bottomLeft: Radius.circular(15))),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                height: 10,
-              ),
+
               Expanded(
                 child: Container(
-                  margin: EdgeInsets.all(10),
-                  child: Column(
-                    textDirection: LanguageManager.getTextDirection(),
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        data["service_name"].toString(),
-                        textDirection: LanguageManager.getTextDirection(),
-                        style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Converter.hexToColor("#2094CD")),
-                      ),
-                      Container(
-                        height: 10,
-                      ),
-                      Row(
-                        textDirection: LanguageManager.getTextDirection(),
-                        children: [
-                          Text(
-                            LanguageManager.getText(95),
-                            textDirection: LanguageManager.getTextDirection(),
-                            style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                                color: Converter.hexToColor("#2094CD")),
+                  child: SingleChildScrollView(
+                    child: Column(
+                      textDirection: LanguageManager.getTextDirection(),
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          width: MediaQuery.of(context).size.width * 0.95,
+                          height: MediaQuery.of(context).size.width * 0.455,
+                          margin:
+                          EdgeInsets.all(MediaQuery.of(context).size.width * 0.025),
+                          decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10),
+                              color: Converter.hexToColor("#F2F2F2"),
+                              image: DecorationImage(
+                                // fit: BoxFit.cover,
+                                  image: CachedNetworkImageProvider(Globals.correctLink(data['service_icon'])))
                           ),
-                          Container(
-                            width: 30,
+                          alignment: LanguageManager.getDirection()? Alignment.topLeft: Alignment.topRight,
+                          child: Row(
+                            textDirection: LanguageManager.getDirection()? TextDirection.ltr : TextDirection.rtl,
+                            children: [
+                              Container(
+                                height: 30,
+                                padding: EdgeInsets.only(left: 5, right: 10),
+                                // width: 60,
+                                margin: EdgeInsets.only(top: 5),
+                                alignment: Alignment.center,
+                                child: Text(
+                                  getStatusText(data["status"]).replaceAll('\n', ' '),
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                decoration: BoxDecoration(
+                                    color: Converter.hexToColor(
+                                        data["status"] == 'CANCELED' || data["status"] == 'ONE_SIDED_CANCELED'
+                                            ? "#f00000"
+                                            : data["status"] == 'WAITING'
+                                            ? "#0ec300"
+                                            : "#2094CD"),
+                                    borderRadius: LanguageManager.getDirection()
+                                        ? BorderRadius.only(
+                                        topRight: Radius.circular(15),
+                                        bottomRight: Radius.circular(15))
+                                        : BorderRadius.only(
+                                        topLeft: Radius.circular(15),
+                                        bottomLeft: Radius.circular(15))),
+                              ),
+                            ],
                           ),
-                          Container(
-                            child: data['price'] == 0
-                                ? Text(
-                              LanguageManager.getText(405),
+                        ),
+                        Container(
+                          height: 5,
+                        ),
+                        Row(
+                          textDirection: LanguageManager.getTextDirection(),
+                          children: [
+                            Container(width: 10),
+                            Expanded(
+                              child: Text(
+                                data[LanguageManager.getDirection()?  'service_name' : 'service_name_en'].toString(),
+                                textDirection: LanguageManager.getTextDirection(),
+                                style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Converter.hexToColor("#2094CD")),
+                              ),
+                            ),
+                            Row(
+                              textDirection: LanguageManager.getTextDirection(),
+                              children: [
+                                InkWell(
+                                  onTap: () => PhoneCall.call(data['number_phone'], context, allowNotSubscribe: ((data["status"] == 'PENDING' || data["status"] == 'WAITING') && data["service_target"] != 'online_services' ) || UserManager.isSubscribe(), isOnlineService: data["service_target"] == 'online_services'),
+                                  child: Container(
+                                    padding: EdgeInsets.all(5),
+                                    child: Icon(
+                                      FlutterIcons.phone_faw,
+                                      color: Converter.hexToColor("#344F64"),
+                                      size: 22,
+                                    ),
+                                  ),
+                                ),
+                                data["service_target"] == 'online_services'?
+                                InkWell(
+                                  onTap: () {
+                                    Navigator.push(context, MaterialPageRoute(builder: (_) => LiveChat(data['provider_id'].toString())));
+                                  },
+                                  child: Container(
+                                    padding: EdgeInsets.all(5),
+                                    child: Icon(
+                                      Icons.message,
+                                      color: Converter.hexToColor("#344F64"),
+                                      size: 22,
+                                    ),
+                                  ),
+                                ) : Container(),
+                              ],
+                            ),
+                            Container(width: 10),
+                          ],
+                        ),
+                        Container(height: data['invoice'] == null? 10: 0),
+
+                        data['invoice'] != null ? Container() :Row(
+                          textDirection: LanguageManager.getTextDirection(),
+                          children: [
+                            Container(width: 10),
+                            Text(
+                              LanguageManager.getText(95),
                               textDirection: LanguageManager.getTextDirection(),
                               style: TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.bold,
                                   color: Converter.hexToColor("#2094CD")),
-                            )
-                            : Row(
-                              textDirection: LanguageManager.getTextDirection(),
-                              children: [
-                                Text(
-                                  data["price"].toString(),
-                                  textDirection:
-                                  LanguageManager.getTextDirection(),
-                                  style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold,
-                                      color: Converter.hexToColor("#2094CD")),
-                                ),
-                                Container(
-                                  width: 5,
-                                ),
-                                Text(
-                                  Globals.getUnit(isUsd: data['service_target']),
-                                  textDirection:
-                                  LanguageManager.getTextDirection(),
-                                  style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.normal,
-                                      color: Converter.hexToColor("#2094CD")),
-                                )
-                              ],
                             ),
-                            padding: EdgeInsets.only(
-                                top: 2, bottom: 2, right: 10, left: 10),
-                            decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(7),
-                                color: Converter.hexToColor("#F2F2F2")),
-                          ),
-                        ],
-                      ),
-                      Container(
-                        height: 10,
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        textDirection: LanguageManager.getTextDirection(),
-                        children: [
-                          Row(
-                            textDirection: LanguageManager.getTextDirection(),
-                            children: [
-                              Icon(
-                                Icons.person,
-                                color: Converter.hexToColor("#C4C4C4"),
-                                size: 20,
-                              ),
-                              Container(
-                                width: 7,
-                              ),
-                              Text(
-                                data['name'].toString(),
+                            Container(
+                              width: 30,
+                            ),
+                            Container(
+                              child: data['price'] == 0
+                                  ? Text(
+                                LanguageManager.getText(405),
+                                textDirection: LanguageManager.getTextDirection(),
                                 style: TextStyle(
-                                    color: Converter.hexToColor("#707070"),
-                                    fontWeight: FontWeight.normal,
-                                    fontSize: 14),
-                                textDirection:
-                                LanguageManager.getTextDirection(),
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                    color: Converter.hexToColor("#2094CD")),
                               )
-                            ],
-                          ),
-                          Row(
-                            textDirection: LanguageManager.getTextDirection(),
-                            children: [
-                              InkWell(
-                                 onTap: () => PhoneCall.call(data['number_phone'], context, allowNotSubscribe: ((data["status"] == 'PENDING' || data["status"] == 'WAITING') && data["service_target"] != 'online_services' ) || UserManager.isSubscribe(), isOnlineService: data["service_target"] == 'online_services'),
-                                child: Container(
-                                  padding: EdgeInsets.all(5),
-                                  child: Icon(
-                                    FlutterIcons.phone_faw,
-                                    color: Converter.hexToColor("#344F64"),
-                                    size: 22,
+                                  : Row(
+                                textDirection: LanguageManager.getTextDirection(),
+                                children: [
+                                  Text(
+                                    data["price"].toString(),
+                                    textDirection:
+                                    LanguageManager.getTextDirection(),
+                                    style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                        color: Converter.hexToColor("#2094CD")),
                                   ),
-                                ),
+                                  Container(
+                                    width: 5,
+                                  ),
+                                  Text(
+                                    Globals.getUnit(isUsd: data['service_target']),
+                                    textDirection:
+                                    LanguageManager.getTextDirection(),
+                                    style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.normal,
+                                        color: Converter.hexToColor("#2094CD")),
+                                  )
+                                ],
                               ),
-                              data["service_target"] == 'online_services'?
-                              InkWell(
-                                onTap: () {
-                                  Navigator.push(context, MaterialPageRoute(builder: (_) => LiveChat(data['provider_id'].toString())));
-                                },
-                                child: Container(
-                                  padding: EdgeInsets.all(5),
-                                  child: Icon(
-                                    Icons.message,
-                                    color: Converter.hexToColor("#344F64"),
-                                    size: 22,
-                                  ),
-                                ),
-                              ) : Container(),
-                            ],
-                          )
-                        ],
-                      ),
-                      Container(
-                        height: 10,
-                      ),
-                      Text(
-                        LanguageManager.getText(258) + ': ' + data['description'].toString(),
-                        style: TextStyle(
-                            color: Converter.hexToColor("#707070"),
-                            fontWeight: FontWeight.normal,
-                            fontSize: 14),
-                        textDirection: LanguageManager.getTextDirection(),
-                      ),
-                      data['status'] == 'ONE_SIDED_CANCELED' || data['status'] == 'CANCELED'
-                          ? Container(height: 1,color: Colors.red.withAlpha(20), margin: EdgeInsets.symmetric(vertical: 15),)
-                          : Container(),
-                      data['status'] == 'ONE_SIDED_CANCELED' || data['status'] == 'CANCELED'
-                          ? Text(
-                          LanguageManager.getText(data['who_canceled'] == 'user'? 391 : 392) + ': ',
-                          textDirection: LanguageManager.getTextDirection(),
-                          style: TextStyle(color: Colors.red),
-                        )
-                      : Container(),
-                      data['status'] == 'ONE_SIDED_CANCELED' || data['status'] == 'CANCELED'
-                      ? Container(
-                          margin: EdgeInsets.symmetric(vertical: 5),
-                          child: Text(data['canceled_reason'] ?? '',
-                          textDirection: LanguageManager.getTextDirection()))
-                      : Container(),
+                              padding: EdgeInsets.only(
+                                  top: 2, bottom: 2, right: 10, left: 10),
+                              decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(7),
+                                  color: Converter.hexToColor("#F2F2F2")),
+                            ),
+                            Container(width: 10),
+                          ],
+                        ),
 
-                    ],
+                        for(var iconInfo in data['details_info'])
+                          if(iconInfo.runtimeType.toString() == '_InternalLinkedHashMap<String, dynamic>')
+                            createInfoIcon(iconInfo['icon'], iconInfo[LanguageManager.getDirection()? 'text_ar' : 'text_en'] ?? ''),
+
+                        Container(
+                          height: 10,
+                        ),
+
+                        if(data['invoice'] != null)
+                          Container(
+                            padding: EdgeInsets.only(left: 15, right: 15, top: 2, bottom: 0),
+                            child: Text(
+                              LanguageManager.getText(461), //تفاصيل الفاتورة:
+                              textDirection: LanguageManager.getTextDirection(),
+                              style: TextStyle(
+                                  color: Colors.blue,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                          ),
+
+                        if(data['invoice'] != null)
+                          for (var invoiceInfo in data['invoice'])
+                            createTextPrice(invoiceInfo[LanguageManager.getDirection()? 'text_ar' : 'text_en'] , invoiceInfo['number']),
+
+                        data['status'] == 'ONE_SIDED_CANCELED' || data['status'] == 'CANCELED'
+                            ? Container(height: 1,color: Colors.red.withAlpha(20), margin: EdgeInsets.symmetric(vertical: 15),)
+                            : Container(),
+                        data['status'] == 'ONE_SIDED_CANCELED' || data['status'] == 'CANCELED'
+                            ? Text(
+                            LanguageManager.getText(data['who_canceled'] == 'user'? 391 : 392) + ': ',
+                            textDirection: LanguageManager.getTextDirection(),
+                            style: TextStyle(color: Colors.red),
+                          )
+                        : Container(),
+                        data['status'] == 'ONE_SIDED_CANCELED' || data['status'] == 'CANCELED'
+                        ? Container(
+                            margin: EdgeInsets.symmetric(vertical: 5),
+                            child: Text(data['canceled_reason'] ?? '',
+                            textDirection: LanguageManager.getTextDirection()))
+                        : Container(),
+
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -694,4 +692,94 @@ class _OrderDetailsState extends State<OrderDetails> with WidgetsBindingObserver
         92);
   }
 
+  Widget createInfoIcon(icon, text) {
+    return Container(
+      padding: EdgeInsets.only(left: 5, right: 5),
+      margin: EdgeInsets.symmetric(horizontal: 15, vertical: 2),
+      child: Row(
+        textDirection: LanguageManager.getTextDirection(),
+        children: [
+          Icon(
+            IconsMap.from[icon],
+            color: Converter.hexToColor("#C4C4C4"),
+            size: 20,
+          ),
+          Container(
+            width: 10,
+          ),
+          Expanded(
+              child: Text(
+                Converter.getRealTime(text),
+                textDirection: LanguageManager.getTextDirection(),
+                style: TextStyle(
+                    fontSize: 16,
+                    color: Converter.hexToColor("#707070"),
+                    fontWeight: FontWeight.w600),
+              ))
+        ],
+      ),
+    );
+  }
+
+  createTextPrice(text, price) {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 10),
+      child: Row(
+        textDirection: LanguageManager.getTextDirection(),
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            text,
+            textDirection: LanguageManager.getTextDirection(),
+            style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: Converter.hexToColor("#2094CD")),
+          ),
+          Container(
+              child: Row(
+                textDirection: LanguageManager.getTextDirection(),
+                children: [
+                  Text(
+                    price.toString(),
+                    textDirection:
+                    LanguageManager.getTextDirection(),
+                    style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: Converter.hexToColor("#2094CD")),
+                  ),
+                  Container(
+                    width: 5,
+                  ),
+                  Text(
+                    Globals.getUnit(isUsd: data['service_target']),
+                    textDirection:
+                    LanguageManager.getTextDirection(),
+                    style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.normal,
+                        color: Converter.hexToColor("#2094CD")),
+                  )
+                ],
+              ),
+              padding: EdgeInsets.only(top: 2, bottom: 2, right: 10, left: 10),
+              margin: EdgeInsets.only(bottom: 5),
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(7),
+                  color: Converter.hexToColor("#F2F2F2")),
+            ),
+        ],
+      ),
+    );
+  }
+
+  createUnderLine() {
+    return Container(
+      height: 1,
+      width: double.infinity,
+      margin: EdgeInsets.only(right: 35,left: 35, top: 15),
+      color: Converter.hexToColor('#e2e2e2'),
+    );
+  }
 }

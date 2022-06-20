@@ -34,7 +34,9 @@ class _AddProductState extends State<AddProduct> {
   void initState() {
     body["garanteed"] = "0";
     body["used"] = "0";
-    loadConfig();
+    Future.delayed(Duration.zero, () {
+      loadConfig();
+    });
     super.initState();
   }
 
@@ -42,18 +44,144 @@ class _AddProductState extends State<AddProduct> {
     setState(() {
       isLoading = true;
     });
-    NetworkManager.httpGet(Globals.baseUrl + "product/configuration", context, (r) {
+    var r = {
+      "state": true,
+      "catigories": [
+        {
+          "id": "1",
+          "name": "قسم الجوالات",
+          "name_en": "",
+          "parent_id": "0",
+          "icon": "https:\/\/server.drtechapp.com\/storage\/images\/camera.svg",
+          "created_at": "2021-07-12 08:09:42",
+          "children": [
+            {
+              "id": "3",
+              "name": "ايفون",
+              "name_en": "",
+              "parent_id": "1",
+              "icon": "https:\/\/server.drtechapp.com\/storage\/images\/camera.svg",
+              "created_at": "2021-07-12 08:09:42",
+              "children": [
+                {
+                  "id": "6",
+                  "name": "iphone 5S",
+                  "name_en": "",
+                  "parent_id": "3",
+                  "icon": "https:\/\/server.drtechapp.com\/storage\/images\/",
+                  "created_at": "2021-07-12 08:09:42",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "id": "4",
+              "name": "سامسونج",
+              "name_en": "",
+              "parent_id": "1",
+              "icon": "https:\/\/server.drtechapp.com\/storage\/images\/camera.svg",
+              "created_at": "2021-07-12 08:09:42",
+              "children": []
+            },
+            {
+              "id": "5",
+              "name": "هواوي",
+              "name_en": "",
+              "parent_id": "1",
+              "icon": "https:\/\/server.drtechapp.com\/storage\/images\/camera.svg",
+              "created_at": "2021-07-12 08:09:42",
+              "children": []
+            }
+          ],
+          "extra_options": true
+        },
+        {
+          "id": "2",
+          "name": "قسم الاكسسوارات ",
+          "name_en": "",
+          "parent_id": "0",
+          "icon": "https:\/\/server.drtechapp.com\/storage\/images\/camera.svg",
+          "created_at": "2021-07-12 08:09:42",
+          "children": []
+        }
+      ],
+      "cities": [
+        {
+          "id": "8363",
+          "name": "مكة",
+          "name_en": "",
+          "country_id": "191",
+          "text": "مكة",
+          "children": [
+            {
+              "id": "633",
+              "name": "الرياض",
+              "name_en": "",
+              "city_id": "8363",
+              "text": "الرياض"
+            }
+          ]
+        },
+        {
+          "id": "8364",
+          "name": "جدة",
+          "name_en": "",
+          "country_id": "191",
+          "text": "جدة",
+          "children": [
+            {
+              "id": "634",
+              "name": "المدينة المنورة",
+              "name_en": "",
+              "city_id": "8364",
+              "text": "المدينة المنورة"
+            }
+          ]
+        }
+      ],
+      "colors": [
+        {
+          "id": "1",
+          "name": "احمر",
+          "name_en": "",
+          "created_at": "2021-07-12 13:55:45"
+        },
+        {
+          "id": "2",
+          "name": "اسود",
+          "name_en": "",
+          "created_at": "2021-07-12 13:55:45"
+        }
+      ],
+      "store_product_duration": [
+        {
+          "id": "1",
+          "name": "3 ايام",
+          "name_en": "",
+          "days": "3",
+          "created_at": "2022-06-12 00:00:00"
+        },
+        {
+          "id": "2",
+          "name": "شهر",
+          "name_en": "",
+          "days": "30",
+          "created_at": "2022-06-12 00:00:00"
+        }
+      ]
+    };
+    // NetworkManager.httpGet(Globals.baseUrl + "product/configuration", context, (r) {
       if (r['state'] == true) {
         setState(() {
           config = r;
           if (widget.id != null) {
-            load();
+            // load();
           } else {
             isLoading = false;
           }
         });
       }
-    }, cashable: true);
+    // }, cashable: true);
   }
 
   void load() {
@@ -343,8 +471,7 @@ class _AddProductState extends State<AddProduct> {
         body["model"] = v['id'];
       });
     }));
-    items
-        .add(createSelectInput("color", 149, config["colors"], onSelected: (v) {
+    items.add(createSelectInput("color", 149, config["colors"], onSelected: (v) {
       setState(() {
         selectedTexts["color"] = v['name'];
         body["color"] = v['id'];
