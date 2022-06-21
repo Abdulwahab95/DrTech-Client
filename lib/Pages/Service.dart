@@ -275,7 +275,7 @@ class _ServiceState extends State<Service> with WidgetsBindingObserver {
                                     Expanded(
                                       child: Text(
                                         selectedFilters.values
-                                            .map((e) => e["name"])
+                                            .map((e) => e[LanguageManager.getDirection()? 'name' : 'name_en'])
                                             .toList()
                                             .join(" , ")
                                         ,
@@ -518,12 +518,12 @@ class _ServiceState extends State<Service> with WidgetsBindingObserver {
                           width: 55,
                           // alignment: Alignment.center,
                           child: Text(
-                            (selectedCity.isEmpty? cities[0]['name'] : selectedCity['name']) ?? '',
+                            (selectedCity.isEmpty? cities[0][LanguageManager.getDirection()? 'name' : 'name_en'] : selectedCity[LanguageManager.getDirection()? 'name' : 'name_en']) ?? '',
                             textDirection: LanguageManager.getTextDirection(),
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                                 fontSize: 14,
-                              color: !selectedCity['name'].toString().contains(LanguageManager.getDirection() ? 'كل' : 'All') ||
+                              color: !selectedCity[LanguageManager.getDirection()? 'name' : 'name_en'].toString().contains(LanguageManager.getDirection() ? 'كل' : 'All') ||
                                             visibleCities
                                         ? Colors.black
                                         : Colors.grey,
@@ -592,9 +592,9 @@ class _ServiceState extends State<Service> with WidgetsBindingObserver {
     if(cct[0] == 1){
       return Converter.getRealText(324); // في جميع فروعنا العالمية لدكتورتك
     } else if(cct[1] == 1){
-      return Converter.getRealText(325) + ' ' + item['country_name']; // في جميع أنحاء
+      return Converter.getRealText(325) + ' ' + item[LanguageManager.getDirection()? 'country_name' : 'country_name_en']; // في جميع أنحاء
     } else if(cct[2] == 1){
-      return (Converter.getRealText(325) + ' ' + item['city_name']); // في جميع أنحاء
+      return (Converter.getRealText(325) + ' ' + item[LanguageManager.getDirection()? 'city_name' : 'city_name_en']); // في جميع أنحاء
     }
     return '';
   }
@@ -736,15 +736,15 @@ class _ServiceState extends State<Service> with WidgetsBindingObserver {
                           // Service type
                           createItemSvgText('build', 15, 15, LanguageManager.getText(200) + ":  " +
                               (
-                                  Globals.checkNullOrEmpty(item['type'].toString())
-                                      ? item['type'].toString()
+                                  Globals.checkNullOrEmpty(item[LanguageManager.getDirection()? 'type' : 'type_en'].toString())
+                                      ? item[LanguageManager.getDirection()? 'type' : 'type_en'].toString()
                                       :
-                                  Globals.checkNullOrEmpty(item['provider_services_title'].toString())
-                                    ? item['provider_services_title'].toString()
+                                  Globals.checkNullOrEmpty(item[LanguageManager.getDirection()? 'provider_services_title' : 'provider_services_title_en'].toString())
+                                    ? item[LanguageManager.getDirection()? 'provider_services_title' : 'provider_services_title_en'].toString()
                                     : getServices(cssss, item)),
                           ),
                           // location
-                          Globals.checkNullOrEmpty(item['city_name']) || Globals.checkNullOrEmpty(item['country_name']) || Globals.checkNullOrEmpty(getCCT(cct, item)) ?
+                          Globals.checkNullOrEmpty(item[LanguageManager.getDirection()? 'city_name' : 'city_name_en']) || Globals.checkNullOrEmpty(item[LanguageManager.getDirection()? 'country_name' : 'country_name_en']) || Globals.checkNullOrEmpty(getCCT(cct, item)) ?
                           createItemSvgText('pin_drop', 13, 16, LanguageManager.getText(244) + ":  ",
                           secondTextColored: getLocationText(item, cct))
                           : Container(),
@@ -764,8 +764,7 @@ class _ServiceState extends State<Service> with WidgetsBindingObserver {
                         addDeleteFavourite(item, isLiked: (item['is_i_Liked'] ?? false));
                       }),
                       createCircleSvgButton('outline-share', LanguageManager.getText(442), () {
-                        ShareManager.shearEngineer(item['id'],
-                            item['provider_name'], item['provider_services_title']);
+                        ShareManager.shearService(item['id'].toString(), item['provider_just_name'].toString(), service: (Globals.checkNullOrEmpty(item['specializ'].toString()) ? item['specializ'].toString() : Converter.getRealText(326)));
                       }),
                       item['offers'].toString() != 'false' ?
                       createCircleSvgButton('offers', LanguageManager.getText(353),
@@ -945,8 +944,7 @@ class _ServiceState extends State<Service> with WidgetsBindingObserver {
               } else {
                 var tmpList = options as List;
 
-                Alert.show(context,tmpList,
-                    type: AlertType.SELECT, onSelected: (item) {
+                Alert.show(context,tmpList, type: AlertType.SELECT, onSelected: (item) {
                   setState(() {
                     print('here_item: $key, $item');
 
@@ -1014,7 +1012,7 @@ class _ServiceState extends State<Service> with WidgetsBindingObserver {
                         child: Text(
                       selectedFilters[key] == null
                           ? LanguageManager.getText(112)
-                          : selectedFilters[key]["name"] ?? '',
+                          : selectedFilters[key][LanguageManager.getDirection()? 'name' : 'name_en'] ?? '',
                       textDirection: LanguageManager.getTextDirection(),
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
@@ -1264,14 +1262,14 @@ class _ServiceState extends State<Service> with WidgetsBindingObserver {
     return (Globals.checkNullOrEmpty(getCCT(cct, item))
         ? getCCT(cct, item)
 
-        : Globals.checkNullOrEmpty(item['city_name'])
-        ? item['street_name'].toString().isEmpty
+        : Globals.checkNullOrEmpty(item[LanguageManager.getDirection()? 'city_name' : 'city_name_en'])
+        ? item[LanguageManager.getDirection()? 'street_name' : 'street_name_en'].toString().isEmpty
         ? (Globals.checkNullOrEmpty(getCCT([0,0,1], item)) ? getCCT([0,0,1], item) : "")
-        : (item['city_name'].toString()  + "  -  " + item['street_name'].toString())
+        : (item[LanguageManager.getDirection()? 'city_name' : 'city_name_en'].toString()  + "  -  " + item[LanguageManager.getDirection()? 'street_name' : 'street_name_en'].toString())
 
-        : Globals.checkNullOrEmpty( item['country_name'].toString())
-        ? getCCT([0,1,0] , {'country_name': item['country_name'].toString()})
-        : getCCT([0,1,0] , {'country_name': item['country_name'].toString()}));
+        : Globals.checkNullOrEmpty( item[LanguageManager.getDirection()? 'country_name' : 'country_name_en'].toString())
+        ? getCCT([0,1,0] , {LanguageManager.getDirection()? 'country_name' : 'country_name_en': item[LanguageManager.getDirection()? 'country_name' : 'country_name_en'].toString()})
+        : getCCT([0,1,0] , {LanguageManager.getDirection()? 'country_name' : 'country_name_en': item[LanguageManager.getDirection()? 'country_name' : 'country_name_en'].toString()}));
   }
 
   createItemSvgText(String name, double w, double h, String text, {secondTextColored, colorText, double height}) {
@@ -1361,7 +1359,7 @@ class _ServiceState extends State<Service> with WidgetsBindingObserver {
             color: Colors.black.withAlpha(5),
           ),
           child: Text(
-            Converter.getRealText(item['name']),
+            Converter.getRealText(item[LanguageManager.getDirection()? 'name' : 'name_en']),
             overflow: TextOverflow.ellipsis,
             textAlign: TextAlign.right,
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.normal),

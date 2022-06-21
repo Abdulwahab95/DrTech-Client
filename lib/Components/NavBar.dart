@@ -74,7 +74,7 @@ class _NavBarState extends State<NavBar> {
               if(Globals.getSetting('show_store') == 'true')
                 createIcon("store", 451, () {setState(() {iSelectedIndex = 2;});
                 widget.onUpdate(iSelectedIndex);
-              }, iSelectedIndex == 2, count: countChatNotSeen),
+              }, iSelectedIndex == 2),
               createIcon("bell", 45, () {
                 goToNotification();
               }, iSelectedIndex == 3, count: countNotSeen),

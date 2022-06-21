@@ -16,7 +16,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 
 import 'FeatureSubscribe.dart';
-import 'Store.dart';
+import '../Screens/Store.dart';
 
 class Home extends StatefulWidget {
   final page;

@@ -712,7 +712,7 @@ class _ServicePageState extends State<ServicePage> with TickerProviderStateMixin
                     Container(
                       child: InkWell(
                         onTap: () {
-                          ShareManager.shearService(data['id'], data['provider_name'] ?? '', service: data['name']?? '');
+                          ShareManager.shearService(data['id'].toString(), data['provider_name'].toString() ?? '', service: data['name'].toString()?? '');
                         },
                         child: Icon(
                           Icons.share,

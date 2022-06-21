@@ -331,7 +331,15 @@ class _AlertState extends State<Alert> {
               ),
               Text(
                 Converter.getRealText(
-                    item['name'] != null ? item['name'] : item['text']),
+                    LanguageManager.getDirection()?
+                    (item['name'] != null ? item['name'] : item['text'])
+                        : (item['name_en'] != null
+                        ? item['name_en']
+                        : item['text_en'] != null
+                            ? item['text_en']
+                            : (item['name'] != null
+                                ? item['name']
+                                : item['text']))),
                 textAlign: TextAlign.right,
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.normal),
               )

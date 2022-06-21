@@ -6,7 +6,7 @@ import 'package:dr_tech/Config/Globals.dart';
 import 'package:dr_tech/Models/LanguageManager.dart';
 import 'package:dr_tech/Pages/OnlineServices.dart';
 import 'package:dr_tech/Pages/Service.dart';
-import 'package:dr_tech/Pages/Store.dart';
+import 'package:dr_tech/Screens/Store.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 

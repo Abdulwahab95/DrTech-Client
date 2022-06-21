@@ -85,7 +85,7 @@ class App extends StatelessWidget {
       routes: {
         "WelcomePage": (context) => MessageHandler(child: Welcome()),
         "LiveChat": (context) => LiveChat(Globals.currentConversationId),
-        "Notifications": (context) => Home(page: 2),
+        "Notifications": (context) => Home(page: Globals.getSetting('show_store') == 'true'? 3 : 2),
       },
       initialRoute: "WelcomePage",
     );
