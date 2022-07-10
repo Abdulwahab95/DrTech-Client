@@ -1,4 +1,5 @@
 
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:dr_tech/Config/Globals.dart';
@@ -58,6 +59,8 @@ class Initialization {
         // read configs
         Globals.config   = r['data']['config'];
         Globals.settings = Globals.getConfig('settings');
+        print('here_base_setting_country: ${Globals.config['user_country']}');
+        DatabaseManager.save("base_setting_country", jsonEncode(Globals.config['user_country']));
         LanguageManager.init(r['data']['localisation']);
         dataSetup();
         configLoad = true;

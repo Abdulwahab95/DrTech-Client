@@ -9,6 +9,7 @@ class SplashEffect extends StatelessWidget {
   final Function onTap;
   final double margin;
   final double radius;
+  final double width;
   final EdgeInsets fullMargin;
   final EdgeInsets padding;
   final Color color;
@@ -24,6 +25,7 @@ class SplashEffect extends StatelessWidget {
         this.onTap,
         this.margin = 0,
         this.radius,
+        this.width,
         this.padding = const EdgeInsets.all(0),
         this.fullMargin,
         this.color = Colors.transparent,
@@ -44,6 +46,7 @@ class SplashEffect extends StatelessWidget {
       textDirection: LanguageManager.getTextDirection(),
       children: [
         Container(
+          width: width,
           margin: fullMargin != null? fullMargin : EdgeInsets.all(margin),
           padding: padding,
           decoration: BoxDecoration(

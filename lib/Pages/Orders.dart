@@ -261,7 +261,7 @@ class _OrdersState extends State<Orders> with TickerProviderStateMixin , Widgets
                   color: Converter.hexToColor("#F2F2F2"),
                 image: DecorationImage(
                     // fit: BoxFit.cover,
-                    image: CachedNetworkImageProvider(Globals.correctLink(item['service_icon'])))
+                    image: CachedNetworkImageProvider(Globals.correctLink(item['service_icon'] is List? item['service_icon'][0] : item['service_icon'])))
 
               ),
               // child: ,

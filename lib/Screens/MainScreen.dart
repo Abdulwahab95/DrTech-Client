@@ -17,6 +17,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../Pages/UserFavoritServices.dart';
+import '../Pages/UserFavoritProducts.dart';
 
 class MainScreen extends StatefulWidget {
   final slider;
@@ -101,6 +102,12 @@ class _MainScreenState extends State<MainScreen> {
       Navigator.push(context, MaterialPageRoute(builder: (_) => JoinRequest()));
     }));
 
+    items.add(createServices("star", 38, () {
+      UserManager.currentUser("id").isNotEmpty
+      ? Navigator.push(context, MaterialPageRoute(builder: (_) => UserFavoriteProducts()))
+      : goLogin();
+    }));
+
     items.add(createServices(FlutterIcons.share_fea, 64, () { // شارك التطبيق
       Alert.show(context,
           Container(
@@ -121,10 +128,6 @@ class _MainScreenState extends State<MainScreen> {
     // items.add(createServices("product", 37, () {
     //   Navigator.push(
     //       context, MaterialPageRoute(builder: (_) => UserProducts()));
-    // }));
-    // items.add(createServices("star", 38, () {
-    //   Navigator.push(
-    //       context, MaterialPageRoute(builder: (_) => UserFavoritProducts()));
     // }));
 
 

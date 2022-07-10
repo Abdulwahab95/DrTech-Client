@@ -13,8 +13,10 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'Config/Globals.dart';
+import 'Models/DatabaseManager.dart';
 import 'Models/Firebase.dart';
 import 'Models/LocalNotifications.dart';
+import 'Pages/BaseSetting.dart';
 import 'Pages/Home.dart';
 import 'Pages/LiveChat.dart';
 import 'Pages/ProviderProfile.dart';
@@ -77,13 +79,18 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // DatabaseManager.unset('base_setting_country');
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(fontFamily: "Cario", primarySwatch: Colors.blue,),
       navigatorKey: LocalNotifications.reminderScreenNavigatorKey,
       navigatorObservers: [FirebaseAnalyticsObserver(analytics: analytics),],
       routes: {
-        "WelcomePage": (context) => MessageHandler(child: Welcome()),
+        "WelcomePage": (context) => MessageHandler(
+            child:
+            // (DatabaseManager.load(Globals.authoKey) ?? "").toString().isEmpty  && (DatabaseManager.load("base_setting_country") ?? "").toString().isEmpty ? BaseSettingPage() :
+            Welcome()
+        ), //
         "LiveChat": (context) => LiveChat(Globals.currentConversationId),
         "Notifications": (context) => Home(page: Globals.getSetting('show_store') == 'true'? 3 : 2),
       },

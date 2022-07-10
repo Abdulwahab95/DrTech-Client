@@ -335,7 +335,7 @@ class _WithdrawalState extends State<Withdrawal> {
         Alert.show(context, Converter.getRealText(r['message_code']),
             onYesShowSecondBtn: false, isDismissible: false, onYes: () {
               Navigator.pushReplacement(context,
-                  MaterialPageRoute(builder: (_) => Home(page: 3)));
+                  MaterialPageRoute(builder: (_) => Home(page: Globals.getSetting('show_store') == 'true'? 4 : 3)));
             });
       }
     }, body: body);

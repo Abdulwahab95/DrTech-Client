@@ -542,8 +542,7 @@ class _AddProductState extends State<AddProduct> {
               alignment: Alignment.center,
               child: Text(
                 LanguageManager.getText(widget.id == null ? 161 : 177),
-                style:
-                    TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
               ),
               decoration: BoxDecoration(
                   boxShadow: [

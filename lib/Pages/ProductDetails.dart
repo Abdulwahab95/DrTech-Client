@@ -17,6 +17,7 @@ import '../Models/UserManager.dart';
 import '../Network/NetworkManager.dart';
 import 'Login.dart';
 import 'Orders.dart';
+import 'WebBrowser.dart';
 
 class ProductDetails extends StatefulWidget {
   final args;
@@ -30,8 +31,17 @@ class _ProductDetailsState extends State<ProductDetails> {
   bool isLoading = false;
   ScrollController sliderController = ScrollController();
   int sliderSelectedIndex = -1;
-  Map body = {}, errors = {};
+  Map body = {}, errors = {}, selectedPaymentOption = {};
 
+  @override
+  void initState() {
+    Future.delayed(Duration.zero, () {
+      if((widget.args['payment_method'] is List) && (widget.args['payment_method'] as List).isNotEmpty)
+        selectedPaymentOption = (widget.args['payment_method'] as List)[0];
+    });
+    super.initState();
+  }
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -53,7 +63,7 @@ class _ProductDetailsState extends State<ProductDetails> {
                           children: [
                             Expanded(
                                 child: Text(
-                              widget.args['name'],
+                              widget.args[LanguageManager.getDirection()? 'name' : 'name_en'],
                               textDirection: LanguageManager.getTextDirection(),
                               style: TextStyle(
                                   color: Colors.blue,
@@ -146,7 +156,7 @@ class _ProductDetailsState extends State<ProductDetails> {
               children: [
                 Expanded(
                   child: InkWell(
-                    onTap: () => PhoneCall.call(widget.args['phone'], context, showDirectOrderButton: true, onTapDirect: (){createOrderProduct(widget.args);}),
+                    onTap: () => PhoneCall.call(widget.args['phone'], context, showDirectOrderButton: true, onTapDirect: (){createOrderProduct(widget.args);}, indexTextDirectOrder: 350),
                     child: Container(
                       height: 45,
                       alignment: Alignment.center,
@@ -391,6 +401,32 @@ class _ProductDetailsState extends State<ProductDetails> {
     );
   }
 
+  createUnderLine() {
+    return Container(
+      height: 1,
+      width: double.infinity,
+      margin: EdgeInsets.symmetric(horizontal: 35, vertical: 5),
+      color: Converter.hexToColor('#C2C2C2'),
+    );
+  }
+
+  createTextPrice(firstText, secondText, {color, fontSize = 16.0}) {
+    return Container(
+      margin: EdgeInsets.only(left: 20, right: 20, top: 5, bottom: 5),
+      child: Row(
+        textDirection: LanguageManager.getTextDirection(),
+        children: [
+          Text(firstText, textDirection: LanguageManager.getTextDirection(), style: color == null ? TextStyle(fontSize: fontSize,  color: Colors.black.withAlpha(150),fontWeight: FontWeight.bold) : TextStyle(fontSize: fontSize, color: color)),
+          Expanded(child: Container()),
+          Text(secondText, textDirection: LanguageManager.getTextDirection(), style: color == null ? TextStyle(fontSize: fontSize, color: Colors.green,  fontWeight: FontWeight.bold) : TextStyle(fontSize: fontSize, color: Colors.green, fontWeight: FontWeight.bold)),
+        ],
+      ),
+    );
+  }
+
+
+
+
   void createOrderProduct(item) {
     if (!UserManager.checkLogin()) {
       Alert.show(context, LanguageManager.getText(298),
@@ -401,12 +437,12 @@ class _ProductDetailsState extends State<ProductDetails> {
       return;
     }
 
-    Alert.staticContent = contentOrderProduct(item);
+    Alert.staticContent = contentOrderProduct();
     Alert.show(context, Alert.staticContent, type: AlertType.WIDGET, isDismissible: false);
 
   }
 
-  contentOrderProduct(item) {
+  contentOrderProduct() {
     return Container(
         child: SingleChildScrollView(
           child: Column(
@@ -425,7 +461,7 @@ class _ProductDetailsState extends State<ProductDetails> {
                 ],
               ),
               Text(
-                Converter.getRealText(LanguageManager.getText(458)), //تأكيد شراء المنتج  
+                Converter.getRealText(LanguageManager.getText(458)), //تأكيد شراء المنتج
                 textDirection: LanguageManager.getTextDirection(),
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.normal, height: 1.2),
                 textAlign: TextAlign.center,
@@ -466,7 +502,7 @@ class _ProductDetailsState extends State<ProductDetails> {
                       });
                   },
                   textDirection: LanguageManager.getTextDirection(),
-                  maxLines: 3,
+                  maxLines: 2,
                   keyboardType: TextInputType.multiline,
                   decoration: InputDecoration(
                       contentPadding: EdgeInsets.symmetric(vertical: 0),
@@ -505,15 +541,35 @@ class _ProductDetailsState extends State<ProductDetails> {
                   style: TextStyle(fontWeight: FontWeight.w600),
                 ),
               ),
+              createDuleOptions("selected_payment_method", 343, 135, 134, selectedPaymentOption["method"]== widget.args['payment_method'][0]['method']),
               Container(height: 10),
-              createRowText(LanguageManager.getText(454), widget.args[widget.args['is_offer'].toString() == '1'? 'offer_price' : 'price'].toString() + ' ' + Globals.getUnit()), //  سعر المنتج
-              createRowText(LanguageManager.getText(455), widget.args['delivery_fee'].toString() + ' ' + Globals.getUnit()), // شحن المنتج
-              createUnderLine(),
-              createRowText(
-                  LanguageManager.getText(456), //  المجموع
-                  (widget.args['delivery_fee'] + widget.args[widget.args['is_offer'].toString() == '1'? 'offer_price' : 'price']).toString() + ' ' + Globals.getUnit(),
-                  color: Colors.black,
-                  fontSize: 18.0
+              if(widget.args[selectedPaymentOption['method'] == 'cash'? 'cash_invoice_info' : 'online_invoice_info'] != null)
+                for (var invoiceInfo in widget.args[selectedPaymentOption['method'] == 'cash'? 'cash_invoice_info' : 'online_invoice_info'])
+                  invoiceInfo['text_en'].toString().toLowerCase().contains('total')
+                      ? Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        createUnderLine(),
+                        createTextPrice(
+                          invoiceInfo[LanguageManager.getDirection()? 'text_ar' : 'text_en'] , //  المجموع
+                          Converter.format(invoiceInfo['number'].toString(), numAfterComma: 2) + ' ' + Globals.getUnit(),
+                          color: Colors.black,
+                          fontSize: 18.0,
+                        )
+                      ])
+                      : createTextPrice(invoiceInfo[LanguageManager.getDirection()? 'text_ar' : 'text_en'], Converter.format(invoiceInfo['number'].toString(), numAfterComma: 2) + ' ' + Globals.getUnit()),
+
+              Container(height: 5),
+              Row(
+                textDirection: LanguageManager.getTextDirection(),
+                children: [
+                  Container(
+                      margin: EdgeInsets.only(left: 20, right: 20, top: 5, bottom: 5),
+                      child: Text(LanguageManager.getText(472), // لايمكن إستبدال أو إرجاع هذا المنتج.
+                        textDirection: LanguageManager.getTextDirection(),
+                        style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+                      )),
+                ],
               ),
               Container(
                 margin: EdgeInsets.only(top: 15, bottom: 15),
@@ -522,7 +578,7 @@ class _ProductDetailsState extends State<ProductDetails> {
                   children: [
                     Expanded(
                       child: InkWell(
-                        onTap: ()=> orderProductFromServer(item),
+                        onTap: ()=> excutePayment(),
                         child: Container(
                           width: 90,
                           height: 45,
@@ -579,31 +635,7 @@ class _ProductDetailsState extends State<ProductDetails> {
         ));
   }
 
-  createUnderLine() {
-    return Container(
-      height: 1,
-      width: double.infinity,
-      margin: EdgeInsets.symmetric(horizontal: 35, vertical: 5),
-      color: Converter.hexToColor('#C2C2C2'),
-    );
-  }
-
-  createRowText(firstText, secondText, {color, fontSize = 16.0}) {
-    return Container(
-      margin: EdgeInsets.only(left: 20, right: 20, top: 5, bottom: 5),
-      child: Row(
-        textDirection: LanguageManager.getTextDirection(),
-        children: [
-          Text(firstText, textDirection: LanguageManager.getTextDirection(), style: color == null ? TextStyle(fontSize: fontSize,  color: Colors.black.withAlpha(150),fontWeight: FontWeight.bold) : TextStyle(fontSize: fontSize, color: color)),
-          Expanded(child: Container()),
-          Text(secondText, textDirection: LanguageManager.getTextDirection(), style: color == null ? TextStyle(fontSize: fontSize, color: Colors.green,  fontWeight: FontWeight.bold) : TextStyle(fontSize: fontSize, color: Colors.green, fontWeight: FontWeight.bold)),
-        ],
-      ),
-    );
-  }
-
-
-  void orderProductFromServer(item) {
+  excutePayment() async {
     Globals.hideKeyBoard(context);
     errors = {};
 
@@ -614,29 +646,185 @@ class _ProductDetailsState extends State<ProductDetails> {
       errors['other_phone'] = true;
 
     if(errors.isNotEmpty) {
-      Alert.staticContent = contentOrderProduct(item);
+      Alert.staticContent = contentOrderProduct();
       Alert.setStateCall = () {};
       Alert.callSetState();
       return;
     }
 
-    Navigator.pop(context);
-    body['product_id'] = item['id'].toString();
+    body['product_id'] = widget.args['id'].toString();
 
+    body['selected_payment_method'] = selectedPaymentOption['method'].toString();
 
-    Alert.startLoading(context);
-    NetworkManager.httpPost(Globals.baseUrl + "orders/create/order/product",context, (r) { // orders/set
-      if (r['state'] == true) {
-        Alert.endLoading(context2: context);
-        Alert.show(context, Converter.getRealText(r['data'] is int? r['data'] : 453),
-            onYesShowSecondBtn: false,
-            premieryText: Converter.getRealText(300),
-            onYes: () {
-              Navigator.of(context).pop(true);
-              Navigator.push(context, MaterialPageRoute(settings: RouteSettings(name: 'Orders'), builder: (_) => Orders()));
-            });
+    print('here_selectedPaymentOption: $selectedPaymentOption');
+    if(selectedPaymentOption['method'] == 'cash') {
+      Navigator.pop(context);
+
+      Alert.startLoading(context);
+      NetworkManager.httpPost(Globals.baseUrl + "orders/create/order/product",context, (r) { // orders/set
+        if (r['state'] == true) {
+          Alert.endLoading(context2: context);
+          Alert.show(context, Converter.getRealText(r['data'] is int? r['data'] : 453),
+              onYesShowSecondBtn: false,
+              premieryText: Converter.getRealText(300),
+              onYes: () {
+                Navigator.of(context).pop(true);
+                Navigator.push(context, MaterialPageRoute(settings: RouteSettings(name: 'Orders'), builder: (_) => Orders()));
+              });
+        }
+      }, body: body);
+    }else if(selectedPaymentOption['method'] == 'myfatoorah'){
+      var results = await Navigator.push(context, MaterialPageRoute(builder: (_) =>
+          WebBrowser(Globals.urlServerGlobal + "/fatoorah/${UserManager.currentUser('id')}/invoice/${widget.args['id']}", LanguageManager.getText(343) + ' ' + selectedPaymentOption[LanguageManager.getDirection() ? "name" : "name_en"])));
+      if (results == null) {
+        Alert.show(context, LanguageManager.getText(240));
+        return;
       }
-    }, body: body);
+
+      print('here_pay_from web results: $results');
+      if (results.toString() == 'success') {
+        Navigator.pop(context);
+
+        Alert.startLoading(context);
+        NetworkManager.httpPost(Globals.baseUrl + "orders/create/order/product",context, (r) { // orders/set
+          if (r['state'] == true) {
+            Alert.endLoading(context2: context);
+            Alert.show(context, Converter.getRealText(r['data'] is int? r['data'] : 453),
+                onYesShowSecondBtn: false,
+                premieryText: Converter.getRealText(300),
+                onYes: () {
+                  Navigator.of(context).pop(true);
+                  Navigator.push(context, MaterialPageRoute(settings: RouteSettings(name: 'Orders'), builder: (_) => Orders()));
+                });
+          }
+        }, body: body);
+      }
+    }
+  }
+
+  Widget createDuleOptions(key, title, yesOption, noOption, isActive) {
+
+    // if(!(isActive is bool)&& (!body.containsKey('payment_method')))
+    //   body["payment_method"] = isActive = jsonEncode(["myfatoorah","cash"]);
+
+    return Container(
+      padding: EdgeInsets.only(left: 10, right: 10, top: 5, bottom: 5),
+      child: Row(
+        textDirection: LanguageManager.getTextDirection(),
+        children: [
+          Expanded(
+              flex: 1,
+              child:
+              Text(
+                LanguageManager.getText(title),
+                textDirection: LanguageManager.getTextDirection(),
+                style: TextStyle(
+                    fontSize: 16,
+                    color: Converter.hexToColor("#2094CD"),
+                    fontWeight: FontWeight.bold),
+              )),
+          // Container(width: 20),
+          // Container(height: 10),
+          Expanded(
+            flex: 2,
+            child: Container(
+              child: GestureDetector(
+                onTap: () {
+                  selectedPaymentOption = widget.args['payment_method'][0];print('here_payment_method: $selectedPaymentOption');
+                  body[key] = selectedPaymentOption['method'];
+                  Alert.staticContent = contentOrderProduct();
+                  Alert.setStateCall = () {};
+                  Alert.callSetState();
+                },
+                child: Row(
+                  textDirection: LanguageManager.getTextDirection(),
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      alignment: Alignment.center,
+                      child: Container(
+                        width: 20,
+                        height: 20,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(30),
+                            border: Border.all(width: 2, color: Colors.grey)),
+                        child: isActive
+                            ? Container(
+                          width: 10,
+                          height: 10,
+                          decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(20),
+                              color: Colors.grey),
+                        )
+                            : null,
+                      ),
+                    ),
+                    Container(width: 10),
+                    Text(widget.args['payment_method'][0][LanguageManager.getDirection()? 'name' : 'name_en'],
+                      style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.black,
+                          fontWeight: FontWeight.normal),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          // if((widget.args['payment_method'] is List) && (widget.args['payment_method'] as List).length > 1)
+          // Container(width: 30),
+          if((widget.args['payment_method'] is List) && (widget.args['payment_method'] as List).length > 1)
+            Expanded(
+              flex: 2,
+              child: Container(
+                child: InkWell(
+                  onTap: () {
+                    selectedPaymentOption = widget.args['payment_method'][1]; print('here_payment_method: $selectedPaymentOption');
+                    body[key] = selectedPaymentOption['method'];
+                    Alert.staticContent = contentOrderProduct();
+                    Alert.setStateCall = () {};
+                    Alert.callSetState();
+                  },
+                  child: Row(
+                    textDirection: LanguageManager.getTextDirection(),
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        alignment: Alignment.center,
+                        child: Container(
+                          width: 20,
+                          height: 20,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(30),
+                              border: Border.all(width: 2, color: Colors.grey)),
+                          child: !isActive
+                              ? Container(
+                            width: 10,
+                            height: 10,
+                            decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(20),
+                                color: Colors.grey),
+                          )
+                              : null,
+                        ),
+                      ),
+                      Container(width: 10),
+                      Text(widget.args['payment_method'][1][LanguageManager.getDirection()? 'name' : 'name_en'],
+                        style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.black,
+                            fontWeight: FontWeight.normal),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
   }
 
 }

@@ -91,7 +91,7 @@ class _OrderDetailsState extends State<OrderDetails> with WidgetsBindingObserver
                               color: Converter.hexToColor("#F2F2F2"),
                               image: DecorationImage(
                                 // fit: BoxFit.cover,
-                                  image: CachedNetworkImageProvider(Globals.correctLink(data['service_icon'])))
+                                  image: CachedNetworkImageProvider(Globals.correctLink(data['service_icon'] is List? data['service_icon'][0] : data['service_icon'])))
                           ),
                           alignment: LanguageManager.getDirection()? Alignment.topLeft: Alignment.topRight,
                           child: Row(
@@ -264,7 +264,18 @@ class _OrderDetailsState extends State<OrderDetails> with WidgetsBindingObserver
 
                         if(data['invoice'] != null)
                           for (var invoiceInfo in data['invoice'])
-                            createTextPrice(invoiceInfo[LanguageManager.getDirection()? 'text_ar' : 'text_en'] , invoiceInfo['number']),
+                            if(invoiceInfo.runtimeType.toString() == '_InternalLinkedHashMap<String, dynamic>')
+                              invoiceInfo['text_en'].toString().toLowerCase().contains('total')
+                                  ? Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    createUnderLine(),
+                                    createTextPrice(
+                                      invoiceInfo[LanguageManager.getDirection()? 'text_ar' : 'text_en'] , //  المجموع
+                                      Converter.format(invoiceInfo['number'].toString(), numAfterComma: 2),
+                                    )
+                                  ])
+                                  : createTextPrice(invoiceInfo[LanguageManager.getDirection()? 'text_ar' : 'text_en'] , Converter.format(invoiceInfo['number'].toString(), numAfterComma: 2) ),
 
                         data['status'] == 'ONE_SIDED_CANCELED' || data['status'] == 'CANCELED'
                             ? Container(height: 1,color: Colors.red.withAlpha(20), margin: EdgeInsets.symmetric(vertical: 15),)
@@ -778,8 +789,8 @@ class _OrderDetailsState extends State<OrderDetails> with WidgetsBindingObserver
     return Container(
       height: 1,
       width: double.infinity,
-      margin: EdgeInsets.only(right: 35,left: 35, top: 15),
-      color: Converter.hexToColor('#e2e2e2'),
+      margin: EdgeInsets.symmetric(horizontal: 35, vertical: 5),
+      color: Converter.hexToColor('#C2C2C2'),
     );
   }
 }

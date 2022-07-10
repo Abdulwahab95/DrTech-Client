@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:dr_tech/Components/Alert.dart';
@@ -187,12 +188,25 @@ class Globals {
   }
 
   static String getUnit({isUsd}){
+    String unit = '';
+
     if(isUsd.toString() == "online_services")
-      return '\$';
+      unit = '\$';
     else if(isRtl())
-      return UserManager.currentUser('unit_ar');
+      unit = UserManager.currentUser('unit_ar');
     else
-      return UserManager.currentUser('unit_en');
+      unit = UserManager.currentUser('unit_en');
+
+    if(unit.isEmpty){
+      print('here_getUnit: ${DatabaseManager.load("base_setting_country")}, ${jsonDecode(DatabaseManager.load("base_setting_country")).runtimeType}');
+      unit = jsonDecode(DatabaseManager.load("base_setting_country"))[isRtl()? 'unit' : 'unit_en'];
+    }
+
+    // if(unit == null){
+    //   unit = isRtl()? 'ر.س' : 'SAR';
+    // }
+
+    return unit;
   }
 
   static String correctLink(data) {

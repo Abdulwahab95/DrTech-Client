@@ -36,7 +36,7 @@ class _NotificationIconState extends State<NotificationIcon> {
         onTap: () {
           setState(() {
             countNotSeen = 0;
-            Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => Home(page: 2,)));
+            Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => Home(page: Globals.getSetting('show_store') == 'true'? 3 : 2,)));
           });
         },
         child: Stack(

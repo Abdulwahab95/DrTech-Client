@@ -278,7 +278,7 @@ class _EnterCodeWithdrawalState extends State<EnterCodeWithdrawal> {
     NetworkManager.httpPost(Globals.baseUrl + "user/withdrawal", context ,(r) {
       if (r['state'] == true) {
         Alert.endLoading();
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => Home(page: 3)));
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => Home(page: Globals.getSetting('show_store') == 'true'? 4 : 3)));
         // success
       }
     }, body: body);

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dr_tech/Components/Alert.dart';
@@ -38,8 +39,8 @@ class _LoginState extends State<Login> {
         });
       },
     );
-    selectedCountrieCode["code"] = DatabaseManager.liveDatabase["country"];
-    selectedCountrieCode["phone_code"] = "+966";
+    selectedCountrieCode["code"] = jsonDecode(DatabaseManager.load("base_setting_country"))['code'];//DatabaseManager.liveDatabase["country"];
+    selectedCountrieCode["phone_code"] = jsonDecode(DatabaseManager.load("base_setting_country"))['country_code'];
     var countries = Globals.getConfig("countries");
     if (countries != "") {
       for (var item in countries) {
@@ -53,9 +54,9 @@ class _LoginState extends State<Login> {
           "id": item["id"],
           "phone_code": item["country_code"],
           "text": item["name"],
-          "icon": Globals.baseUrl +
-              "storage/flags/" +
-              item["code"].toString().toLowerCase(),
+          "icon": Globals.baseUrl + "storage/flags/" + item["code"].toString().toLowerCase(),
+          "unit": item['unit'] ?? '',
+          "unit_en": item['unit_en'] ?? '',
         });
       }
     }
@@ -147,13 +148,15 @@ class _LoginState extends State<Login> {
                               )),
                               InkWell(
                                 onTap: () {
+                                  print('hh');
                                   hideKeyBoard();
                                   Alert.show(context, countries,
                                       onSelected: (selcted) {
                                     setState(() {
                                       selectedCountrieCode = selcted;
-                                      body["country"] =
-                                          selectedCountrieCode["code"];
+                                      body["country"] = selectedCountrieCode["code"];
+                                      print('here_p: $selcted');
+                                      DatabaseManager.save("base_setting_country", jsonEncode(selcted));
                                     });
                                   }, type: AlertType.SELECT);
                                 },
@@ -182,10 +185,7 @@ class _LoginState extends State<Login> {
                                                 image: DecorationImage(
                                                     fit: BoxFit.cover,
                                                     image: CachedNetworkImageProvider(
-                                                        Globals.baseUrl +
-                                                            "storage/flags/" +
-                                                            selectedCountrieCode[
-                                                                "code"]))),
+                                                        Globals.baseUrl + "storage/flags/" + selectedCountrieCode["code"]))),
                                           )
                                         ],
                                       ),

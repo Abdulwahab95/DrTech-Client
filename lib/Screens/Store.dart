@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dr_tech/Components/CustomBehavior.dart';
@@ -14,6 +15,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+
+import '../Models/UserManager.dart';
 
 class Store extends StatefulWidget {
   const Store();
@@ -188,6 +191,9 @@ class _StoreState extends State<Store> {
       "product_type_id": selectedSubCatigory['id'].toString(),
       // "page": pageIndex.toString()
     };
+    if(UserManager.currentUser('id').isNotEmpty)
+      body['user_id'] = UserManager.currentUser('id');
+
     NetworkManager.httpGet(Globals.baseUrl + "store/load", context, (r) {
     //  var r =   {
     //   "state": true,
@@ -281,7 +287,7 @@ class _StoreState extends State<Store> {
       backgroundColor: Colors.white,
       body: Column(
         children: [
-          TitleBar(() {Navigator.pop(context);}, 451, withoutBell: true, withoutBack: true),
+          TitleBar(null, 451, withoutBell: true, withoutBack: true),
           isConfigLoading
               ? Expanded(
                   child: Center(
@@ -326,7 +332,7 @@ class _StoreState extends State<Store> {
                             // Container(height: 5),
                             Center (child: Wrap(
                               textDirection: LanguageManager.getTextDirection(),
-                              spacing: 10,
+                              // spacing: 10,
                               // alignment: WrapAlignment.spaceEvenl,
 
                               children: getProducts(),
@@ -374,6 +380,10 @@ class _StoreState extends State<Store> {
   List<Widget> getProducts() {
     List<Widget> products = [];
         for (var item in data) {
+          // for(int i=0; i == (item['payment_method'] as List).length -1; i++) {
+          //   item['payment_method'][i] =
+          //       (data['pay_methodes'] as List).firstWhere((element) => item['payment_method'][i] == element['method']);
+          // }
           products.add(Product(item));
         }
 

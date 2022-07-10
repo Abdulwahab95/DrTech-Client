@@ -315,7 +315,7 @@ class _WelcomeState extends State<Welcome> {
             Globals.isLiveChatOpenFromNotification
                 ? LiveChat(Globals.currentConversationId)
                 : Globals.isNotificationOpenFromNotification
-                ? Home(page: 2)
+                ? Home(page: Globals.getSetting('show_store') == 'true'? 3 : 2)
                 : Home()));
   }
 

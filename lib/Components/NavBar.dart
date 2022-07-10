@@ -57,7 +57,7 @@ class _NavBarState extends State<NavBar> {
         ),
         Container(
           margin: EdgeInsets.only(bottom: 10),
-          height: homeIconSize * 0.5,
+          height: homeIconSize * 0.51,
           color: Colors.transparent,
           child: Row(
             textDirection: LanguageManager.getTextDirection(),
@@ -134,21 +134,21 @@ class _NavBarState extends State<NavBar> {
       onTap: onTap,
       child: Container(
         // width: homeIconSize,
-        child: Row(
+        child: Column(
           textDirection: LanguageManager.getTextDirection(),
-          crossAxisAlignment: CrossAxisAlignment.end,
+          crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              margin: EdgeInsets.only(bottom: homeIconSize * 0.04),
-              width: homeIconSize * 0.45,
-              height: homeIconSize * 0.45,
+              // margin: EdgeInsets.only(bottom: homeIconSize * 0.04),
+              width: homeIconSize * 0.45 * .65,
+              height: homeIconSize * 0.45 * .65,
               alignment: Alignment.center,
               child: SvgPicture.asset(
                 "assets/icons/$icon.svg",
-                width: homeIconSize * 0.25,
-                height: homeIconSize * 0.25,
+                width: homeIconSize * 0.25 * .65,
+                height: homeIconSize * 0.25 * .65,
                 color: Colors.white,
               ),
               decoration: BoxDecoration(
@@ -156,15 +156,12 @@ class _NavBarState extends State<NavBar> {
                   borderRadius: BorderRadius.circular(homeIconSize)),
             ),
             Container(
-              width: 5,
-            ),
-            Container(
-              margin: EdgeInsets.only(bottom: 5),
+              margin: EdgeInsets.only(right: LanguageManager.getDirection()? 20 : 0, left: LanguageManager.getDirection()? 0 : 20,bottom: 5),
               child: Text(
                 LanguageManager.getText(text),
                 style: TextStyle(
                     color: isActive ? activeColor : Colors.grey,
-                    fontSize: 14,
+                    fontSize: 13,
                     fontWeight: FontWeight.bold),
               ),
             )
