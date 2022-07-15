@@ -14,7 +14,7 @@ import 'package:http_parser/http_parser.dart' as http_parser;
 
 class NetworkManager {
   static Map<String, int> asyncValidator = {};
-  String call(String url, BuildContext context, Function callback, {var body, onError, cachable}) {
+  String call(String url, BuildContext context, Function callback, {var body, onError, cachable, isDelete = false}) {
     String storageKey = url;
     int validatorKey = DateTime.now().microsecondsSinceEpoch;
     asyncValidator[url] = validatorKey;
@@ -76,6 +76,8 @@ class NetworkManager {
 
       if (body != null)
         response = await http.post(Uri.parse(url), headers: header, body: body).catchError((e) {processError(e, context);});
+      else if (isDelete == true)
+        response = await http.delete(Uri.parse(url), headers: header).catchError((e) {processError(e, context);});
       else
         response = await http.get(Uri.parse(url), headers: header).catchError((e) {processError(e, context);});
 
@@ -111,12 +113,18 @@ class NetworkManager {
         //   Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => Login()), (Route<dynamic> route) => false);
         // }
 
+        if(context != null)
+          Alert.endLoading(context2: context);
+        else
+          Alert.endLoading();
+
         var r = json.decode(response.body);
         // r['message_code'] = 10;
-          Alert.endLoading(context2: context);
         if(notInAllow(r, url)){
           if (r['message_code'] != null && r['message_code'] != -1)
             Alert.show(context, LanguageManager.getText(int.parse(r['message_code'].toString())));
+          else if (r['code'] != null && r['code'] is Map && (r['code'] as Map).containsKey('message'))
+            Alert.show(context, Converter.getRealText(r['code']['message']));
           else
             Alert.show(context, Converter.getRealText(r['message']));
         }
@@ -236,6 +244,12 @@ class NetworkManager {
         .call(url, context, callback, body: body, onError: onError, cachable: cachable);
   }
 
+  static String httpDelete(String url, BuildContext context, Function callback,
+      {var body, onError}) {
+    return NetworkManager()
+        .call(url, context, callback, body: body, onError: onError,  isDelete: true);
+  }
+
   static log(e) {
     print(e);
   }
@@ -255,6 +269,7 @@ class NetworkManager {
             && LanguageManager.getText(362) != 'NO_TEXT_FOUND'
         )? LanguageManager.getText(362) : Converter.getRealText(e)));
   }
+
 }
 
 class MultipartRequest extends http.MultipartRequest {

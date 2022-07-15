@@ -43,6 +43,7 @@ class _ProductState extends State<Product> {
   @override
   Widget build(BuildContext context) {
     double size = MediaQuery.of(context).size.width * 0.5;
+    print("here_images: ${widget.item['id']}, ${widget.item['images']}");
     return InkWell(
       onTap: () {
         Navigator.push(context, MaterialPageRoute(builder: (_) => ProductDetails(widget.item)));

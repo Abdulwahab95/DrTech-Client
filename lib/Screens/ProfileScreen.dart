@@ -21,6 +21,8 @@ import 'package:flutter_icons/flutter_icons.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../Network/NetworkManager.dart';
+
 class ProfileScreen extends StatefulWidget {
   final refrashState;
   const ProfileScreen(this.refrashState);
@@ -186,6 +188,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Navigator.push(
                 context, MaterialPageRoute(builder: (_) => RateApp()));
           })
+          :Container(),          
+          UserManager.currentUser("id").isNotEmpty?
+          getProfileItem(FlutterIcons.account_off_mco, 278, () {  //  اقفال الحساب
+            // Navigator.push(context, MaterialPageRoute(builder: (_) => RateApp()));
+            Alert.show(context, getAlertDeleteAccount(), type: AlertType.WIDGET);
+          }, withArraw: false)
           :Container(),
           UserManager.currentUser("id").isNotEmpty?
           getProfileItem(FlutterIcons.log_out_fea, 66, () {
@@ -364,6 +372,96 @@ class _ProfileScreenState extends State<ProfileScreen> {
     // ScaffoldMessenger.of(context)
     //   ..removeCurrentSnackBar()
     //   ..showSnackBar(SnackBar(content: Text('$result , old: $old, new: ${UserManager.currentUser("image")}')));
+  }
+
+  getAlertDeleteAccount() {
+    return
+      Container(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            textDirection: LanguageManager.getTextDirection(),
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Row(
+                textDirection: LanguageManager.getTextDirection(),
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Container(),
+                  InkWell(
+                    onTap: () {Navigator.pop(context);},
+                    child: Icon(FlutterIcons.x_fea, size: 24),
+                  )
+                ],
+              ),
+              Container(child: Icon(FlutterIcons.md_trash_ion, size: 50)),
+
+              Container(height: 5),
+
+              Text(LanguageManager.getText(280),  //  تنبيه
+                  style: TextStyle(color: Converter.hexToColor("#707070"), fontWeight: FontWeight.bold), textDirection: LanguageManager.getTextDirection()),
+
+              Container(height: 30),
+
+              Text(
+                LanguageManager.getText(279).replaceAll('\\n', '\n'), // سيتم حذف حسابك بشكل نهائي\nهل انت متأكد من حذف حسابك ؟
+                style: TextStyle(
+                    color: Converter.hexToColor("#707070"),
+                    fontWeight: FontWeight.bold),
+              ),
+              Container(height: 30),
+              Row(
+                textDirection: LanguageManager.getTextDirection(),
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  InkWell(
+                    onTap: () {Navigator.pop(context);},
+                    child: Container(
+                      width: MediaQuery.of(context).size.width * 0.45,
+                      height: 45,
+                      alignment: Alignment.center,
+                      child: Text(
+                        LanguageManager.getText(172), // تراجع
+                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                      ),
+                      decoration: BoxDecoration(
+                          boxShadow: [BoxShadow(color: Colors.black.withAlpha(15), spreadRadius: 2, blurRadius: 2)],
+                          borderRadius: BorderRadius.circular(8),
+                          color: Converter.hexToColor("#344f64")),
+                    ),
+                  ),
+                  InkWell(
+                    onTap: () {
+                      Navigator.pop(context);
+                      Alert.startLoading(context);
+                      NetworkManager.httpDelete(Globals.baseUrl + "account/delete", context, (r) {
+                        print('ishere22?');
+                        DatabaseManager.unset("current_panel");
+                        DatabaseManager.unset(Globals.authoKey);
+                        var dbData = DatabaseManager.load('user_keys');
+                        List userKeys = dbData != "" ? dbData : [];
+                        for (var key in userKeys) {
+                          DatabaseManager.unset(key);
+                        }
+                        main();
+                      });
+                    },
+                    child: Container(
+                      width: MediaQuery.of(context).size.width * 0.45,
+                      height: 45,
+                      alignment: Alignment.center,
+                      child: Text(
+                          LanguageManager.getText(169),
+                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                      decoration: BoxDecoration(
+                          boxShadow: [BoxShadow(color: Colors.black.withAlpha(15), spreadRadius: 2, blurRadius: 2)],
+                          borderRadius: BorderRadius.circular(8),
+                          color: Converter.hexToColor("#FF0000")),
+                    ),
+                  ),
+                ],
+              )
+            ],
+          ));
   }
 
 }
